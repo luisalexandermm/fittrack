@@ -223,7 +223,7 @@
 }
 .nav-fija.visible { transform: none; }
 .nav-fija .marca { font-size: 1.3rem; }
-.nav-fija .marca-simbolo { width: 26px; height: 26px; }
+.nav-fija .marca-simbolo { width: 96px; height: auto; max-height: 34px; }
 .nav-fija-enlaces { display: flex; gap: 28px; }
 .nav-fija-enlaces a { color: var(--tinta-2); text-decoration: none; font-weight: 500; font-size: .93rem; transition: color .2s; }
 .nav-fija-enlaces a:hover, .nav-fija-enlaces a.activo { color: var(--tinta); }
