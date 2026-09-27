@@ -9,7 +9,7 @@
     "sql": "node supabase/generar-datos.js"
   },
   "engines": {
-    "node": ">=22.9"
+    "node": ">=22.9.0 <23"
   },
   "author": "Luis Alexander Maturana — Maturana Tech",
   "license": "MIT",
