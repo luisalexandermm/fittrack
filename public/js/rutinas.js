@@ -137,7 +137,7 @@ function pintarRutina() {
     ${bloques}
     <div class="acciones-rutina">
       ${rutinaActualId ? '' : `<button class="btn btn-linea" id="btn-guardar-rutina" type="button">${icono('guardar')}<span class="solo-lector">Guardar rutina</span></button>`}
-      <button class="btn btn-arcilla" id="btn-empezar" type="button">${icono('play')}Iniciar rutina</button>
+      <button class="btn btn-lima" id="btn-empezar" type="button">${icono('play')}Iniciar rutina</button>
     </div>`;
 }
 

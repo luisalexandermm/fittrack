@@ -22,7 +22,7 @@
       y guardamos tu preferencia de tema en tu navegador. No usamos cookies de publicidad ni de rastreo.
       <a href="/cookies">Leer la política</a>.</p>
       <div class="fila">
-        <button class="btn btn-arcilla btn-sm" type="button" data-cerrar>Entendido</button>
+        <button class="btn btn-lima btn-sm" type="button" data-cerrar>Entendido</button>
         <a class="btn btn-linea btn-sm" href="/privacidad">Privacidad</a>
       </div>`;
     banner.querySelector('[data-cerrar]').addEventListener('click', () => {

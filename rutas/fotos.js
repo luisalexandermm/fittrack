@@ -12,10 +12,10 @@ const { hoy, fechaValida } = require('./utilidades');
 const router = express.Router();
 const BUCKET = 'fotos';
 
-// La foto llega a la memoria del servidor (máx. 8 MB) y de ahí sube a Supabase
+// La foto llega a la memoria del servidor (máx. 4 MB) y de ahí sube a Supabase
 const subir = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 8 * 1024 * 1024 },
+  limits: { fileSize: 4 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
     if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) cb(null, true);
     else cb(new Error('Solo se permiten imágenes JPG, PNG o WEBP'));

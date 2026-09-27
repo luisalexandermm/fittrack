@@ -64,8 +64,8 @@ async function cargarInicio() {
       <p>${detalleHoy}</p>
       <div class="acciones">
         ${act.entrena || entrenoHoy
-          ? `<a href="#rutinas" class="btn btn-arcilla" data-empezar-hoy>${icono('play')}Comenzar</a>`
-          : `<a href="#rutinas" class="btn btn-arcilla">Entrenar igual</a>`}
+          ? `<a href="#rutinas" class="btn btn-lima" data-empezar-hoy>${icono('play')}Comenzar</a>`
+          : `<a href="#rutinas" class="btn btn-lima">Entrenar igual</a>`}
         <a href="#calendario" class="btn btn-linea">Ver semana</a>
       </div>
     </div>

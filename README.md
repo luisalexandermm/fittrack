@@ -3,7 +3,7 @@
 Rutinas de ejercicio en casa según **objetivo, tiempo y nivel**, con entrenador en pantalla completa, seguimiento de **peso, medidas y fotos**, **plan de comidas** con recetas de Colombia y del Pacífico, y **calendario semanal**.
 
 Full stack: **Node.js + Express + Supabase** (PostgreSQL, Auth y Storage) · frontend en **HTML, CSS y JavaScript puro** (sin build).
-Diseño propio: paleta **Carbón y perla** (blanco perlado) con un solo acento **arcilla**, tipografías servidas desde el propio servidor.
+Diseño propio: paleta **negro profundo + verde lima** (#050B0A / #B8FF3D), claro por defecto, tipografías servidas desde el propio servidor.
 
 ---
 
@@ -31,6 +31,14 @@ Por defecto Supabase pide **confirmar el correo** al registrarse; la app ya mane
 
 ### 4. Pon las llaves
 Supabase → **Project Settings → API** (o **API Keys**):
+
+En Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+En macOS o Linux:
 
 ```bash
 cp .env.example .env
@@ -77,7 +85,7 @@ Detalles en `public/img/LEEME.txt`.
 
 | Sección | Qué hace |
 |---|---|
-| **Landing** | Hero oscuro con la palabra FITTRACK, anillo arcilla y tu foto delante; menú a pantalla completa; registro en 4 pasos (cuenta, objetivo, nivel/tiempo, privacidad) y login |
+| **Landing** | Hero oscuro con la palabra FITTRACK, anillo lima, pegatinas flotantes y tu foto delante; menú a pantalla completa; registro en 4 pasos (cuenta, objetivo, nivel/tiempo, privacidad) y login |
 | **Inicio** | Objetivo con % de avance hacia la meta, peso/meta/grasa/cintura, plan de hoy según el calendario, semana y minutos por semana |
 | **Rutinas** | Generador (objetivo, nivel, minutos), lista de ejercicios con pictogramas propios, cambiar ejercicios, guardar rutinas, entrenador con temporizador |
 | **Progreso** | Pestañas Peso (gráfica con meta, anillo de avance, estadísticas), Medidas (gráfica y tabla) y Fotos (galería privada y comparador antes/después) |
@@ -170,12 +178,17 @@ fittrack/
 
 ## Colores (cámbialos en `public/css/base.css`)
 
-| Variable | Claro | Uso |
-|---|---|---|
-| `--fondo` | `#F2F1ED` blanco perlado | fondo |
-| `--tinta` | `#151311` carbón | texto y botones oscuros |
-| `--arcilla` | `#9C4A2F` | el único color de acento |
-| `--piedra` | `#8B877F` | textos de apoyo |
+| Variable | Claro | Oscuro | Uso |
+|---|---|---|---|
+| `--lima` | `#B8FF3D` | `#B8FF3D` | botones, logo, indicadores (relleno) |
+| `--acento` | `#3F7A00` | `#B8FF3D` | texto y líneas de acento (lima oscuro en claro para que se lea) |
+| `--lima-suave` | `#DDF7B5` | — | fondos y acentos sutiles |
+| `--verde` | `#182D20` | `#182D20` | elementos secundarios, tarjetas oscuras |
+| `--noche` / `--noche-2` | `#050B0A` / `#0B1513` | igual | hero, navbar, secciones oscuras |
+| `--fondo` | `#E8ECEA` | `#050B0A` | fondo |
+| `--superficie` | `#FFFFFF` | `#0B1513` | tarjetas |
+| `--tinta` | `#050B0A` | `#FFFFFF` | texto principal |
+| `--piedra` | `#5F6A65` | `#9AA39F` | texto secundario |
 
 El modo oscuro está en el bloque `:root[data-tema="oscuro"]` del mismo archivo.
 
@@ -183,14 +196,20 @@ El modo oscuro está en el bloque `:root[data-tema="oscuro"]` del mismo archivo.
 
 `rutas/rutinas.js`: el objetivo define trabajo/descanso (grasa 40/20, músculo 45/30, resistencia 50/15, movilidad 45/10), el nivel lo ajusta, se elige un circuito de 4–6 ejercicios de grupos distintos y se calculan las rondas para llenar el tiempo, con calentamiento y enfriamiento. Solo cuenta rondas completas, por eso la duración real puede quedar unos minutos por debajo.
 
+## Despliegue en Vercel con GitHub
+
+1. Importa el repositorio desde GitHub en Vercel y deja la **Root Directory** en la carpeta del proyecto. Vercel detecta `server.js` como Express; no hace falta un comando de build.
+2. En **Project Settings → Environment Variables**, agrega `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `SITE_URL`. Define `SITE_URL` con el dominio de producción, por ejemplo `https://tu-dominio.vercel.app`. Las llaves secretas van solo en Vercel, nunca en GitHub.
+3. Despliega y copia el dominio asignado. En Supabase → **Authentication → URL Configuration**, úsalo como **Site URL** y agrega `https://tu-dominio.vercel.app/verificar` a **Redirect URLs**. Si usarás dominios de Preview, agrega también un patrón permitido que cubra únicamente tus previews.
+4. Cada push a la rama conectada volverá a desplegar la app. Prueba registro, confirmación de correo, inicio de sesión y subida de fotos.
+
+`vercel.json` habilita URLs limpias como `/app` y `/verificar`. Vercel sirve los archivos de `public/` desde su CDN. Las fotos tienen un límite de **4 MB** para respetar el máximo de 4,5 MB por petición de Vercel Functions.
+
 ## Antes de publicar
 
-1. En `.env` (o en las variables del hosting): `NODE_ENV=production` y `SITE_URL=https://tu-dominio.com`.
-2. En Supabase agrega `https://tu-dominio.com/verificar` a **Redirect URLs** y cambia la **Site URL**.
-3. Configura un **SMTP propio** en Supabase (el correo gratuito envía muy pocos mensajes por hora).
-4. Sírvela con **HTTPS** (Render, Railway, Fly.io o un VPS). Como las fotos están en Storage, no importa que el hosting borre archivos al reiniciar.
-5. Activa las copias de seguridad de Supabase (plan Pro) o exporta la base de vez en cuando.
-6. Revisa los textos legales.
+1. Configura un **SMTP propio** en Supabase (el correo gratuito envía muy pocos mensajes por hora).
+2. Activa las copias de seguridad de Supabase (plan Pro) o exporta la base de vez en cuando.
+3. Revisa los textos legales.
 
 ---
 

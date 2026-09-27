@@ -1,6 +1,6 @@
 /* ============================================================
    FitTrack — base.css
-   Paleta "Carbón y perla": un solo color de acento (arcilla).
+   Paleta verde lima + negro verdoso (ver colores abajo).
    Tipografías servidas desde /fuentes (sin Google Fonts).
    Lo usan todas las páginas: landing, app y páginas legales.
    ============================================================ */
@@ -17,49 +17,59 @@
 @font-face { font-family: 'Instrument'; src: url('../fuentes/instrument-sans-latin-600-normal.woff2') format('woff2'); font-weight: 600; font-display: swap; }
 @font-face { font-family: 'Instrument'; src: url('../fuentes/instrument-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; font-display: swap; }
 
-/* ---------- Colores: MODO CLARO (por defecto) ---------- */
+/* ---------- Colores: MODO CLARO (por defecto) ----------
+   Paleta:  lima #B8FF3D · verde oscuro #182D20 · negro profundo #050B0A
+            negro verdoso #0B1513 · blanco #FFFFFF · gris claro #E8ECEA
+            gris #9AA39F · verde suave #DDF7B5
+   Regla:   --lima es para RELLENOS (botones, barras, etiquetas).
+            --acento es para TEXTOS y LÍNEAS: en modo claro es un lima más
+            oscuro, porque el lima puro sobre blanco casi no se lee. */
 :root {
-  --fondo: #F2F1ED;            /* blanco perlado */
-  --superficie: #FBFAF8;       /* tarjetas */
-  --superficie-2: #E8E6E1;     /* rellenos suaves */
-  --tinta: #151311;            /* carbón: texto principal */
-  --tinta-2: #4A4640;          /* texto secundario */
-  --piedra: #8B877F;           /* texto de apoyo */
-  --linea: rgba(21, 19, 17, 0.12);
-  --linea-fuerte: rgba(21, 19, 17, 0.28);
-  --arcilla: #9C4A2F;          /* el ÚNICO color de acento */
-  --arcilla-2: #7F3A23;        /* arcilla al pasar el mouse */
-  --arcilla-suave: rgba(156, 74, 47, 0.10);
-  --sobre-arcilla: #FAF9F6;    /* texto encima de arcilla */
-  --noche: #151311;            /* bloques siempre oscuros (hero, reproductor) */
-  --sobre-noche: #F2F1ED;
-  --sobre-noche-2: #A5A29C;
+  --fondo: #E8ECEA;            /* gris claro: fondo de la web */
+  --superficie: #FFFFFF;       /* tarjetas */
+  --superficie-2: #DDE3E0;     /* rellenos suaves */
+  --tinta: #050B0A;            /* texto principal */
+  --tinta-2: #33403A;          /* texto secundario */
+  --piedra: #5F6A65;           /* texto de apoyo (el gris #9AA39F no se lee sobre claro) */
+  --linea: rgba(5, 11, 10, 0.10);
+  --linea-fuerte: rgba(5, 11, 10, 0.24);
+  --lima: #B8FF3D;             /* verde lima: botones, logo, indicadores */
+  --lima-2: #A6F01F;           /* lima al pasar el mouse */
+  --lima-suave: #DDF7B5;       /* verde suave: fondos sutiles */
+  --sobre-lima: #050B0A;       /* texto encima del lima */
+  --acento: #3F7A00;           /* lima oscurecido para textos y líneas */
+  --acento-2: #2F5C00;
+  --verde: #182D20;            /* verde oscuro: elementos secundarios */
+  --noche: #050B0A;            /* negro profundo: hero y bloques oscuros */
+  --noche-2: #0B1513;          /* negro verdoso */
+  --sobre-noche: #FFFFFF;
+  --sobre-noche-2: #9AA39F;
 
   --f-display: 'Big Shoulders', 'Arial Narrow', sans-serif;
   --f-titulo: 'Bricolage', system-ui, sans-serif;
   --f-texto: 'Instrument', system-ui, sans-serif;
 
-  --r: 4px;       /* radio pequeño: botones, campos */
-  --r-lg: 10px;   /* radio de tarjetas */
-  --sombra: 0 18px 40px -24px rgba(40, 28, 16, 0.35);
+  --r: 6px;       /* radio pequeño: botones, campos */
+  --r-lg: 14px;   /* radio de tarjetas */
+  --sombra: 0 20px 44px -26px rgba(5, 11, 10, 0.35);
   color-scheme: light;
 }
 
 /* ---------- Colores: MODO OSCURO ---------- */
 :root[data-tema="oscuro"] {
-  --fondo: #12100E;
-  --superficie: #1B1815;
-  --superficie-2: #26221E;
-  --tinta: #F2F1ED;
-  --tinta-2: #B5B1A9;
-  --piedra: #8B877F;
-  --linea: rgba(242, 241, 237, 0.10);
-  --linea-fuerte: rgba(242, 241, 237, 0.24);
-  --arcilla: #B45A3A;
-  --arcilla-2: #C66B4A;
-  --arcilla-suave: rgba(180, 90, 58, 0.16);
-  --noche: #0B0A09;
-  --sombra: 0 18px 40px -24px rgba(0, 0, 0, 0.8);
+  --fondo: #050B0A;
+  --superficie: #0B1513;
+  --superficie-2: #182D20;
+  --tinta: #FFFFFF;
+  --tinta-2: #C3CCC8;
+  --piedra: #9AA39F;
+  --linea: rgba(255, 255, 255, 0.08);
+  --linea-fuerte: rgba(255, 255, 255, 0.2);
+  --lima-suave: rgba(184, 255, 61, 0.12);
+  --acento: #B8FF3D;
+  --acento-2: #D4FF7A;
+  --noche: #050B0A;
+  --sombra: 0 20px 44px -24px rgba(0, 0, 0, 0.85);
   color-scheme: dark;
 }
 
@@ -77,23 +87,15 @@ body {
   min-height: 100vh;
 }
 
-/* Brillo nacarado muy suave (solo en modo claro): reflejos tenues sobre el blanco perlado */
-:root:not([data-tema="oscuro"]) body {
-  background:
-    radial-gradient(1100px 620px at 88% -8%, rgba(221, 216, 232, .45), transparent 62%),
-    radial-gradient(900px 560px at -8% 38%, rgba(236, 224, 214, .45), transparent 60%),
-    radial-gradient(800px 500px at 60% 110%, rgba(220, 230, 228, .35), transparent 60%),
-    var(--fondo);
-  background-attachment: fixed;
-}
+
 img, svg { display: block; max-width: 100%; }
 a { color: inherit; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; background: none; border: 0; }
 ul, ol { list-style: none; }
 [hidden] { display: none !important; }
-::selection { background: var(--arcilla); color: var(--sobre-arcilla); }
-:focus-visible { outline: 2px solid var(--arcilla); outline-offset: 3px; }
+::selection { background: var(--lima); color: var(--sobre-lima); }
+:focus-visible { outline: 2px solid var(--acento); outline-offset: 3px; }
 
 h1, h2, h3, h4 { font-family: var(--f-titulo); font-weight: 700; line-height: 1.08; letter-spacing: -0.02em; }
 
@@ -117,7 +119,7 @@ h1, h2, h3, h4 { font-family: var(--f-titulo); font-weight: 700; line-height: 1.
 .cifra { font-family: var(--f-display); font-weight: 800; letter-spacing: -0.01em; line-height: 1; }
 .suave { color: var(--tinta-2); }
 .tenue { color: var(--piedra); }
-.acento { color: var(--arcilla); }
+.acento { color: var(--acento); }
 
 /* ---------- Botones ---------- */
 .btn {
@@ -134,15 +136,15 @@ h1, h2, h3, h4 { font-family: var(--f-titulo); font-weight: 700; line-height: 1.
 .btn .ic { transition: transform .2s; }
 .btn:hover .ic-flecha { transform: translateX(4px); }
 
-.btn-arcilla { background: var(--arcilla); color: var(--sobre-arcilla); }
-.btn-arcilla:hover { background: var(--arcilla-2); }
+.btn-lima { background: var(--lima); color: var(--sobre-lima); }
+.btn-lima:hover { background: var(--lima-2); }
 .btn-tinta { background: var(--tinta); color: var(--fondo); }
 .btn-tinta:hover { background: var(--tinta-2); }
 .btn-linea { border-color: var(--linea-fuerte); }
 .btn-linea:hover { background: var(--superficie-2); }
 .btn-texto { padding: 0 4px; min-height: 40px; }
-.btn-texto:hover { color: var(--arcilla); }
-.btn-peligro:hover { color: var(--arcilla); border-color: var(--arcilla); }
+.btn-texto:hover { color: var(--acento); }
+.btn-peligro:hover { color: var(--acento); border-color: var(--acento); }
 .btn-bloque { width: 100%; }
 .btn-sm { min-height: 38px; padding: 0 14px; font-size: 0.86rem; }
 .btn-icono { width: 44px; min-height: 44px; padding: 0; }
@@ -163,9 +165,9 @@ input[type=text], input[type=email], input[type=password], input[type=number], i
   transition: border-color .2s, box-shadow .2s;
 }
 textarea { padding: 12px 14px; min-height: 90px; resize: vertical; }
-input:focus, select:focus, textarea:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px var(--arcilla-suave); }
+input:focus, select:focus, textarea:focus { border-color: var(--tinta); box-shadow: 0 0 0 3px var(--lima-suave); }
 input::placeholder, textarea::placeholder { color: var(--piedra); }
-input[type=range] { width: 100%; accent-color: var(--arcilla); }
+input[type=range] { width: 100%; accent-color: var(--lima); }
 
 .con-unidad { position: relative; }
 .con-unidad input { padding-right: 46px; }
@@ -174,8 +176,8 @@ input[type=range] { width: 100%; accent-color: var(--arcilla); }
 /* Casilla de verificación propia */
 .casilla { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; font-size: .9rem; color: var(--tinta-2); }
 .casilla input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; flex-shrink: 0; margin-top: 2px; border: 1.5px solid var(--linea-fuerte); border-radius: 3px; background: var(--superficie); cursor: pointer; display: grid; place-items: center; }
-.casilla input:checked { background: var(--arcilla); border-color: var(--arcilla); }
-.casilla input:checked::after { content: ''; width: 10px; height: 5px; border-left: 2px solid var(--sobre-arcilla); border-bottom: 2px solid var(--sobre-arcilla); transform: rotate(-45deg) translate(1px, -1px); }
+.casilla input:checked { background: var(--lima); border-color: var(--acento); }
+.casilla input:checked::after { content: ''; width: 10px; height: 5px; border-left: 2px solid var(--sobre-lima); border-bottom: 2px solid var(--sobre-lima); transform: rotate(-45deg) translate(1px, -1px); }
 .casilla a { color: var(--tinta); text-underline-offset: 3px; }
 
 /* Opciones de selección única (objetivo, nivel…) */
@@ -187,15 +189,15 @@ input[type=range] { width: 100%; accent-color: var(--arcilla); }
   transition: all .2s;
 }
 .opcion:hover { border-color: var(--tinta); }
-.opcion.activo { background: var(--tinta); color: var(--fondo); border-color: var(--tinta); }
+.opcion.activo { background: var(--lima); color: #050B0A; border-color: var(--lima); }
 
 .opciones-grandes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .opciones-grandes .opcion { min-height: 0; padding: 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; }
 .opciones-grandes .opcion strong { font-family: var(--f-titulo); font-size: 1rem; }
 .opciones-grandes .opcion span { font-weight: 500; font-size: .8rem; color: var(--piedra); }
-.opciones-grandes .opcion.activo span { color: var(--sobre-noche-2); }
+.opciones-grandes .opcion.activo span { color: #182D20; }
 
-.error-form { color: var(--arcilla); font-size: .88rem; font-weight: 600; min-height: 1.3em; }
+.error-form { color: var(--acento); font-size: .88rem; font-weight: 600; min-height: 1.3em; }
 
 /* ---------- Tarjetas ---------- */
 .caja { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--r-lg); padding: 20px; }
@@ -205,16 +207,16 @@ input[type=range] { width: 100%; accent-color: var(--arcilla); }
 .pestanas::-webkit-scrollbar { display: none; }
 .pestana { padding: 12px 0; border-bottom: 2px solid transparent; margin-bottom: -1px; font-weight: 600; color: var(--piedra); white-space: nowrap; }
 .pestana:hover { color: var(--tinta); }
-.pestana.activo { color: var(--tinta); border-color: var(--arcilla); }
+.pestana.activo { color: var(--tinta); border-color: var(--acento); }
 
 /* ---------- Marca (logo) ---------- */
 .marca { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--f-display); font-weight: 800; font-size: 1.5rem; letter-spacing: .02em; text-transform: uppercase; }
-.marca-simbolo { width: 30px; height: 30px; flex-shrink: 0; }
+.marca-simbolo { width: 30px; height: 30px; flex-shrink: 0; object-fit: contain; }
 
 /* ---------- Avisos (toasts) ---------- */
 #avisos { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 1000; display: flex; flex-direction: column; gap: 8px; align-items: center; width: calc(100% - 32px); max-width: 420px; pointer-events: none; }
 .aviso { background: var(--tinta); color: var(--fondo); padding: 12px 18px; border-radius: var(--r); font-weight: 600; font-size: .9rem; box-shadow: var(--sombra); animation: aparecer .3s ease; }
-.aviso.error { background: var(--arcilla); color: var(--sobre-arcilla); }
+.aviso.error { background: var(--lima); color: var(--sobre-lima); }
 @keyframes aparecer { from { opacity: 0; transform: translateY(10px); } }
 
 /* ---------- Ventana modal (en móvil sube desde abajo) ---------- */
@@ -229,6 +231,7 @@ input[type=range] { width: 100%; accent-color: var(--arcilla); }
 
 /* ---------- Banner de cookies ---------- */
 .banner-cookies {
+  --acento: #B8FF3D;
   position: fixed; left: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); z-index: 900;
   width: calc(100% - 32px); max-width: 420px;
   background: var(--noche); color: var(--sobre-noche);
@@ -249,13 +252,13 @@ input[type=range] { width: 100%; accent-color: var(--arcilla); }
 .legal h1 { font-size: clamp(2.2rem, 6vw, 3.6rem); margin: 12px 0 10px; }
 .legal .meta { color: var(--piedra); margin-bottom: 40px; font-size: .92rem; }
 .legal h2 { font-size: 1.3rem; margin: 40px 0 12px; display: flex; gap: 12px; align-items: baseline; }
-.legal h2 span { font-family: var(--f-display); font-weight: 800; color: var(--arcilla); font-size: 1.1rem; }
+.legal h2 span { font-family: var(--f-display); font-weight: 800; color: var(--acento); font-size: 1.1rem; }
 .legal p, .legal li { color: var(--tinta-2); margin-bottom: 12px; }
 .legal ul { padding-left: 0; }
 .legal ul li { padding-left: 22px; position: relative; }
-.legal ul li::before { content: ''; position: absolute; left: 4px; top: .7em; width: 8px; height: 2px; background: var(--arcilla); }
+.legal ul li::before { content: ''; position: absolute; left: 4px; top: .7em; width: 8px; height: 2px; background: var(--lima); }
 .legal strong { color: var(--tinta); }
-.legal .nota { border-left: 3px solid var(--arcilla); background: var(--arcilla-suave); padding: 14px 18px; border-radius: 0 var(--r) var(--r) 0; margin: 24px 0; }
+.legal .nota { border-left: 3px solid var(--acento); background: var(--lima-suave); padding: 14px 18px; border-radius: 0 var(--r) var(--r) 0; margin: 24px 0; }
 .legal table { width: 100%; border-collapse: collapse; margin: 12px 0 20px; font-size: .9rem; }
 .legal th, .legal td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linea); vertical-align: top; }
 .legal th { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--piedra); }

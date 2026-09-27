@@ -45,7 +45,7 @@ function pintarAvisoAutorizacion() {
       <div>
         <strong>Tu peso, medidas y fotos son datos sensibles</strong>
         <p>Para guardarlos necesitamos tu autorización expresa. Solo tú los ves y puedes retirarla o borrarlos cuando quieras.</p>
-        <button class="btn btn-arcilla btn-sm" type="button" id="btn-autorizar">Autorizar seguimiento</button>
+        <button class="btn btn-lima btn-sm" type="button" id="btn-autorizar">Autorizar seguimiento</button>
       </div>
     </div>`;
   document.getElementById('btn-autorizar').addEventListener('click', abrirAutorizacion);
@@ -60,7 +60,7 @@ function abrirAutorizacion() {
       <label class="casilla"><input type="checkbox" id="acepto-sensibles"><span>Sí, autorizo el tratamiento de estos datos. <a href="/privacidad" target="_blank">Leer la política</a></span></label>
       <div class="fila-botones">
         <button type="button" class="btn btn-linea" data-cerrar-modal>Ahora no</button>
-        <button type="submit" class="btn btn-arcilla">Autorizar</button>
+        <button type="submit" class="btn btn-lima">Autorizar</button>
       </div>
     </form>`);
   document.getElementById('form-autorizar').addEventListener('submit', async e => {
@@ -175,7 +175,7 @@ function abrirFormularioMedida() {
       <div class="campo"><label for="m-notas">Notas</label><input id="m-notas" name="notas" type="text" maxlength="300"></div>
       <div class="fila-botones">
         <button type="button" class="btn btn-linea" data-cerrar-modal>Cancelar</button>
-        <button type="submit" class="btn btn-arcilla">Guardar</button>
+        <button type="submit" class="btn btn-lima">Guardar</button>
       </div>
     </form>`);
 

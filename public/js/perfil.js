@@ -101,7 +101,7 @@ function abrirPrivacidad() {
         <p>${perfil.sensibles_ok
           ? `Autorizaste guardarlos el ${fecha(perfil.sensibles_fecha)}. Si retiras la autorización, no se podrán guardar nuevos registros; los que ya tienes siguen ahí hasta que los borres.`
           : 'No has autorizado guardar estos datos. Sin autorización no se registran peso, medidas ni fotos.'}</p>
-        <button type="button" class="btn ${perfil.sensibles_ok ? 'btn-linea' : 'btn-arcilla'} btn-sm" id="btn-cambiar-autorizacion">
+        <button type="button" class="btn ${perfil.sensibles_ok ? 'btn-linea' : 'btn-lima'} btn-sm" id="btn-cambiar-autorizacion">
           ${perfil.sensibles_ok ? 'Retirar autorización' : 'Autorizar'}
         </button>
       </div>

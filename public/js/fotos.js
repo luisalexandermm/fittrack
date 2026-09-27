@@ -19,7 +19,7 @@ function prepararFotos() {
     zona.querySelector('img')?.remove();
     if (urlVistaPrevia) URL.revokeObjectURL(urlVistaPrevia);
     if (!archivo) return;
-    if (archivo.size > 8 * 1024 * 1024) { inputArchivo.value = ''; return avisar('La foto pesa más de 8 MB', 'error'); }
+    if (archivo.size > 4 * 1024 * 1024) { inputArchivo.value = ''; return avisar('La foto pesa más de 4 MB', 'error'); }
     urlVistaPrevia = URL.createObjectURL(archivo);
     const img = document.createElement('img');
     img.src = urlVistaPrevia;

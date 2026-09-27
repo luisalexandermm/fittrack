@@ -221,7 +221,7 @@ create policy "fotos_crear" on public.fotos for insert to authenticated
     and exists (select 1 from public.perfiles p where p.id = (select auth.uid()) and p.sensibles_ok)
   );
 
--- Permisos de la API de Supabase sobre cada tabla
+-- Permisos de la API de Supabase sobre cada tabla 
 grant select on public.ejercicios, public.recetas, public.consejos to anon, authenticated;
 grant select, update on public.perfiles to authenticated;
 grant select, insert, update, delete on public.rutinas, public.sesiones to authenticated;
