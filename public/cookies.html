@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Política de cookies — FitTrack</title>
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <script src="js/tema.js"></script>
+</head>
+<body>
+  <header class="legal-cabecera">
+    <a href="/" class="marca"><svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="3" fill="#9C4A2F"/><path d="M10 24V8h12M10 16h6l2-3.5 2.5 7 2-3.5H24" stroke="#FAF9F6" stroke-width="2.4" fill="none" stroke-linecap="square"/></svg>FitTrack</a>
+    <a href="/" class="btn btn-linea btn-sm">Volver</a>
+  </header>
+
+  <main class="legal">
+    <span class="rotulo">Legal</span>
+    <h1>Política de cookies</h1>
+    <p class="meta">Última actualización: 26 de septiembre de 2026</p>
+
+    <p>Una cookie es un pequeño archivo que un sitio web guarda en tu navegador. FitTrack usa lo mínimo posible: <strong>solo cookies esenciales</strong> (las de tu sesión). No usamos cookies de publicidad, de analítica ni de terceros.</p>
+
+    <h2><span>01</span>Cookies que usamos</h2>
+    <div class="tabla-scroll">
+      <table>
+        <thead><tr><th>Nombre</th><th>Tipo</th><th>Para qué</th><th>Duración</th></tr></thead>
+        <tbody>
+          <tr><td><code>sb_acceso</code></td><td>Esencial</td><td>Probar que eres tú en cada acción dentro de la app. <em>httpOnly</em>, <em>SameSite</em> y en producción solo por HTTPS.</td><td>1 hora (se renueva sola)</td></tr>
+          <tr><td><code>sb_refresco</code></td><td>Esencial</td><td>Renovar tu sesión sin pedirte la contraseña a cada rato. Mismas protecciones.</td><td>30 días o hasta que cierres sesión</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Sin estas cookies no es posible iniciar sesión, por eso no piden consentimiento: son estrictamente necesarias para el servicio que solicitas.</p>
+
+    <h2><span>02</span>Almacenamiento local del navegador</h2>
+    <p>Además, guardamos dos preferencias en el almacenamiento local de tu navegador (<em>localStorage</em>). No son cookies, no se envían al servidor y no te identifican:</p>
+    <div class="tabla-scroll">
+      <table>
+        <thead><tr><th>Nombre</th><th>Para qué</th></tr></thead>
+        <tbody>
+          <tr><td><code>fittrack-tema</code></td><td>Recordar si prefieres el modo claro u oscuro</td></tr>
+          <tr><td><code>fittrack-aviso-cookies</code></td><td>No volver a mostrarte el aviso de cookies</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2><span>03</span>Sin terceros</h2>
+    <p>Las fuentes tipográficas y los íconos se sirven desde nuestro propio servidor, así que al abrir FitTrack tu navegador no se conecta a Google ni a otros servicios. Tu navegador solo habla con el servidor de FitTrack; es el servidor quien se conecta con Supabase. El único enlace externo es el de WhatsApp, que solo se abre si tú lo tocas.</p>
+
+    <h2><span>04</span>Cómo borrarlas</h2>
+    <p>Al cerrar sesión se borran las cookies de sesión. También puedes borrar cookies y almacenamiento local desde la configuración de tu navegador; si lo haces, tendrás que volver a iniciar sesión.</p>
+
+    <div class="nota">Más información en la <a href="/privacidad">política de tratamiento de datos</a>.</div>
+  </main>
+  <script src="js/cookies.js"></script>
+</body>
+</html>

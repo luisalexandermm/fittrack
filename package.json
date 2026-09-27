@@ -1,0 +1,24 @@
+{
+  "name": "fittrack",
+  "version": "1.0.0",
+  "description": "FitTrack — rutinas en casa, progreso, nutrición y calendario (Node + Express + Supabase)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --no-warnings=ExperimentalWarning server.js",
+    "dev": "node --env-file-if-exists=.env --watch --no-warnings=ExperimentalWarning server.js",
+    "sql": "node supabase/generar-datos.js"
+  },
+  "engines": {
+    "node": ">=22.9"
+  },
+  "author": "Luis Alexander Maturana — Maturana Tech",
+  "license": "MIT",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.0",
+    "helmet": "^8.3.0",
+    "multer": "^2.4.0"
+  }
+}

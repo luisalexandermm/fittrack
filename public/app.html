@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>FitTrack</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#F2F1ED">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="js/tema.js"></script>
+</head>
+<body class="app">
+
+  <!-- ============ Menú lateral (escritorio) ============ -->
+  <aside class="lateral">
+    <a href="#inicio" class="marca">
+      <svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="3" fill="#9C4A2F"/><path d="M10 24V8h12M10 16h6l2-3.5 2.5 7 2-3.5H24" stroke="#FAF9F6" stroke-width="2.4" fill="none" stroke-linecap="square"/></svg>
+      FitTrack
+    </a>
+    <nav class="menu" aria-label="Secciones">
+      <a href="#inicio" data-vista="inicio"><svg class="ic"><use href="/img/iconos.svg#i-inicio"/></svg>Inicio</a>
+      <a href="#rutinas" data-vista="rutinas"><svg class="ic"><use href="/img/iconos.svg#i-rutinas"/></svg>Rutinas</a>
+      <a href="#progreso" data-vista="progreso"><svg class="ic"><use href="/img/iconos.svg#i-progreso"/></svg>Progreso</a>
+      <a href="#nutricion" data-vista="nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Nutrición</a>
+      <a href="#calendario" data-vista="calendario"><svg class="ic"><use href="/img/iconos.svg#i-calendario"/></svg>Calendario</a>
+      <a href="#perfil" data-vista="perfil"><svg class="ic"><use href="/img/iconos.svg#i-perfil"/></svg>Perfil</a>
+    </nav>
+    <a href="#rutinas" class="btn btn-arcilla btn-bloque cta-lateral"><svg class="ic"><use href="/img/iconos.svg#i-play"/></svg>Entrenar ahora</a>
+    <div class="lateral-pie">
+      <button class="fila-tema btn-tema" type="button">
+        <span><svg class="ic ic-sm"><use href="/img/iconos.svg#i-luna"/></svg>Tema</span><b data-tema-texto>Claro</b>
+      </button>
+      <a href="#perfil" class="usuario-mini">
+        <span class="avatar" data-avatar>·</span>
+        <span><strong data-nombre>…</strong><small data-nivel></small></span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- ============ Barra superior (celular y tablet) ============ -->
+  <header class="barra-sup">
+    <a href="#inicio" class="marca">
+      <svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="3" fill="#9C4A2F"/><path d="M10 24V8h12M10 16h6l2-3.5 2.5 7 2-3.5H24" stroke="#FAF9F6" stroke-width="2.4" fill="none" stroke-linecap="square"/></svg>
+      FitTrack
+    </a>
+    <div class="barra-sup-acciones">
+      <a href="#calendario" class="btn btn-icono" aria-label="Calendario"><svg class="ic"><use href="/img/iconos.svg#i-calendario"/></svg></a>
+      <a href="#perfil" class="avatar" data-avatar aria-label="Perfil">·</a>
+    </div>
+  </header>
+
+  <main class="contenido" id="contenido">
+
+    <!-- ===================== INICIO ===================== -->
+    <section class="vista" id="vista-inicio" aria-labelledby="t-inicio">
+      <header class="saludo">
+        <div>
+          <h1 id="t-inicio">Hola, <span data-nombre-corto>…</span></h1>
+          <p class="tenue">¿Listo para tu mejor versión?</p>
+        </div>
+        <div class="saludo-lado"><span class="chip-racha" id="chip-racha" hidden></span><span class="fecha-hoy rotulo" id="fecha-hoy"></span></div>
+      </header>
+      <div class="inicio-rejilla" id="inicio-contenido"></div>
+    </section>
+
+    <!-- ===================== RUTINAS ===================== -->
+    <section class="vista" id="vista-rutinas" aria-labelledby="t-rutinas">
+      <header class="cabecera">
+        <div><span class="rotulo">Rutinas</span><h1 id="t-rutinas">Tu rutina</h1></div>
+      </header>
+
+      <div class="rutinas-rejilla">
+        <details class="ajustes-rutina caja" id="ajustes-rutina" open>
+          <summary><span><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Ajustar rutina</span><svg class="ic flecha-det"><use href="/img/iconos.svg#i-abajo"/></svg></summary>
+          <div class="ajustes-cuerpo">
+            <div class="campo">
+              <span class="rotulo">Objetivo</span>
+              <div class="opciones-grandes" id="g-objetivo">
+                <button type="button" class="opcion" data-valor="grasa"><strong>Quemar grasa</strong><span>40/20</span></button>
+                <button type="button" class="opcion" data-valor="musculo"><strong>Músculo</strong><span>45/30</span></button>
+                <button type="button" class="opcion" data-valor="resistencia"><strong>Resistencia</strong><span>50/15</span></button>
+                <button type="button" class="opcion" data-valor="movilidad"><strong>Movilidad</strong><span>45/10</span></button>
+              </div>
+            </div>
+            <div class="campo">
+              <span class="rotulo">Nivel</span>
+              <div class="opciones" id="g-nivel">
+                <button type="button" class="opcion" data-valor="1">Principiante</button>
+                <button type="button" class="opcion" data-valor="2">Intermedio</button>
+                <button type="button" class="opcion" data-valor="3">Avanzado</button>
+              </div>
+            </div>
+            <div class="campo">
+              <span class="rotulo">Tiempo: <b class="cifra acento" id="g-minutos-valor">20</b> min</span>
+              <input type="range" id="g-minutos" min="10" max="60" step="5" value="20" aria-label="Minutos disponibles">
+            </div>
+            <button class="btn btn-tinta btn-bloque" id="btn-generar">Generar rutina <svg class="ic ic-flecha"><use href="/img/iconos.svg#i-flecha"/></svg></button>
+          </div>
+        </details>
+
+        <div>
+          <article id="vista-rutina"></article>
+          <section class="guardadas">
+            <h2 class="subtitulo">Rutinas guardadas</h2>
+            <div class="lista-guardadas" id="lista-guardadas"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== PROGRESO ===================== -->
+    <section class="vista" id="vista-progreso" aria-labelledby="t-progreso">
+      <header class="cabecera">
+        <div><span class="rotulo">Progreso</span><h1 id="t-progreso">Lo que cambia</h1></div>
+        <button class="btn btn-arcilla" id="btn-registrar"><svg class="ic"><use href="/img/iconos.svg#i-mas"/></svg>Registrar</button>
+      </header>
+
+      <div id="aviso-autorizacion"></div>
+
+      <div class="pestanas" id="pestanas-progreso" role="tablist">
+        <button class="pestana activo" data-panel="peso" role="tab">Peso</button>
+        <button class="pestana" data-panel="medidas" role="tab">Medidas</button>
+        <button class="pestana" data-panel="fotos" role="tab">Fotos</button>
+      </div>
+
+      <div class="panel" data-panel="peso" id="panel-peso"></div>
+
+      <div class="panel" data-panel="medidas" hidden>
+        <div class="caja">
+          <div class="caja-cabeza">
+            <h2 class="subtitulo" id="titulo-grafica-medida">Evolución</h2>
+            <div class="opciones opciones-sm" id="selector-medida">
+              <button class="opcion activo" data-valor="cintura">Cintura</button>
+              <button class="opcion" data-valor="cadera">Cadera</button>
+              <button class="opcion" data-valor="pecho">Pecho</button>
+              <button class="opcion" data-valor="brazo">Brazo</button>
+              <button class="opcion" data-valor="muslo">Muslo</button>
+              <button class="opcion" data-valor="grasa">% Grasa</button>
+            </div>
+          </div>
+          <div id="grafica-medida"></div>
+        </div>
+        <div class="caja" style="margin-top:16px">
+          <h2 class="subtitulo">Registros</h2>
+          <div class="tabla-scroll" id="tabla-medidas"></div>
+        </div>
+      </div>
+
+      <div class="panel" data-panel="fotos" hidden>
+        <form class="caja subida" id="form-foto">
+          <label class="zona-foto" id="zona-foto">
+            <input type="file" name="foto" accept="image/jpeg,image/png,image/webp">
+            <span><svg class="ic ic-lg"><use href="/img/iconos.svg#i-camara"/></svg>Elegir foto</span>
+          </label>
+          <div class="subida-campos">
+            <div class="campo"><label for="f-fecha">Fecha</label><input id="f-fecha" type="date" name="fecha"></div>
+            <div class="campo">
+              <label for="f-angulo">Ángulo</label>
+              <select id="f-angulo" name="angulo"><option value="frente">Frente</option><option value="lado">Lado</option><option value="espalda">Espalda</option></select>
+            </div>
+            <div class="campo ancho"><label for="f-nota">Nota</label><input id="f-nota" type="text" name="nota" maxlength="200" placeholder="Opcional"></div>
+            <div class="ancho fila-acciones">
+              <button type="submit" class="btn btn-tinta">Subir foto</button>
+              <span class="tenue nota-privada"><svg class="ic ic-sm"><use href="/img/iconos.svg#i-candado"/></svg>Solo tú puedes verlas</span>
+            </div>
+          </div>
+        </form>
+
+        <div class="fila-filtros">
+          <div class="opciones opciones-sm" id="filtro-angulo">
+            <button class="opcion activo" data-valor="todas">Todas</button>
+            <button class="opcion" data-valor="frente">Frente</button>
+            <button class="opcion" data-valor="lado">Lado</button>
+            <button class="opcion" data-valor="espalda">Espalda</button>
+          </div>
+          <button class="btn btn-linea btn-sm" id="btn-comparar"><svg class="ic ic-sm"><use href="/img/iconos.svg#i-cambiar"/></svg>Comparar</button>
+        </div>
+        <p class="ayuda-comparar" id="ayuda-comparar" hidden>Toca dos fotos: primero la de antes y luego la de después.</p>
+        <div class="galeria" id="galeria"></div>
+      </div>
+    </section>
+
+    <!-- ===================== NUTRICIÓN ===================== -->
+    <section class="vista" id="vista-nutricion" aria-labelledby="t-nutricion">
+      <header class="cabecera">
+        <div><span class="rotulo">Nutrición</span><h1 id="t-nutricion">Come para tu objetivo</h1></div>
+      </header>
+      <div class="pestanas" id="pestanas-nutricion" role="tablist">
+        <button class="pestana activo" data-panel="plan" role="tab">Plan de comidas</button>
+        <button class="pestana" data-panel="recetas" role="tab">Recetas</button>
+        <button class="pestana" data-panel="consejos" role="tab">Consejos</button>
+      </div>
+      <div class="panel" data-panel="plan" id="panel-plan"></div>
+      <div class="panel" data-panel="recetas" hidden>
+        <div class="opciones opciones-sm" id="filtro-recetas" style="margin:20px 0">
+          <button class="opcion activo" data-valor="">Todas</button>
+          <button class="opcion" data-valor="desayuno">Desayuno</button>
+          <button class="opcion" data-valor="almuerzo">Almuerzo</button>
+          <button class="opcion" data-valor="cena">Cena</button>
+          <button class="opcion" data-valor="snack">Snacks</button>
+        </div>
+        <div class="rejilla-recetas" id="lista-recetas"></div>
+      </div>
+      <div class="panel" data-panel="consejos" id="panel-consejos" hidden></div>
+      <p class="descargo"><svg class="ic ic-sm"><use href="/img/iconos.svg#i-ayuda"/></svg>Las calorías son aproximadas y el plan es orientativo. Si tienes una condición de salud, consulta a un profesional en nutrición.</p>
+    </section>
+
+    <!-- ===================== CALENDARIO ===================== -->
+    <section class="vista" id="vista-calendario" aria-labelledby="t-calendario">
+      <header class="cabecera">
+        <div><span class="rotulo">Calendario</span><h1 id="t-calendario">Tu semana</h1></div>
+      </header>
+      <div class="calendario-rejilla">
+        <div>
+          <div class="semana-nav">
+            <button class="btn btn-icono btn-linea" id="semana-anterior" aria-label="Semana anterior"><svg class="ic"><use href="/img/iconos.svg#i-atras"/></svg></button>
+            <h2 class="mes" id="mes-titulo">—</h2>
+            <button class="btn btn-icono btn-linea" id="semana-siguiente" aria-label="Semana siguiente"><svg class="ic"><use href="/img/iconos.svg#i-flecha"/></svg></button>
+          </div>
+          <div class="semana-dias" id="semana-dias"></div>
+          <div class="lista-dias" id="lista-dias"></div>
+        </div>
+        <aside>
+          <h2 class="subtitulo">Historial del mes</h2>
+          <div class="caja historial" id="historial"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== PERFIL ===================== -->
+    <section class="vista" id="vista-perfil" aria-labelledby="t-perfil">
+      <div class="perfil-rejilla">
+        <div>
+          <header class="perfil-cabeza">
+            <span class="avatar avatar-xl" data-avatar>·</span>
+            <h1 id="t-perfil" data-nombre>…</h1>
+            <p class="tenue" data-nivel-largo></p>
+          </header>
+          <div class="perfil-stats" id="perfil-stats"></div>
+          <h2 class="subtitulo">Mis objetivos</h2>
+          <a href="#progreso" class="caja fila-objetivo" id="perfil-objetivo"></a>
+        </div>
+
+        <nav class="menu-perfil" aria-label="Opciones de perfil">
+          <a href="#progreso"><svg class="ic"><use href="/img/iconos.svg#i-progreso"/></svg>Mi progreso<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
+          <a href="#rutinas"><svg class="ic"><use href="/img/iconos.svg#i-rutinas"/></svg>Mis rutinas<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
+          <a href="#nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Mi nutrición<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
+          <button type="button" data-abrir="configuracion"><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Configuración<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" data-abrir="privacidad"><svg class="ic"><use href="/img/iconos.svg#i-escudo"/></svg>Privacidad y datos<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" data-abrir="seguridad"><svg class="ic"><use href="/img/iconos.svg#i-candado"/></svg>Contraseña<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" class="btn-tema"><svg class="ic"><use href="/img/iconos.svg#i-luna"/></svg>Tema<b data-tema-texto class="valor-fila">Claro</b></button>
+          <a href="https://wa.me/573145312045" target="_blank" rel="noopener noreferrer"><svg class="ic"><use href="/img/iconos.svg#i-ayuda"/></svg>Ayuda y soporte<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
+          <button type="button" id="btn-salir" class="salir"><svg class="ic"><use href="/img/iconos.svg#i-salir"/></svg>Cerrar sesión</button>
+          <div class="legal-mini"><a href="/privacidad">Privacidad</a> · <a href="/terminos">Términos</a> · <a href="/cookies">Cookies</a></div>
+        </nav>
+      </div>
+    </section>
+  </main>
+
+  <!-- ============ Barra inferior (celular y tablet) ============ -->
+  <nav class="barra-inf" aria-label="Secciones">
+    <a href="#inicio" data-vista="inicio"><svg class="ic"><use href="/img/iconos.svg#i-inicio"/></svg>Inicio</a>
+    <a href="#progreso" data-vista="progreso"><svg class="ic"><use href="/img/iconos.svg#i-progreso"/></svg>Progreso</a>
+    <a href="#rutinas" data-vista="rutinas" class="central"><span class="central-boton"><svg class="ic"><use href="/img/iconos.svg#i-play"/></svg></span>Entrenar</a>
+    <a href="#nutricion" data-vista="nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Nutrición</a>
+    <a href="#perfil" data-vista="perfil"><svg class="ic"><use href="/img/iconos.svg#i-perfil"/></svg>Perfil</a>
+  </nav>
+
+  <!-- ============ Reproductor (pantalla completa) ============ -->
+  <div class="reproductor" id="reproductor" hidden>
+    <div class="rep-arriba">
+      <div><span class="rep-fase" id="rep-fase">Prepárate</span><span class="rep-ronda" id="rep-ronda"></span></div>
+      <div class="rep-botones">
+        <button class="btn btn-icono" id="rep-sonido" aria-label="Sonido"><svg class="ic"><use href="/img/iconos.svg#i-sonido"/></svg></button>
+        <button class="btn btn-icono" id="rep-cerrar" aria-label="Salir"><svg class="ic"><use href="/img/iconos.svg#i-cerrar"/></svg></button>
+      </div>
+    </div>
+    <div class="rep-barra"><div id="rep-barra"></div></div>
+
+    <div class="rep-centro" id="rep-centro">
+      <div class="rep-info">
+        <div class="rep-picto" id="rep-picto"></div>
+        <span class="rotulo" id="rep-grupo"></span>
+        <h2 id="rep-nombre">Prepárate</h2>
+        <p id="rep-desc"></p>
+      </div>
+      <div class="rep-anillo">
+        <svg viewBox="0 0 200 200"><circle class="rep-fondo" cx="100" cy="100" r="88"/><circle class="rep-trazo" id="rep-trazo" cx="100" cy="100" r="88"/></svg>
+        <div class="rep-cuenta"><strong class="cifra" id="rep-cuenta">0</strong><span class="rotulo" id="rep-estado">segundos</span></div>
+      </div>
+      <div class="rep-sigue"><span class="rotulo">Sigue</span><strong id="rep-sigue">—</strong></div>
+    </div>
+
+    <div class="rep-final" id="rep-final" hidden>
+      <span class="rotulo">Sesión completada</span>
+      <h2>Lo hiciste.</h2>
+      <p id="rep-final-texto"></p>
+      <div class="campo">
+        <span class="rotulo">¿Cómo te sentiste?</span>
+        <div class="opciones" id="rep-sensacion">
+          <button class="opcion" data-valor="1">Muy duro</button>
+          <button class="opcion" data-valor="2">Duro</button>
+          <button class="opcion activo" data-valor="3">Bien</button>
+          <button class="opcion" data-valor="4">Muy bien</button>
+          <button class="opcion" data-valor="5">Excelente</button>
+        </div>
+      </div>
+      <input type="text" id="rep-notas" placeholder="Notas (opcional)" maxlength="500">
+      <div class="fila-botones">
+        <button class="btn btn-linea" id="rep-descartar">Descartar</button>
+        <button class="btn btn-arcilla" id="rep-guardar">Guardar sesión</button>
+      </div>
+    </div>
+
+    <div class="rep-controles" id="rep-controles">
+      <button class="btn btn-icono" id="rep-anterior" aria-label="Anterior"><svg class="ic"><use href="/img/iconos.svg#i-anterior"/></svg></button>
+      <button class="btn rep-play" id="rep-pausa" aria-label="Pausa"><svg class="ic"><use href="/img/iconos.svg#i-pausa"/></svg></button>
+      <button class="btn btn-icono" id="rep-siguiente-btn" aria-label="Siguiente"><svg class="ic"><use href="/img/iconos.svg#i-siguiente"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ============ Ventana modal genérica ============ -->
+  <div class="modal" id="modal" role="dialog" aria-modal="true">
+    <div class="hoja">
+      <button class="btn btn-icono hoja-cerrar" data-cerrar-modal aria-label="Cerrar"><svg class="ic"><use href="/img/iconos.svg#i-cerrar"/></svg></button>
+      <div id="modal-contenido"></div>
+    </div>
+  </div>
+
+  <!-- ============ Comparador de fotos ============ -->
+  <div class="modal modal-oscuro" id="modal-comparar" role="dialog" aria-modal="true" aria-label="Comparar fotos">
+    <button class="btn btn-icono cerrar-comparar" id="cerrar-comparar" aria-label="Cerrar"><svg class="ic"><use href="/img/iconos.svg#i-cerrar"/></svg></button>
+    <div class="comparador" id="comparador">
+      <img id="img-antes" alt="Antes">
+      <img id="img-despues" class="despues" alt="Después">
+      <div class="divisor" id="divisor"><span></span></div>
+      <span class="etq izq" id="etq-antes">Antes</span>
+      <span class="etq der" id="etq-despues">Después</span>
+    </div>
+  </div>
+
+  <div id="avisos" aria-live="polite"></div>
+
+  <script src="js/api.js"></script>
+  <script src="js/graficas.js"></script>
+  <script src="js/plan-semanal.js"></script>
+  <script src="js/inicio.js"></script>
+  <script src="js/rutinas.js"></script>
+  <script src="js/reproductor.js"></script>
+  <script src="js/progreso.js"></script>
+  <script src="js/fotos.js"></script>
+  <script src="js/nutricion.js"></script>
+  <script src="js/calendario.js"></script>
+  <script src="js/perfil.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/cookies.js"></script>
+</body>
+</html>

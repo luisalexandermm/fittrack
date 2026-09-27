@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Verificando — FitTrack</title>
+  <meta name="robots" content="noindex">
+  <meta name="referrer" content="no-referrer">
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/landing.css">
+  <script src="js/tema.js"></script>
+</head>
+<body class="pagina-verificar">
+  <header class="legal-cabecera">
+    <a href="/" class="marca"><svg class="marca-simbolo" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="3" fill="#9C4A2F"/><path d="M10 24V8h12M10 16h6l2-3.5 2.5 7 2-3.5H24" stroke="#FAF9F6" stroke-width="2.4" fill="none" stroke-linecap="square"/></svg>FitTrack</a>
+  </header>
+
+  <main class="verificar">
+    <div class="panel-acceso">
+
+      <!-- Mientras revisa el enlace -->
+      <div id="v-cargando" class="formulario revisa-correo">
+        <span class="rotulo">Un momento</span>
+        <h3>Verificando tu enlace…</h3>
+      </div>
+
+      <!-- Correo confirmado -->
+      <div id="v-listo" class="formulario revisa-correo" hidden>
+        <svg class="ic ic-lg acento"><use href="img/iconos.svg#i-check"/></svg>
+        <h3>¡Cuenta confirmada!</h3>
+        <p class="suave" id="v-listo-texto">Te llevamos a tu panel…</p>
+        <a href="/app" class="btn btn-arcilla btn-bloque">Ir a FitTrack</a>
+      </div>
+
+      <!-- Nueva contraseña (enlace de recuperación) -->
+      <form id="v-nueva" class="formulario" hidden novalidate>
+        <span class="rotulo">Recuperar acceso</span>
+        <h3>Crea tu nueva contraseña</h3>
+        <div class="campo"><label for="v-pass">Nueva contraseña</label><input id="v-pass" type="password" autocomplete="new-password" placeholder="8+ caracteres, letras y números" maxlength="72"></div>
+        <div class="campo"><label for="v-pass2">Repítela</label><input id="v-pass2" type="password" autocomplete="new-password" maxlength="72"></div>
+        <p class="error-form" id="v-error" role="alert"></p>
+        <button type="submit" class="btn btn-tinta btn-bloque">Guardar y entrar</button>
+      </form>
+
+      <!-- Enlace vencido o con error -->
+      <div id="v-fallo" class="formulario revisa-correo" hidden>
+        <span class="rotulo">Enlace no válido</span>
+        <h3>Este enlace ya no sirve</h3>
+        <p class="suave" id="v-fallo-texto">Puede que haya vencido o que ya lo hayas usado.</p>
+        <a href="/#acceso" class="btn btn-tinta btn-bloque">Volver a iniciar sesión</a>
+      </div>
+    </div>
+  </main>
+
+  <div id="avisos" aria-live="polite"></div>
+  <script src="js/api.js"></script>
+  <script src="js/verificar.js"></script>
+</body>
+</html>

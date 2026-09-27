@@ -1,0 +1,5 @@
+Fuentes incluidas (servidas desde este mismo servidor, sin Google Fonts):
+- Big Shoulders Display — SIL Open Font License 1.1
+- Bricolage Grotesque — SIL Open Font License 1.1
+- Instrument Sans — SIL Open Font License 1.1
+Obtenidas del proyecto Fontsource (https://fontsource.org). Uso libre, incluso comercial.

@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg">
+  <!-- ============================================================
+       Íconos de FitTrack. Se usan así:
+       <svg class="ic"><use href="/img/iconos.svg#i-inicio"/></svg>
+       Todos usan currentColor, así que toman el color del texto.
+       ============================================================ -->
+
+  <!-- ===== Interfaz (24x24) ===== -->
+  <symbol id="i-inicio" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4z"/></symbol>
+  <symbol id="i-rutinas" viewBox="0 0 24 24"><path d="M9 7a3 3 0 0 1 6 0"/><path d="M7.5 9.5h9l1.5 10H6z"/><path d="M10 14h4"/></symbol>
+  <symbol id="i-progreso" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M5 16l4.5-5 3.5 3 6-7"/><path d="M15 7h4v4"/></symbol>
+  <symbol id="i-nutricion" viewBox="0 0 24 24"><path d="M4 12h16a8 8 0 0 1-16 0z"/><path d="M9 8c0-2 1-3 3-4M13 9c1-2 3-3 5-3"/></symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24"><rect x="4" y="5.5" width="16" height="14.5" rx="1.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/></symbol>
+  <symbol id="i-perfil" viewBox="0 0 24 24"><circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20c.8-3.8 3.8-6 7.5-6s6.7 2.2 7.5 6"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z" fill="currentColor"/></symbol>
+  <symbol id="i-pausa" viewBox="0 0 24 24"><path d="M8.5 5.5v13M15.5 5.5v13" stroke-width="3"/></symbol>
+  <symbol id="i-siguiente" viewBox="0 0 24 24"><path d="M6 6l9 6-9 6zM18 6v12"/></symbol>
+  <symbol id="i-anterior" viewBox="0 0 24 24"><path d="M18 6l-9 6 9 6zM6 6v12"/></symbol>
+  <symbol id="i-cerrar" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-basura" viewBox="0 0 24 24"><path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l.8 13h9.4l.8-13M9.5 7V4h5v3"/></symbol>
+  <symbol id="i-cambiar" viewBox="0 0 24 24"><path d="M4 8.5h14l-3.5-3.5M20 15.5H6l3.5 3.5"/></symbol>
+  <symbol id="i-mas" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-guardar" viewBox="0 0 24 24"><path d="M6.5 4h11v16.5L12 16.8l-5.5 3.7z"/></symbol>
+  <symbol id="i-flecha" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-atras" viewBox="0 0 24 24"><path d="M20 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-abajo" viewBox="0 0 24 24"><path d="M6 9.5l6 6 6-6"/></symbol>
+  <symbol id="i-fuego" viewBox="0 0 24 24"><path d="M12 21c3.9 0 6.5-2.7 6.5-6.3 0-4.4-4.3-6-4.3-10.7-2.8 1.8-4.5 4.4-4.5 7-.9-.8-1.6-1.9-1.8-3.4C6 9.4 5.5 12 5.5 14.7 5.5 18.3 8.1 21 12 21z"/></symbol>
+  <symbol id="i-reloj" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="8"/><path d="M12 8v4.5l3 2M9.5 2.5h5"/></symbol>
+  <symbol id="i-bascula" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M8 10a5 5 0 0 1 8 0M12 10l1.5-2.2"/></symbol>
+  <symbol id="i-regla" viewBox="0 0 24 24"><rect x="2.5" y="8" width="19" height="8" rx="1"/><path d="M6.5 8v3M10.5 8v4.5M14.5 8v3M18.5 8v4.5"/></symbol>
+  <symbol id="i-gota" viewBox="0 0 24 24"><path d="M12 3.5s6 6.4 6 10.7a6 6 0 0 1-12 0C6 9.9 12 3.5 12 3.5z"/></symbol>
+  <symbol id="i-objetivo" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/></symbol>
+  <symbol id="i-salir" viewBox="0 0 24 24"><path d="M14.5 4H19v16h-4.5M10 8l-4 4 4 4M6 12h10.5"/></symbol>
+  <symbol id="i-sonido" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9a4.2 4.2 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></symbol>
+  <symbol id="i-silencio" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5"/></symbol>
+  <symbol id="i-camara" viewBox="0 0 24 24"><path d="M3.5 8h3.5l2-3h6l2 3h3.5v11.5h-17z"/><circle cx="12" cy="13.3" r="3.5"/></symbol>
+  <symbol id="i-descargar" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-candado" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="1.5"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></symbol>
+  <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 3.5 5 6v5.5c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  <symbol id="i-ayuda" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.5a2.3 2.3 0 1 1 3.2 2.1c-.7.3-1 .9-1 1.6v.5"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></symbol>
+  <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+  <symbol id="i-luna" viewBox="0 0 24 24"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></symbol>
+  <symbol id="i-sol" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.8"/><path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6"/></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M4 20l1.2-4A8.2 8.2 0 1 1 8.4 19z"/><path d="M9 8.5c.2 3 2.7 5.6 5.8 6l1-1.4-2-1-1 .8c-1-.4-1.9-1.3-2.3-2.3l.8-1-1-2z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M10 17h10"/></symbol>
+  <symbol id="i-bombillo" viewBox="0 0 24 24"><path d="M9 17.5h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.6.5 1 1.2 1 2V16h5v-.1c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></symbol>
+  <symbol id="i-lista" viewBox="0 0 24 24"><path d="M9 6.5h11M9 12h11M9 17.5h11M4.5 6.5h.01M4.5 12h.01M4.5 17.5h.01" stroke-width="2"/></symbol>
+  <symbol id="i-editar" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+
+  <!-- ===== Pictogramas de ejercicio (48x48) — figuras propias ===== -->
+  <!-- Piernas: sentadilla -->
+  <symbol id="p-piernas" viewBox="0 0 48 48">
+    <circle cx="27" cy="9" r="4"/>
+    <path d="M26 14 20 26"/><path d="M20 26h11l-1 13"/><path d="M24 18h13"/>
+    <path d="M6 41h36" opacity=".35"/>
+  </symbol>
+  <!-- Empuje: flexión -->
+  <symbol id="p-empuje" viewBox="0 0 48 48">
+    <circle cx="39" cy="22" r="3.6"/>
+    <path d="M34 26 8 35"/><path d="M33 26.5V38"/>
+    <path d="M4 39h40" opacity=".35"/>
+  </symbol>
+  <!-- Tirón: remo con toalla en la puerta -->
+  <symbol id="p-tiron" viewBox="0 0 48 48">
+    <path d="M42 5v36" opacity=".35"/>
+    <circle cx="20" cy="11" r="3.8"/>
+    <path d="M21 16 14 38"/><path d="M19 22h22"/><path d="M14 38l8 1"/>
+    <path d="M6 41h36" opacity=".35"/>
+  </symbol>
+  <!-- Core: plancha -->
+  <symbol id="p-core" viewBox="0 0 48 48">
+    <circle cx="39.5" cy="26" r="3.6"/>
+    <path d="M34 29 7 35"/><path d="M34 29v8h6"/>
+    <path d="M4 39h40" opacity=".35"/>
+  </symbol>
+  <!-- Cardio: salto con brazos arriba -->
+  <symbol id="p-cardio" viewBox="0 0 48 48">
+    <circle cx="24" cy="8.5" r="3.8"/>
+    <path d="M24 13v14"/><path d="M24 17 14 7M24 17 34 7"/><path d="M24 27l-8 11M24 27l8 11"/>
+    <path d="M9 43h6M33 43h6" opacity=".35"/>
+  </symbol>
+  <!-- Movilidad: zancada con brazos arriba -->
+  <symbol id="p-movilidad" viewBox="0 0 48 48">
+    <circle cx="22" cy="9" r="3.6"/>
+    <path d="M22 13.5v13"/><path d="M22 16l4-10"/><path d="M22 26.5l10 3v10"/><path d="M22 26.5l-9 8-6 5"/>
+    <path d="M4 41h40" opacity=".35"/>
+  </symbol>
+  <!-- Descanso -->
+  <symbol id="p-descanso" viewBox="0 0 48 48">
+    <path d="M30 12a12 12 0 1 0 8 18 10 10 0 0 1-8-18z"/>
+    <path d="M34 8h5l-5 6h5" opacity=".5"/>
+  </symbol>
+  <!-- Caminata / descanso activo -->
+  <symbol id="p-caminata" viewBox="0 0 48 48">
+    <circle cx="25" cy="8.5" r="3.6"/>
+    <path d="M25 13l-3 13"/><path d="M24 17l-6 6M24 17l6 5"/><path d="M22 26l-6 13M22 26l6 6 2 7"/>
+    <path d="M6 42h36" opacity=".35"/>
+  </symbol>
+
+  <!-- ===== Comidas (48x48) ===== -->
+  <symbol id="c-desayuno" viewBox="0 0 48 48">
+    <path d="M10 18h22v10a11 11 0 0 1-22 0z"/><path d="M32 21h3a4 4 0 0 1 0 8h-3"/>
+    <path d="M16 8c0 3 3 3 3 6M23 8c0 3 3 3 3 6" opacity=".5"/><path d="M8 42h28" opacity=".35"/>
+  </symbol>
+  <symbol id="c-almuerzo" viewBox="0 0 48 48">
+    <circle cx="24" cy="25" r="13"/><circle cx="24" cy="25" r="7" opacity=".5"/>
+    <path d="M5 12v8a2 2 0 0 0 4 0v-8M7 20v18"/><path d="M41 12c-3 0-3 7-3 10h3v16"/>
+  </symbol>
+  <symbol id="c-cena" viewBox="0 0 48 48">
+    <path d="M7 22h34a17 17 0 0 1-34 0z"/><path d="M17 39h14"/>
+    <path d="M18 16c0-3 3-3 3-6M26 16c0-3 3-3 3-6" opacity=".5"/>
+  </symbol>
+  <symbol id="c-snack" viewBox="0 0 48 48">
+    <path d="M24 15c-5-3-13-1-13 9 0 8 6 15 10 15 2 0 2-1 3-1s1 1 3 1c4 0 10-7 10-15 0-10-8-12-13-9z"/>
+    <path d="M24 15c0-4 2-7 5-8" /><path d="M26 11c3-1 6 0 7 2-3 1-6 0-7-2z" opacity=".6"/>
+  </symbol>
+</svg>

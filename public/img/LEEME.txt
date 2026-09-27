@@ -1,0 +1,18 @@
+FOTO DEL HERO
+=============
+Guarda aquí la foto de la persona entrenando con este nombre exacto:
+
+    hero-atleta.png
+
+Requisitos:
+- PNG con FONDO TRANSPARENTE (la persona recortada). Puedes quitar el fondo con
+  remove.bg, Photoshop, Photopea (gratis) o Canva.
+- Vertical, idealmente de 1000 a 1400 px de alto.
+- Que la persona llegue hasta el borde de abajo de la imagen (piernas o cadera cortadas
+  abajo), así "sale" desde el piso del hero como en la referencia.
+- Usa una foto tuya o de alguien que te haya dado permiso.
+
+La página la pone en blanco y negro automáticamente para que combine con la paleta.
+Si la quieres a color, en css/landing.css busca ".hero-persona img" y borra la línea "filter".
+
+Mientras no exista el archivo, el hero muestra un marcador con la forma del espacio.
