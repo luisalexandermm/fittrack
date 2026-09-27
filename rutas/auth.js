@@ -27,6 +27,11 @@ router.post('/registro', async (req, res) => {
   if (acepta_terminos !== true) return res.status(400).json({ error: 'Debes aceptar los términos y la política de tratamiento de datos' });
 
   const sensibles = acepta_sensibles === true;
+  const metaPesoNumerica = sensibles ? numeroONull(meta_peso) : null;
+  if (sensibles && meta_peso !== '' && meta_peso !== null && meta_peso !== undefined &&
+      (metaPesoNumerica === null || metaPesoNumerica < 20 || metaPesoNumerica > 400)) {
+    return res.status(400).json({ error: 'La meta de peso debe estar entre 20 y 400 kg' });
+  }
 
   // Estos datos viajan a Supabase y el trigger "crear_perfil" arma el perfil con ellos
   const datosPerfil = {
@@ -37,7 +42,7 @@ router.post('/registro', async (req, res) => {
     acepta_terminos: true,
     acepta_sensibles: sensibles,
     peso: sensibles ? numeroONull(peso) : null,
-    meta_peso: sensibles ? numeroONull(meta_peso) : null,
+    meta_peso: metaPesoNumerica,
     fecha: hoy()
   };
 
