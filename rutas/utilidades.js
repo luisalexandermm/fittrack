@@ -34,10 +34,12 @@ function passwordValida(password) {
 // Pasa los mensajes de Supabase Auth (en inglés) a español claro
 function traducirErrorAuth(error) {
   const m = String(error.message || '').toLowerCase();
-  if (m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos';
-  if (m.includes('email not confirmed')) return 'Confirma tu correo antes de entrar. Revisa tu bandeja de entrada (y spam).';
+  const codigo = String(error.code || '');
+  if (codigo === 'email_not_confirmed' || m.includes('email not confirmed')) return 'Confirma tu correo antes de entrar. Revisa tu bandeja de entrada (y spam).';
+  if (codigo === 'invalid_credentials' || m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos';
   if (m.includes('already registered') || m.includes('already been registered')) return 'Ya existe una cuenta con ese correo';
-  if (m.includes('rate limit') || error.status === 429) return 'Se enviaron demasiados correos. Espera un rato e inténtalo de nuevo.';
+  if (codigo === 'over_email_send_rate_limit' || m.includes('email rate limit')) return 'Ya te enviamos un correo hace poco. Revisa tu bandeja de entrada (y spam) o espera un rato antes de pedir otro.';
+  if (m.includes('rate limit') || error.status === 429) return 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.';
   if (m.includes('password') && (m.includes('weak') || m.includes('at least') || m.includes('should'))) return 'La contraseña no cumple los requisitos de seguridad';
   if (m.includes('same') && m.includes('password')) return 'La nueva contraseña debe ser distinta a la anterior';
   if (m.includes('signups not allowed') || m.includes('signup is disabled')) return 'Los registros están desactivados en este momento';

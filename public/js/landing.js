@@ -13,6 +13,12 @@ document.documentElement.classList.add('js-listo'); // activa las animaciones de
 const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const punteroFino = window.matchMedia('(pointer: fine)').matches;
 
+// Si Supabase mandó el enlace del correo a la página de inicio (y no a /verificar),
+// pasamos los datos del enlace a /verificar para confirmar la cuenta o cambiar la contraseña.
+if (/(access_token|error_code)=/.test(location.hash) || new URLSearchParams(location.search).has('code')) {
+  window.location.replace('/verificar' + location.search + location.hash);
+}
+
 // ---------- 0. ¿Hay servidor? ¿Ya tiene sesión? ----------
 function avisarSinServidor() {
   const aviso = document.getElementById('aviso-servidor');
