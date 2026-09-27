@@ -2,7 +2,12 @@
 
 // Fecha de hoy en formato YYYY-MM-DD (hora de Colombia, o la de TZ si la defines)
 function hoy() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: process.env.TZ || 'America/Bogota' });
+  const zonaHoraria = (process.env.TZ || 'America/Bogota').replace(/^:/, '');
+  try {
+    return new Date().toLocaleDateString('en-CA', { timeZone: zonaHoraria });
+  } catch {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+  }
 }
 
 // ¿El texto tiene forma de fecha YYYY-MM-DD?
