@@ -1,9 +1,9 @@
 # FitTrack
 
-Rutinas de ejercicio en casa según **objetivo, tiempo y nivel**, con entrenador en pantalla completa, seguimiento de **peso, medidas y fotos**, **plan de comidas** con recetas de Colombia y del Pacífico, y **calendario semanal**.
+Tu **semana de entrenamiento** armada según **objetivo, nivel, lugar (casa o gimnasio), días y tiempo**, con **cada ejercicio animado**, entrenador en pantalla completa, seguimiento de **peso, medidas y fotos**, **plan de comidas** con recetas de Colombia y del Pacífico, y **calendario semanal**.
 
 Full stack: **Node.js + Express + Supabase** (PostgreSQL, Auth y Storage) · frontend en **HTML, CSS y JavaScript puro** (sin build).
-Diseño propio: paleta **negro profundo + verde lima** (#050B0A / #B8FF3D), claro por defecto, tipografías servidas desde el propio servidor.
+Diseño propio: **blanco perlado, grises y negro con el verde lima como acento** (#F4F5F2 / #050B0A / #B8FF3D), claro por defecto, tipografías servidas desde el propio servidor.
 
 ---
 
@@ -17,9 +17,29 @@ Supabase → **New project**. Elige una región cercana (por ejemplo *São Paulo
 ### 2. Crea las tablas
 Supabase → **SQL Editor** → **New query**:
 1. Pega todo el archivo `supabase/esquema.sql` → **Run**.
-2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 51 ejercicios, 20 recetas y 13 consejos).
+2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 67 ejercicios —51 de casa y 16 de gimnasio—, 20 recetas y 13 consejos).
 
 Eso crea las tablas, las reglas de seguridad (RLS), el trigger que arma el perfil al registrarse y el bucket **privado** `fotos` en Storage. Puedes ejecutarlos otra vez sin romper nada.
+
+### ¿Tu base ya tenía usuarios? Ejecuta la migración (una sola vez)
+Si ya habías ejecutado el `esquema.sql` anterior, **no borres nada**: ejecuta en el SQL Editor, en este orden:
+1. `supabase/migracion-onboarding.sql`
+2. `supabase/datos.sql`
+
+La migración **solo agrega** cosas y se puede ejecutar varias veces:
+
+| Qué | Para qué |
+|---|---|
+| `perfiles.lugar` (casa / gimnasio / ambos, por defecto casa) | decide qué ejercicios puede recibir cada usuario |
+| `perfiles.dias_entreno` (0 = lunes … 6 = domingo) | los días que eligió; si está vacío se calculan con `meta_semanal` como antes |
+| `perfiles.edad` (opcional) | dato básico del onboarding |
+| `perfiles.plan_semanal` (jsonb) | la semana generada: qué rutina toca cada día |
+| `ejercicios.equipo` y `ejercicios.musculos` | filtrar por lugar y mostrar los músculos en la ficha |
+| trigger `crear_perfil` ampliado | guarda lugar, días, edad, altura y medidas iniciales al registrarse |
+
+No cambia ninguna política RLS, no borra columnas ni usuarios, y `datos.sql` agrega los ejercicios nuevos **al final**, así que los ids de siempre no cambian.
+Los usuarios antiguos quedan con "casa" y sus días de siempre, y en Inicio ven una tarjeta para completar sus preferencias.
+Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan lugar y días.
 
 ### 3. Configura el inicio de sesión
 Supabase → **Authentication → URL Configuration**:
@@ -75,9 +95,8 @@ Cada consulta se hace **como el usuario conectado**, así que aunque hubiera un 
 
 ### Poner tu foto en el hero
 
-Guarda una foto **PNG con fondo transparente** en `public/img/hero-atleta.png`.
-Mientras no exista, el hero muestra un marcador con la forma del espacio.
-Detalles en `public/img/LEEME.txt`.
+La foto del hero está en `public/img/hero-atleta.png`. Cámbiala por otra con el mismo nombre (mejor PNG sin fondo).
+El símbolo del logo (`img/logo-simbolo.png`) es el corredor recortado de tu `logo.png`.
 
 ---
 
@@ -85,13 +104,15 @@ Detalles en `public/img/LEEME.txt`.
 
 | Sección | Qué hace |
 |---|---|
-| **Landing** | Hero oscuro con la palabra FITTRACK, anillo lima, pegatinas flotantes y tu foto delante; menú a pantalla completa; registro en 4 pasos (cuenta, objetivo, nivel/tiempo, privacidad) y login |
-| **Inicio** | Objetivo con % de avance hacia la meta, peso/meta/grasa/cintura, plan de hoy según el calendario, semana y minutos por semana |
-| **Rutinas** | Generador (objetivo, nivel, minutos), lista de ejercicios con pictogramas propios, cambiar ejercicios, guardar rutinas, entrenador con temporizador |
+| **Landing** | Hero oscuro con la palabra FITTRACK, anillo lima y tu foto (el diseño original), cómo funciona, **demo con el generador real** (objetivo, lugar, nivel y tiempo, con la animación de cada ejercicio), vitrina de la app, objetivos |
+| **Registro (modal)** | Onboarding en 7 pasos dentro de una ventana flotante: cuenta (con confirmar contraseña) → objetivo → lugar → nivel → días → tiempo → datos básicos y privacidad → **FitTrack arma tu semana** y te la muestra |
+| **Inicio** | Tu entrenamiento de hoy (con la figura del primer ejercicio y botón Empezar), tu semana (✓ hecho · → próximo · ○ programado · — descanso), tu progreso (peso, cintura, entrenamientos, racha) y lo que está cambiando (gráfica de peso y minutos por semana) |
+| **Rutinas** | La rutina de cada día de la semana, ficha de cada ejercicio (animación, músculos, duración, descanso, nivel, equipo e instrucciones), cambiar ejercicios, otra versión del día, rutina libre y rutinas guardadas |
+| **Entrenamiento** | Pantalla completa: ejercicio X de N, figura animada, contador, barra de progreso, músculos, siguiente ejercicio, pausa, saltar, anterior y terminar antes (se guarda lo hecho) |
 | **Progreso** | Pestañas Peso (gráfica con meta, anillo de avance, estadísticas), Medidas (gráfica y tabla) y Fotos (galería privada y comparador antes/después) |
 | **Nutrición** | Plan de comidas del día según el objetivo, cambiar opciones, 20 recetas con ingredientes y pasos, consejo del día |
-| **Calendario** | Semana planeada según tus días de entreno (rutina, movilidad, descanso activo, descanso), días cumplidos e historial del mes |
-| **Perfil** | Datos, objetivos, configuración, privacidad y datos, contraseña, tema claro/oscuro, ayuda por WhatsApp |
+| **Calendario** | Tu semana con estados y leyenda, días cumplidos e historial del mes |
+| **Perfil** | Preferencias de entreno (objetivo, nivel, lugar, días, tiempo; al cambiarlas pregunta si actualizar la semana), datos personales, privacidad y datos, contraseña, tema claro/oscuro |
 
 Funciona en celular, tablet y escritorio: en pantallas de 1024 px o menos el menú lateral se cambia por una barra arriba y otra abajo.
 
@@ -133,7 +154,7 @@ fittrack/
 ├── server.js                 → arranca Express, seguridad, rutas y frontend
 ├── db/
 │   ├── supabase.js           → conexión con Supabase y catálogos en memoria
-│   ├── ejercicios.js         → 51 ejercicios sin equipo (fuente de datos.sql)
+│   ├── ejercicios.js         → 67 ejercicios con equipo y músculos (fuente de datos.sql)
 │   ├── recetas.js            → 20 recetas (desayuno, almuerzo, cena, snack)
 │   └── consejos.js           → consejos del día
 ├── middleware/
@@ -144,6 +165,7 @@ fittrack/
 │   ├── perfil.js             → ver y editar perfil
 │   ├── cuenta.js             → exportar datos, contraseña, autorización, borrar cuenta
 │   ├── rutinas.js            → GENERADOR de rutinas + guardadas
+│   ├── plan.js               → la SEMANA: usa el generador una vez por día y la guarda en el perfil
 │   ├── sesiones.js           → entrenamientos completados
 │   ├── medidas.js            → peso y medidas
 │   ├── fotos.js              → fotos en Supabase Storage (privadas)
@@ -151,7 +173,8 @@ fittrack/
 │   ├── resumen.js            → datos del panel de inicio
 │   └── utilidades.js         → fechas, números, reglas de contraseña
 ├── supabase/
-│   ├── esquema.sql           → tablas, RLS, trigger y bucket de fotos (ejecutar 1.º)
+│   ├── esquema.sql           → tablas, RLS, trigger y bucket de fotos (instalación nueva)
+│   ├── migracion-onboarding.sql → solo si tu base ya existía: agrega lo del onboarding
 │   ├── datos.sql             → ejercicios, recetas y consejos (ejecutar 2.º)
 │   ├── generar-datos.js      → regenera datos.sql si cambias los catálogos (npm run sql)
 │   └── plantillas-correo.md  → correos de Supabase en español
@@ -161,16 +184,17 @@ fittrack/
     ├── verificar.html        → a donde llegan los enlaces de los correos
     ├── privacidad.html · terminos.html · cookies.html · 404.html
     ├── css/  base.css (colores, botones, formularios) · landing.css · app.css
-    ├── img/  iconos.svg (íconos y pictogramas propios) · favicon.svg · hero-atleta.png (tu foto)
+    ├── img/  iconos.svg (íconos y pictogramas) · logo.png · logo-simbolo.png · hero-atleta.png (tu foto)
     ├── fuentes/              → Big Shoulders, Bricolage Grotesque, Instrument Sans (OFL)
     └── js/
         ├── tema.js           → claro (por defecto) / oscuro
         ├── cookies.js        → aviso de cookies
         ├── api.js            → api(), avisos, fechas, íconos
-        ├── landing.js        → hero, menú, registro, login y recuperar contraseña
+        ├── animaciones.js    → figuras animadas de cada ejercicio (SVG, sin videos)
+        ├── landing.js        → hero, demo, modal de registro/onboarding, login y recuperar contraseña
         ├── verificar.js      → confirma la cuenta o crea la contraseña nueva
         ├── app.js            → navegación, pestañas, ventana modal
-        ├── plan-semanal.js   → qué toca cada día
+        ├── plan-semanal.js   → la semana del servidor y el estado de cada día
         ├── graficas.js       → barras, línea y anillo en SVG
         ├── inicio.js · rutinas.js · reproductor.js · progreso.js · fotos.js
         └── nutricion.js · calendario.js · perfil.js
@@ -180,21 +204,33 @@ fittrack/
 
 | Variable | Claro | Oscuro | Uso |
 |---|---|---|---|
-| `--lima` | `#B8FF3D` | `#B8FF3D` | botones, logo, indicadores (relleno) |
-| `--acento` | `#3F7A00` | `#B8FF3D` | texto y líneas de acento (lima oscuro en claro para que se lea) |
-| `--lima-suave` | `#DDF7B5` | — | fondos y acentos sutiles |
-| `--verde` | `#182D20` | `#182D20` | elementos secundarios, tarjetas oscuras |
-| `--noche` / `--noche-2` | `#050B0A` / `#0B1513` | igual | hero, navbar, secciones oscuras |
-| `--fondo` | `#E8ECEA` | `#050B0A` | fondo |
+| `--fondo` | `#F4F5F2` blanco perlado | `#050B0A` | fondo |
+| `--fondo-2` | `#E8ECEA` gris claro | `#081110` | secciones alternas y footer |
 | `--superficie` | `#FFFFFF` | `#0B1513` | tarjetas |
-| `--tinta` | `#050B0A` | `#FFFFFF` | texto principal |
+| `--tinta` | `#050B0A` | `#FFFFFF` | texto principal y botones negros |
 | `--piedra` | `#5F6A65` | `#9AA39F` | texto secundario |
+| `--lima` | `#B8FF3D` | `#B8FF3D` | acento: botones principales, indicadores, barras |
+| `--acento` | `#3F7A00` | `#B8FF3D` | texto y líneas de acento (lima oscuro en claro para que se lea) |
+| `--lima-suave` | `#DDF7B5` | lima al 12 % | fondos sutiles |
 
 El modo oscuro está en el bloque `:root[data-tema="oscuro"]` del mismo archivo.
 
 ## Cómo se genera una rutina
 
-`rutas/rutinas.js`: el objetivo define trabajo/descanso (grasa 40/20, músculo 45/30, resistencia 50/15, movilidad 45/10), el nivel lo ajusta, se elige un circuito de 4–6 ejercicios de grupos distintos y se calculan las rondas para llenar el tiempo, con calentamiento y enfriamiento. Solo cuenta rondas completas, por eso la duración real puede quedar unos minutos por debajo.
+`rutas/rutinas.js`: el objetivo define trabajo/descanso (grasa 40/20, músculo 45/30, resistencia 50/15, movilidad 45/10), el nivel lo ajusta, se elige un circuito de 4–6 ejercicios de grupos distintos y se calculan las rondas para llenar el tiempo, con calentamiento y enfriamiento. Las rondas se redondean al número más cercano sin pasarse más de 3 minutos, así que la duración real queda cerca de lo que elegiste.
+
+- **Lugar**: en casa solo entran ejercicios sin equipo o con muebles (`equipo` = ninguno o casa); en gimnasio y ambos también los de máquinas y pesas (en gimnasio van primero).
+- **Enfoque** (opcional): limita los grupos del circuito (tren superior, piernas + core, cardio…).
+
+## Cómo se arma la semana
+
+`rutas/plan.js` reparte un **enfoque** a cada día de entreno según el objetivo (por ejemplo, grasa: Full Body → Cardio intenso → Piernas + Core → Movilidad → Tren superior…; con 1–2 días, siempre Full Body) y llama al generador de arriba una vez por día. Los días libres quedan como *descanso activo* o *descanso*.
+La semana se guarda en `perfiles.plan_semanal` y se repite cada lunes. Se vuelve a armar cuando el usuario cambia sus preferencias y dice que sí, o con "Otra versión de este día". Las sesiones hechas están en `sesiones`, así que nunca se pierden.
+
+## Animaciones de los ejercicios
+
+`public/js/animaciones.js` dibuja una figura en SVG (cadera, torso, cabeza, brazos y piernas) y la mueve entre poses clave; cada ejercicio tiene su movimiento (`EJERCICIOS` al final del archivo). Pesa unos pocos KB, no usa videos ni GIF, se pausa cuando no está en pantalla y respeta "reducir movimiento" del sistema.
+Para un ejercicio nuevo: agrégalo **al final** de `db/ejercicios.js`, corre `npm run sql`, y en `animaciones.js` asígnale un movimiento existente (o crea uno copiando otro).
 
 ## Despliegue en Vercel con GitHub
 

@@ -18,7 +18,7 @@ async function passwordCorrecta(email, password) {
 router.get('/exportar', async (req, res) => {
   const sb = req.sb;
   const [perfil, sesiones, medidas, fotos, rutinas] = await Promise.all([
-    sb.from('perfiles').select('nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso, terminos_fecha, sensibles_ok, sensibles_fecha, creado_en').single(),
+    sb.from('perfiles').select('*').single(), // todo el perfil (incluye preferencias y semana)
     sb.from('sesiones').select('fecha, nombre, objetivo, minutos, sensacion, notas').order('fecha'),
     sb.from('medidas').select('fecha, peso, cintura, cadera, pecho, brazo, muslo, grasa, notas').order('fecha'),
     sb.from('fotos').select('fecha, angulo, nota').order('fecha'),

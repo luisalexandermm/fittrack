@@ -34,6 +34,8 @@ app.use('/api/auth', require('./rutas/auth'));                          // públ
 app.use('/api/perfil', requiereLogin, require('./rutas/perfil'));
 app.use('/api/cuenta', requiereLogin, require('./rutas/cuenta'));
 app.use('/api/rutinas', requiereLogin, require('./rutas/rutinas'));
+app.use('/api/plan', require('./rutas/plan').publico);                 // /api/plan/estructura (pública)
+app.use('/api/plan', requiereLogin, require('./rutas/plan'));
 app.use('/api/sesiones', requiereLogin, require('./rutas/sesiones'));
 app.use('/api/medidas', requiereLogin, requiereAutorizacionSensibles, require('./rutas/medidas'));
 app.use('/api/fotos', requiereLogin, requiereAutorizacionSensibles, require('./rutas/fotos'));

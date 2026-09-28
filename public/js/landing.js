@@ -1,17 +1,17 @@
 // ============================================================
 //  landing.js — página de inicio
-//   0. Servidor y sesión      6. Contadores animados
-//   1. Foto del hero          7. Linterna e imán en tarjetas/botones
-//   2. Letras y parallax      8. Scroll: pasos, franja, barra de avance
-//   3. Menú completo          9. Demo: rutina en vivo
-//   4. Barra fija            10. Vitrina de la app (pestañas automáticas)
-//   5. Aparición al scroll   11. Objetivos → demo
-//  Al final: registro, login y recuperar contraseña.
+//   0. Servidor y sesión          6. Demo (usa el generador real)
+//   1. Hero, barra fija y scroll  7. Vitrina de la app
+//   2. Menú de celular            8. Objetivos → demo
+//   3. Aparición y contadores     9. Modal de acceso (abrir / cerrar)
+//   5. Pasos (figura animada)    10. Onboarding: 7 pasos + tu semana
+//                                11. Login y recuperar contraseña
 // ============================================================
 
 document.documentElement.classList.add('js-listo'); // activa las animaciones de aparición
 const movimientoReducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const punteroFino = window.matchMedia('(pointer: fine)').matches;
+const $ = id => document.getElementById(id);
 
 // Si Supabase mandó el enlace del correo a la página de inicio (y no a /verificar),
 // pasamos los datos del enlace a /verificar para confirmar la cuenta o cambiar la contraseña.
@@ -21,7 +21,7 @@ if (/(access_token|error_code)=/.test(location.hash) || new URLSearchParams(loca
 
 // ---------- 0. ¿Hay servidor? ¿Ya tiene sesión? ----------
 function avisarSinServidor() {
-  const aviso = document.getElementById('aviso-servidor');
+  const aviso = $('aviso-servidor');
   aviso.hidden = false;
   aviso.querySelector('p').textContent = MENSAJE_SIN_SERVIDOR;
 }
@@ -37,14 +37,13 @@ if (location.protocol === 'file:') {
     .catch(avisarSinServidor);
 }
 
-// ---------- 1. Foto del hero ----------
+// ---------- 1. Hero (el diseño original): foto, letras y parallax ----------
 // Si existe public/img/hero-atleta.png se muestra; si no, queda el marcador.
-const foto = document.getElementById('hero-foto');
+const foto = $('hero-foto');
 foto.decode()
-  .then(() => { foto.hidden = false; document.getElementById('hero-marcador').hidden = true; })
+  .then(() => { foto.hidden = false; $('hero-marcador').hidden = true; })
   .catch(() => { /* todavía no hay foto */ });
 
-// ---------- 2. Letras de FITTRACK y parallax ----------
 document.querySelectorAll('.hero-palabra i').forEach((letra, i) => letra.style.setProperty('--i', i));
 
 const capas = document.querySelectorAll('.capa');
@@ -61,63 +60,74 @@ if (!movimientoReducido && punteroFino) {
   });
 }
 
-// ---------- 3. Menú a pantalla completa (celular y tablet) ----------
-const menu = document.getElementById('menu-completo');
-const btnAbrir = document.getElementById('abrir-menu');
-function abrirMenu() {
-  menu.hidden = false;
-  btnAbrir.setAttribute('aria-expanded', 'true');
-  document.body.style.overflow = 'hidden';
-  document.getElementById('cerrar-menu').focus();
-}
-function cerrarMenu() {
-  menu.hidden = true;
-  btnAbrir.setAttribute('aria-expanded', 'false');
-  document.body.style.overflow = '';
-}
-btnAbrir.addEventListener('click', abrirMenu);
-document.querySelectorAll('[data-abrir-menu]').forEach(b => b.addEventListener('click', abrirMenu));
-document.getElementById('cerrar-menu').addEventListener('click', cerrarMenu);
-menu.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !menu.hidden) cerrarMenu(); });
-
-// ---------- 4. Barra fija: aparece cuando el hero sale de la pantalla ----------
-const navFija = document.getElementById('nav-fija');
+// Barra fija: aparece cuando el hero sale de la pantalla
+const navFija = $('nav-fija');
 new IntersectionObserver(([entrada]) => {
   const visible = !entrada.isIntersecting;
   navFija.classList.toggle('visible', visible);
   navFija.setAttribute('aria-hidden', String(!visible));
   navFija.querySelectorAll('a, button').forEach(el => { el.tabIndex = visible ? 0 : -1; });
-}, { threshold: 0.05 }).observe(document.getElementById('arriba'));
+}, { threshold: 0.05 }).observe($('arriba'));
 
-// El enlace de la sección visible queda marcado
-const enlacesFija = navFija.querySelectorAll('.nav-fija-enlaces a');
-new IntersectionObserver(entradas => {
-  entradas.forEach(e => {
-    if (!e.isIntersecting) return;
-    enlacesFija.forEach(a => a.classList.toggle('activo', a.getAttribute('href') === '#' + e.target.id));
-  });
-}, { rootMargin: '-45% 0px -50% 0px' }).observe(document.getElementById('como'));
-['demo', 'app', 'objetivos', 'acceso'].forEach(id => {
-  const s = document.getElementById(id);
-  if (s) new IntersectionObserver(entradas => entradas.forEach(e => {
-    if (e.isIntersecting) enlacesFija.forEach(a => a.classList.toggle('activo', a.getAttribute('href') === '#' + id));
-  }), { rootMargin: '-45% 0px -50% 0px' }).observe(s);
+// Barra de avance de la página y línea de los pasos
+const barraNav = $('nav-progreso');
+const listaPasos = $('pasos-linea');
+const rellenoPasos = $('pasos-relleno');
+let esperandoCuadro = false;
+
+function alHacerScroll() {
+  esperandoCuadro = false;
+  const alto = window.innerHeight;
+  const total = document.documentElement.scrollHeight - alto;
+  barraNav.style.setProperty('--avance', total > 0 ? (window.scrollY / total).toFixed(3) : 0);
+  const r = listaPasos.getBoundingClientRect();
+  const avance = Math.min(Math.max((alto * 0.85 - r.top) / (r.height + alto * 0.2), 0), 1);
+  rellenoPasos.parentElement.style.setProperty('--avance', avance.toFixed(3));
+}
+window.addEventListener('scroll', () => {
+  if (!esperandoCuadro) { esperandoCuadro = true; requestAnimationFrame(alHacerScroll); }
+}, { passive: true });
+alHacerScroll();
+
+// El enlace de la sección visible queda marcado en la barra fija
+const enlacesNav = navFija.querySelectorAll('.nav-fija-enlaces a');
+['como', 'demo', 'app', 'objetivos'].forEach(id => {
+  new IntersectionObserver(entradas => entradas.forEach(e => {
+    if (e.isIntersecting) enlacesNav.forEach(a => a.classList.toggle('activo', a.getAttribute('href') === '#' + id));
+  }), { rootMargin: '-45% 0px -50% 0px' }).observe($(id));
 });
 
-// ---------- 5. Aparición suave al hacer scroll ----------
+// ---------- 2. Menú a pantalla completa (celular) ----------
+const menu = $('menu-completo');
+const btnMenu = $('abrir-menu');
+function abrirMenu() {
+  menu.hidden = false;
+  btnMenu.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+  $('cerrar-menu').focus();
+}
+function cerrarMenu() {
+  menu.hidden = true;
+  btnMenu.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+}
+btnMenu.addEventListener('click', abrirMenu);
+document.querySelectorAll('[data-abrir-menu]').forEach(b => b.addEventListener('click', abrirMenu));
+$('cerrar-menu').addEventListener('click', cerrarMenu);
+menu.querySelectorAll('a').forEach(a => a.addEventListener('click', cerrarMenu));
+
+// ---------- 3. Aparición suave y contadores ----------
 const observadorRevelar = new IntersectionObserver(entradas => {
   entradas.forEach(e => {
     if (e.isIntersecting) { e.target.classList.add('visto'); observadorRevelar.unobserve(e.target); }
   });
-}, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+}, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
 document.querySelectorAll('.revelar').forEach(el => observadorRevelar.observe(el));
 
-// ---------- 6. Contadores: cuentan desde 0 cuando aparecen ----------
 function contar(el) {
   const final = Number(el.dataset.contar);
   if (movimientoReducido) { el.textContent = final; return; }
-  const inicio = performance.now(), duracion = 1400;
+  const inicio = performance.now(), duracion = 1300;
   const paso = ahora => {
     const t = Math.min((ahora - inicio) / duracion, 1);
     el.textContent = Math.round(final * (1 - Math.pow(1 - t, 4)));
@@ -130,97 +140,63 @@ const observadorContar = new IntersectionObserver(entradas => {
 }, { threshold: 0.6 });
 document.querySelectorAll('[data-contar]').forEach(el => observadorContar.observe(el));
 
-// ---------- 7. Linterna (brillo que sigue al mouse) e imán en botones ----------
+// El botón principal se acerca un poquito al cursor
 if (punteroFino && !movimientoReducido) {
-  document.querySelectorAll('.foco').forEach(el => {
-    el.addEventListener('mousemove', e => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      el.style.setProperty('--my', (e.clientY - r.top) + 'px');
-    });
-  });
-  // El botón se acerca un poquito al cursor
   document.querySelectorAll('.iman').forEach(el => {
     el.addEventListener('mousemove', e => {
       const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left - r.width / 2) * 0.25;
-      const y = (e.clientY - r.top - r.height / 2) * 0.35;
-      el.style.transform = `translate(${x}px, ${y}px)`;
+      el.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.2}px, ${(e.clientY - r.top - r.height / 2) * 0.3}px)`;
     });
     el.addEventListener('mouseleave', () => { el.style.transform = ''; });
   });
 }
 
-// ---------- 8. Efectos ligados al scroll ----------
-const barraNav = document.getElementById('nav-progreso');
-const listaPasos = document.getElementById('pasos-linea');
-const rellenoPasos = document.getElementById('pasos-relleno');
-const lineasFranja = document.querySelectorAll('[data-mover]');
-let esperandoCuadro = false;
+// ---------- 5. Paso 4 de "cómo funciona": figura animada ----------
+montarAnimacion($('paso-figura'), 'Burpees', 'cardio');
 
-function alHacerScroll() {
-  esperandoCuadro = false;
-  const alto = window.innerHeight;
-  // Barra de avance de toda la página
-  const total = document.documentElement.scrollHeight - alto;
-  barraNav.style.setProperty('--avance', total > 0 ? (window.scrollY / total).toFixed(3) : 0);
+// ---------- 6. Demo: arma una rutina con el generador real del servidor ----------
+const PICTO = { piernas: 'p-piernas', empuje: 'p-empuje', tiron: 'p-tiron', core: 'p-core', cardio: 'p-cardio', movilidad: 'p-movilidad' };
+const demo = { objetivo: 'grasa', lugar: 'casa', nivel: 1, minutos: 25, rutina: null, elegido: 0 };
+let esperaDemo = null;
 
-  // Línea de los 3 pasos: se llena mientras la sección pasa por la pantalla
-  const r = listaPasos.getBoundingClientRect();
-  const avance = Math.min(Math.max((alto * 0.8 - r.top) / (r.height + alto * 0.2), 0), 1);
-  rellenoPasos.parentElement.style.setProperty('--avance', avance.toFixed(3));
-
-  // Franja: las dos líneas se mueven en sentidos contrarios
-  if (!movimientoReducido) {
-    lineasFranja.forEach(linea => {
-      const rr = linea.getBoundingClientRect();
-      const desplazamiento = (rr.top - alto / 2) * 0.35 * Number(linea.dataset.mover);
-      linea.style.setProperty('--x', desplazamiento.toFixed(1) + 'px');
-    });
+async function calcularDemo() {
+  try {
+    demo.rutina = await api('/plan/demo', { method: 'POST', body: { objetivo: demo.objetivo, lugar: demo.lugar, nivel: demo.nivel, minutos: demo.minutos } });
+  } catch (err) {
+    $('d-lista').innerHTML = `<li class="tenue">${escapar(err.message)}</li>`;
+    return;
   }
-}
-window.addEventListener('scroll', () => {
-  if (!esperandoCuadro) { esperandoCuadro = true; requestAnimationFrame(alHacerScroll); }
-}, { passive: true });
-alHacerScroll();
-
-// ---------- 9. Demo: arma una rutina en vivo (sin registrarse) ----------
-// Mismas reglas que el generador del servidor (rutas/rutinas.js), en versión corta.
-// [nombre, grupo, nivel mínimo, objetivos: g=grasa m=músculo r=resistencia v=movilidad]
-const EJERCICIOS_DEMO = [["Sentadilla","piernas",1,"gmr"],["Zancada alterna","piernas",1,"gmr"],["Puente de glúteo","piernas",1,"mrv"],["Sentadilla sumo con pausa","piernas",2,"mr"],["Sentadilla con salto","piernas",2,"gr"],["Zancada búlgara (en silla)","piernas",2,"m"],["Sentadilla a una pierna (pistol asistida)","piernas",3,"m"],["Zancada con salto","piernas",3,"gr"],["Sentadilla isométrica en pared","piernas",1,"mr"],["Flexiones con rodillas","empuje",1,"gmr"],["Flexiones inclinadas (en mesa)","empuje",1,"mr"],["Flexiones","empuje",2,"gmr"],["Fondos en silla","empuje",2,"m"],["Flexiones pica (hombro)","empuje",2,"m"],["Flexiones diamante","empuje",3,"m"],["Flexiones explosivas","empuje",3,"gm"],["Superman","tiron",1,"mrv"],["Remo con toalla en puerta","tiron",1,"m"],["Nadador (brazos Y-T-W)","tiron",2,"mv"],["Remo invertido bajo mesa","tiron",3,"m"],["Plancha","core",1,"mrv"],["Bicho muerto (dead bug)","core",1,"mv"],["Crunch abdominal","core",1,"gm"],["Escaladores","core",2,"gr"],["Plancha lateral","core",2,"mr"],["Bicicleta abdominal","core",2,"gm"],["Hollow hold","core",3,"mr"],["Plancha con toque de hombro","core",2,"mr"],["Jumping jacks","cardio",1,"gr"],["Rodillas arriba","cardio",1,"gr"],["Boxeo de sombra","cardio",1,"gr"],["Skater (patinador)","cardio",2,"gr"],["Burpees","cardio",2,"gr"],["Burpee con flexión","cardio",3,"gr"],["Saltos de tijera rápidos","cardio",3,"gr"],["Saludo al sol","movilidad",1,"v"],["Estocada con rotación","movilidad",1,"v"],["Perro boca abajo a cobra","movilidad",1,"v"],["Sentadilla profunda sostenida","movilidad",2,"v"],["Rotación torácica en 4 apoyos","movilidad",1,"v"],["Puente con extensión de pierna","movilidad",2,"vm"]];
-const CONFIG_DEMO = {
-  grasa: { t: 40, d: 20, nombre: 'Quema total', letra: 'g' },
-  musculo: { t: 45, d: 30, nombre: 'Fuerza en casa', letra: 'm' },
-  resistencia: { t: 50, d: 15, nombre: 'Circuito resistencia', letra: 'r' },
-  movilidad: { t: 45, d: 10, nombre: 'Flow de movilidad', letra: 'v' }
-};
-const PICTO_DEMO = { piernas: 'p-piernas', empuje: 'p-empuje', tiron: 'p-tiron', core: 'p-core', cardio: 'p-cardio', movilidad: 'p-movilidad' };
-const GRUPO_DEMO = { piernas: 'Piernas', empuje: 'Empuje', tiron: 'Espalda', core: 'Core', cardio: 'Cardio', movilidad: 'Movilidad' };
-const demo = { objetivo: 'grasa', nivel: 1, minutos: 25, lista: [] };
-
-function mezclar(lista) {
-  const a = [...lista];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
+  const r = demo.rutina;
+  const principal = r.bloques.find(b => b.tipo === 'principal');
+  $('d-titulo').textContent = r.nombre.split(' · ')[0];
+  animarNumero('d-trabajo', r.trabajo);
+  animarNumero('d-descanso', r.descanso);
+  animarNumero('d-rondas', r.rondas);
+  animarNumero('d-duracion', Math.round(r.duracion_seg / 60));
+  $('d-lista').innerHTML = principal.ejercicios.map((e, i) => `
+    <li><button type="button" data-i="${i}" style="animation-delay:${i * 50}ms">
+      <span class="n">${i + 1}</span>
+      <svg class="t" aria-hidden="true"><use href="img/iconos.svg#${PICTO[e.grupo] || 'p-movilidad'}"/></svg>
+      <span><strong>${escapar(e.nombre)}</strong><small>${NOMBRES_GRUPO[e.grupo] || ''}${e.equipo === 'gimnasio' ? ' · Gimnasio' : ''}</small></span>
+      <span class="seg">${e.segundos}s</span>
+    </button></li>`).join('');
+  elegirEjercicioDemo(0);
 }
 
-// Elige ejercicios de grupos distintos (uno de cada grupo por turnos)
-function elegirDemo(cantidad) {
-  const conf = CONFIG_DEMO[demo.objetivo];
-  const sirven = EJERCICIOS_DEMO.filter(e => e[2] <= demo.nivel && e[3].includes(conf.letra));
-  const grupos = {};
-  // Primero los del nivel exacto (más reto), luego los más fáciles
-  mezclar(sirven).sort((a, b) => (b[2] === demo.nivel) - (a[2] === demo.nivel)).forEach(e => { (grupos[e[1]] ||= []).push(e); });
-  const elegidos = [];
-  const nombres = mezclar(Object.keys(grupos));
-  while (elegidos.length < cantidad && nombres.some(g => grupos[g].length)) {
-    for (const g of nombres) if (grupos[g].length && elegidos.length < cantidad) elegidos.push(grupos[g].shift());
-  }
-  return elegidos;
+function elegirEjercicioDemo(i) {
+  const principal = demo.rutina.bloques.find(b => b.tipo === 'principal');
+  const e = principal.ejercicios[i];
+  if (!e) return;
+  demo.elegido = i;
+  document.querySelectorAll('#d-lista button').forEach(b => b.classList.toggle('activo', Number(b.dataset.i) === i));
+  montarAnimacion($('d-figura'), e.nombre, e.grupo);
+  $('d-grupo').textContent = NOMBRES_GRUPO[e.grupo] || '';
+  $('d-nombre').textContent = e.nombre;
+  $('d-musculos').textContent = e.musculos || e.descripcion;
 }
 
 function animarNumero(id, valor) {
-  const el = document.getElementById(id);
+  const el = $(id);
   const desde = Number(el.textContent) || 0;
   if (movimientoReducido || desde === valor) { el.textContent = valor; return; }
   const inicio = performance.now();
@@ -232,44 +208,11 @@ function animarNumero(id, valor) {
   requestAnimationFrame(paso);
 }
 
-function calcularDemo(nuevaLista = true) {
-  const conf = CONFIG_DEMO[demo.objetivo];
-  let t = conf.t, d = conf.d;
-  if (demo.nivel === 1) { t -= 10; d += 10; }
-  if (demo.nivel === 3) { t += 10; d = Math.max(10, d - 5); }
-
-  let porRonda = demo.nivel + 3;
-  if (demo.minutos <= 15) porRonda = Math.min(porRonda, 4);
-  if (nuevaLista || demo.lista.length !== porRonda) demo.lista = elegirDemo(porRonda);
-
-  const suaves = ((demo.minutos >= 30 ? 4 : 3) + 3) * 40;
-  const ronda = demo.lista.length * (t + d);
-  const rondas = Math.max(1, Math.floor((demo.minutos * 60 - suaves + 60) / (ronda + 60)));
-  const total = suaves + rondas * ronda + (rondas - 1) * 60;
-
-  document.getElementById('d-titulo').textContent = conf.nombre;
-  animarNumero('d-trabajo', t);
-  animarNumero('d-descanso', d);
-  animarNumero('d-rondas', rondas);
-  animarNumero('d-duracion', Math.round(total / 60));
-  document.getElementById('d-barra-on').style.flexBasis = (t / (t + d)) * 100 + '%';
-  document.getElementById('d-barra-off').style.flexBasis = (d / (t + d)) * 100 + '%';
-
-  document.getElementById('d-lista').innerHTML = demo.lista.map((e, i) => `
-    <li style="animation-delay:${i * 60}ms">
-      <span class="n">${i + 1}</span>
-      <svg class="t" aria-hidden="true"><use href="img/iconos.svg#${PICTO_DEMO[e[1]]}"/></svg>
-      <span><strong>${e[0]}</strong><small>${GRUPO_DEMO[e[1]]}</small></span>
-      <span class="seg">${t}s</span>
-    </li>`).join('');
-}
-
 function prepararChips(id, alCambiar) {
-  const caja = document.getElementById(id);
-  caja.addEventListener('click', e => {
+  $(id).addEventListener('click', e => {
     const chip = e.target.closest('[data-valor]');
     if (!chip) return;
-    caja.querySelectorAll('.chip-demo').forEach(c => c.classList.toggle('activo', c === chip));
+    $(id).querySelectorAll('.chip-demo').forEach(c => c.classList.toggle('activo', c === chip));
     alCambiar(chip.dataset.valor);
   });
 }
@@ -279,54 +222,54 @@ function elegirObjetivoDemo(valor) {
   calcularDemo();
 }
 prepararChips('d-objetivo', elegirObjetivoDemo);
+prepararChips('d-lugar', v => { demo.lugar = v; calcularDemo(); });
 prepararChips('d-nivel', v => { demo.nivel = Number(v); calcularDemo(); });
-const rangoDemo = document.getElementById('d-minutos');
-rangoDemo.addEventListener('input', () => {
-  demo.minutos = Number(rangoDemo.value);
-  document.getElementById('d-minutos-valor').textContent = rangoDemo.value;
-  calcularDemo(false);
+$('d-minutos').addEventListener('input', e => {
+  demo.minutos = Number(e.target.value);
+  $('d-minutos-valor').textContent = e.target.value;
+  clearTimeout(esperaDemo);
+  esperaDemo = setTimeout(calcularDemo, 250); // espera a que suelte el control
 });
-document.getElementById('d-mezclar').addEventListener('click', () => calcularDemo());
-calcularDemo();
+$('d-mezclar').addEventListener('click', calcularDemo);
+$('d-lista').addEventListener('click', e => {
+  const boton = e.target.closest('[data-i]');
+  if (boton) elegirEjercicioDemo(Number(boton.dataset.i));
+});
+// La demo se pide al servidor solo cuando la sección se acerca a la pantalla
+new IntersectionObserver(([e], obs) => { if (e.isIntersecting) { calcularDemo(); obs.disconnect(); } }, { rootMargin: '300px' }).observe($('demo'));
 
-// Mini temporizador de 10 segundos con el primer ejercicio
+// Probar 10 segundos del ejercicio elegido
 let relojDemo = null;
-document.getElementById('d-probar').addEventListener('click', () => {
-  const caja = document.getElementById('d-reloj');
-  const trazo = document.getElementById('d-trazo');
-  const CIRC = 2 * Math.PI * 52;
+$('d-probar').addEventListener('click', () => {
   let quedan = 10;
   clearInterval(relojDemo);
-  caja.hidden = false;
-  document.getElementById('d-ejercicio').textContent = demo.lista[0] ? demo.lista[0][0] : 'Sentadilla';
-  document.getElementById('d-cuenta').textContent = quedan;
-  trazo.style.transition = 'none'; trazo.style.strokeDashoffset = 0; trazo.getBoundingClientRect(); trazo.style.transition = '';
-  trazo.style.strokeDashoffset = CIRC / 10;
+  $('d-reloj').hidden = false;
+  $('d-cuenta').textContent = quedan;
+  $('d-barra').style.width = '0%';
   relojDemo = setInterval(() => {
     quedan--;
-    document.getElementById('d-cuenta').textContent = quedan;
-    trazo.style.strokeDashoffset = CIRC * Math.min((10 - quedan + 1) / 10, 1);
+    $('d-cuenta').textContent = quedan;
+    $('d-barra').style.width = ((10 - quedan) / 10) * 100 + '%';
     if (quedan <= 0) {
       clearInterval(relojDemo);
-      document.getElementById('d-ejercicio').textContent = '¡Así se siente! Crea tu cuenta para la rutina completa.';
-      setTimeout(() => { caja.hidden = true; }, 2200);
+      $('d-cuenta').textContent = '✓';
+      setTimeout(() => { $('d-reloj').hidden = true; }, 1600);
     }
   }, 1000);
 });
-document.getElementById('d-reloj').addEventListener('click', () => { clearInterval(relojDemo); document.getElementById('d-reloj').hidden = true; });
 
-// ---------- 10. Vitrina de la app: cambia sola cada 5 segundos ----------
+// ---------- 7. Vitrina de la app: cambia sola cada 5 segundos ----------
 const vitrina = document.querySelector('.vitrina');
 const tabs = document.querySelectorAll('.vitrina-tab');
 const pantallas = document.querySelectorAll('.tel-pantalla');
-const telefono = document.getElementById('telefono');
+const telefono = $('telefono');
 let pantallaActual = 0, temporizadorVitrina = null;
+montarAnimacion($('tel-figura'), 'Flexiones', 'empuje');
 
 function mostrarPantalla(n) {
   pantallaActual = n;
   tabs.forEach((t, i) => { t.classList.toggle('activo', i === n); t.setAttribute('aria-selected', i === n); });
   pantallas.forEach((p, i) => p.classList.toggle('activa', i === n));
-  // reinicia la barrita de tiempo
   const barra = tabs[n].querySelector('.tiempo');
   barra.style.animation = 'none'; barra.getBoundingClientRect(); barra.style.animation = '';
   reiniciarVitrina();
@@ -342,109 +285,177 @@ function reiniciarVitrina() {
 tabs.forEach((t, i) => t.addEventListener('click', () => mostrarPantalla(i)));
 vitrina.addEventListener('mouseenter', () => vitrina.classList.add('pausada'));
 vitrina.addEventListener('mouseleave', () => { vitrina.classList.remove('pausada'); reiniciarVitrina(); });
-// Solo corre cuando la sección está a la vista
 new IntersectionObserver(([e]) => { if (e.isIntersecting) reiniciarVitrina(); else clearTimeout(temporizadorVitrina); }, { threshold: 0.3 }).observe(vitrina);
 
-// El teléfono se inclina siguiendo el mouse
 if (punteroFino && !movimientoReducido) {
-  const escena = document.getElementById('telefono-escena');
+  const escena = $('telefono-escena');
   escena.addEventListener('mousemove', e => {
     const r = escena.getBoundingClientRect();
-    telefono.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 24 + 'deg');
-    telefono.style.setProperty('--rx', (0.5 - (e.clientY - r.top) / r.height) * 14 + 'deg');
+    telefono.style.setProperty('--ry', ((e.clientX - r.left) / r.width - 0.5) * 18 + 'deg');
+    telefono.style.setProperty('--rx', (0.5 - (e.clientY - r.top) / r.height) * 10 + 'deg');
   });
   escena.addEventListener('mouseleave', () => { telefono.style.removeProperty('--ry'); telefono.style.removeProperty('--rx'); });
 }
 
-// ---------- 11. Objetivos: al tocar uno, la demo lo carga ----------
+// ---------- 8. Objetivos: al tocar uno, la demo lo carga ----------
 document.querySelectorAll('[data-objetivo]').forEach(boton => {
   boton.addEventListener('click', () => {
     elegirObjetivoDemo(boton.dataset.objetivo);
-    document.getElementById('demo').scrollIntoView({ behavior: movimientoReducido ? 'auto' : 'smooth' });
+    $('demo').scrollIntoView({ behavior: movimientoReducido ? 'auto' : 'smooth' });
   });
 });
 
-// ---------- Pestañas registro / login ----------
-const formRegistro = document.getElementById('form-registro');
-const formLogin = document.getElementById('form-login');
+// ============================================================
+//  9. MODAL DE ACCESO: registro con onboarding, login y recuperar
+// ============================================================
+const modal = $('acceso-modal');
+const cuerpoModal = $('acceso-cuerpo');
+const VISTAS = ['form-registro', 'ob-generando', 'ob-semana', 'form-login', 'form-recuperar', 'revisa-correo'];
+let elementoAntesDelModal = null;
+let generandoSemana = false;
 
-function mostrarPestana(nombre) {
-  document.querySelectorAll('.pestana').forEach(p => p.classList.toggle('activo', p.dataset.pestana === nombre));
-  formRegistro.hidden = nombre !== 'registro';
-  formLogin.hidden = nombre !== 'login';
-  document.getElementById('form-recuperar').hidden = nombre !== 'recuperar';
-  document.getElementById('revisa-correo').hidden = true;
+function abrirAcceso(vista = 'registro') {
+  if (modal.hidden) {
+    elementoAntesDelModal = document.activeElement;
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+  }
+  mostrarVista(vista);
 }
 
-function mostrarRevisaCorreo(titulo, texto) {
-  formRegistro.hidden = true;
-  formLogin.hidden = true;
-  document.getElementById('form-recuperar').hidden = true;
-  document.getElementById('rv-titulo').textContent = titulo;
-  document.getElementById('rv-texto').textContent = texto;
-  document.getElementById('revisa-correo').hidden = false;
+function cerrarAcceso() {
+  if (generandoSemana) return; // no cerrar a mitad de crear la cuenta
+  modal.hidden = true;
+  document.body.style.overflow = '';
+  if (location.hash === '#acceso') history.replaceState(null, '', location.pathname);
+  if (elementoAntesDelModal) elementoAntesDelModal.focus();
 }
 
-document.getElementById('ir-recuperar').addEventListener('click', () => {
-  document.getElementById('rc-email').value = document.getElementById('l-email').value;
-  mostrarPestana('recuperar');
-});
-document.querySelectorAll('[data-pestana-ir]').forEach(b => b.addEventListener('click', () => mostrarPestana(b.dataset.pestanaIr)));
+// Muestra una de las vistas del modal (registro, login, recuperar…)
+function mostrarVista(nombre) {
+  const id = { registro: 'form-registro', login: 'form-login', recuperar: 'form-recuperar' }[nombre] || nombre;
+  VISTAS.forEach(v => { $(v).hidden = v !== id; });
+  const enOnboarding = id === 'form-registro';
+  $('ob-progreso').hidden = !enOnboarding && id !== 'ob-generando' && id !== 'ob-semana';
+  $('ob-contador').hidden = !enOnboarding;
+  if (enOnboarding) irAPaso(pasoActual, false);
+  else {
+    $('ob-atras').hidden = true;
+    if (id === 'ob-generando') marcarProgreso(TOTAL_PASOS + 0.5);
+    if (id === 'ob-semana') marcarProgreso(TOTAL_PASOS + 1);
+  }
+  cuerpoModal.scrollTop = 0;
+  enfocarPrimero();
+}
 
-// Recuperar contraseña
-document.getElementById('form-recuperar').addEventListener('submit', async e => {
+function enfocarPrimero() {
+  const visible = VISTAS.map($).find(v => !v.hidden);
+  const campo = visible && visible.querySelector('input:not([type=checkbox]), .ob-opcion.activo, .ob-dia, .ob-tiempo.activo, a.btn, button.btn');
+  if (campo) setTimeout(() => campo.focus({ preventScroll: true }), 60);
+}
+
+// Todos los botones "Crear cuenta", "Crear mi plan", "Entrar"… abren el modal
+document.querySelectorAll('[data-ir]').forEach(a => a.addEventListener('click', e => {
   e.preventDefault();
-  const email = document.getElementById('rc-email').value.trim();
-  const error = document.getElementById('rc-error');
-  error.textContent = '';
-  if (!/^\S+@\S+\.\S+$/.test(email)) return (error.textContent = 'Revisa el correo');
-  try {
-    await api('/auth/recuperar', { method: 'POST', body: { email } });
-    mostrarRevisaCorreo('Revisa tu correo', `Si ${email} tiene una cuenta, te llegará un enlace para crear una contraseña nueva.`);
-  } catch (err) {
-    error.textContent = err.message;
+  cerrarMenu();
+  abrirAcceso(a.dataset.ir);
+}));
+document.querySelectorAll('[data-vista-ir]').forEach(b => b.addEventListener('click', () => mostrarVista(b.dataset.vistaIr)));
+$('acceso-cerrar').addEventListener('click', cerrarAcceso);
+modal.addEventListener('mousedown', e => { if (e.target === modal) cerrarAcceso(); });
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    if (!modal.hidden) cerrarAcceso();
+    else if (!menu.hidden) cerrarMenu();
+  }
+  // Mantener el foco del teclado dentro del modal (accesibilidad)
+  if (e.key === 'Tab' && !modal.hidden) {
+    const enfocables = [...modal.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"]), summary')]
+      .filter(el => !el.disabled && el.offsetParent !== null);
+    if (!enfocables.length) return;
+    const primero = enfocables[0], ultimo = enfocables[enfocables.length - 1];
+    if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
   }
 });
-document.querySelectorAll('.pestana').forEach(p => p.addEventListener('click', () => mostrarPestana(p.dataset.pestana)));
-document.querySelectorAll('[data-ir]').forEach(a => a.addEventListener('click', () => mostrarPestana(a.dataset.ir)));
 
-// Opciones de selección única
-function seleccionUnica(idContenedor) {
-  const contenedor = document.getElementById(idContenedor);
-  contenedor.addEventListener('click', e => {
+// Enlaces directos: /#acceso abre "Entrar" (lo usa /verificar), /#registro abre el registro
+function abrirSegunHash() {
+  if (location.hash === '#acceso') abrirAcceso('login');
+  if (location.hash === '#registro') abrirAcceso('registro');
+}
+abrirSegunHash();
+window.addEventListener('hashchange', abrirSegunHash);
+
+// ============================================================
+//  10. ONBOARDING: 7 pasos → FitTrack genera tu semana
+// ============================================================
+const TOTAL_PASOS = 7;
+const formRegistro = $('form-registro');
+const errorRegistro = $('r-error');
+const btnSiguiente = $('r-siguiente');
+const ob = { objetivo: 'grasa', lugar: 'casa', nivel: 1, dias: [0, 2, 4], minutos: 20 };
+let pasoActual = 1;
+
+function marcarProgreso(n) {
+  $('ob-progreso').querySelector('i').style.setProperty('--p', Math.min(100, (n / (TOTAL_PASOS + 1)) * 100) + '%');
+}
+
+function irAPaso(n, animar = true) {
+  const haciaAtras = n < pasoActual;
+  pasoActual = n;
+  formRegistro.querySelectorAll('.ob-paso').forEach(p => {
+    const visible = Number(p.dataset.paso) === n;
+    p.hidden = !visible;
+    if (visible && animar) {
+      p.classList.toggle('atras', haciaAtras);
+      p.style.animation = 'none'; p.getBoundingClientRect(); p.style.animation = '';
+    }
+  });
+  $('ob-atras').hidden = n === 1;
+  $('ob-contador').textContent = `Paso ${n} de ${TOTAL_PASOS}`;
+  btnSiguiente.firstChild.textContent = n === TOTAL_PASOS ? 'Crear mi cuenta y mi semana ' : 'Continuar ';
+  errorRegistro.textContent = '';
+  marcarProgreso(n);
+  cuerpoModal.scrollTop = 0;
+  if (animar) enfocarPrimero();
+}
+$('ob-atras').addEventListener('click', () => { if (pasoActual > 1) irAPaso(pasoActual - 1); });
+
+// Opciones de una sola elección (objetivo, lugar, nivel, tiempo)
+function eleccionUnica(idContenedor, campo, convertir = v => v) {
+  $(idContenedor).addEventListener('click', e => {
     const opcion = e.target.closest('[data-valor]');
     if (!opcion) return;
-    contenedor.querySelectorAll('[data-valor]').forEach(o => o.classList.toggle('activo', o === opcion));
+    $(idContenedor).querySelectorAll('[data-valor]').forEach(o => o.classList.toggle('activo', o === opcion));
+    ob[campo] = convertir(opcion.dataset.valor);
   });
 }
-seleccionUnica('r-objetivo');
-seleccionUnica('r-nivel');
+eleccionUnica('r-objetivo', 'objetivo');
+eleccionUnica('r-lugar', 'lugar');
+eleccionUnica('r-nivel', 'nivel', Number);
+eleccionUnica('r-minutos', 'minutos', Number);
 
-const rango = document.getElementById('r-minutos');
-rango.addEventListener('input', () => { document.getElementById('r-minutos-valor').textContent = rango.value; });
-
-// Mostrar peso y meta solo si autoriza datos sensibles
-const casillaSensibles = document.getElementById('r-sensibles');
-casillaSensibles.addEventListener('change', () => {
-  document.getElementById('r-datos-cuerpo').hidden = !casillaSensibles.checked;
+// Días: se pueden elegir varios
+$('r-dias').addEventListener('click', e => {
+  const boton = e.target.closest('[data-dia]');
+  if (!boton) return;
+  const activo = !boton.classList.contains('activo');
+  boton.classList.toggle('activo', activo);
+  boton.setAttribute('aria-pressed', String(activo));
+  ob.dias = [...$('r-dias').querySelectorAll('.activo')].map(b => Number(b.dataset.dia));
+  pintarPistaDias();
 });
-
-// ---------- 6. Registro en 4 pasos ----------
-let pasoActual = 1;
-const TOTAL_PASOS = 4;
-const errorRegistro = document.getElementById('r-error');
-const btnAtras = document.getElementById('r-atras');
-const btnSiguiente = document.getElementById('r-siguiente');
-
-function irAPaso(n) {
-  pasoActual = n;
-  document.querySelectorAll('.paso').forEach(p => { p.hidden = Number(p.dataset.paso) !== n; });
-  document.querySelectorAll('.pasos span').forEach((s, i) => s.classList.toggle('hecho', i < n));
-  btnAtras.hidden = n === 1;
-  btnSiguiente.firstChild.textContent = n === TOTAL_PASOS ? 'Crear mi cuenta ' : 'Continuar ';
-  errorRegistro.textContent = '';
+function pintarPistaDias() {
+  const n = ob.dias.length;
+  const pistas = { 0: 'Elige al menos un día', 1: 'Un día por semana · mejor que nada', 2: 'Dos días · cuerpo completo cada vez', 3: 'Tres días · un gran comienzo', 4: 'Cuatro días · con un día de movilidad', 5: 'Cinco días · buen ritmo', 6: 'Seis días · deja un día libre', 7: 'Siete días · incluye días suaves' };
+  $('r-dias-pista').textContent = pistas[n];
 }
-btnAtras.addEventListener('click', () => irAPaso(pasoActual - 1));
+
+// Mostrar peso, meta y medidas solo si autoriza datos sensibles
+const casillaSensibles = $('r-sensibles');
+casillaSensibles.addEventListener('change', () => { $('r-datos-cuerpo').hidden = !casillaSensibles.checked; });
 
 // Misma regla que el servidor: 8+ caracteres con letras y números
 function revisarPassword(p) {
@@ -453,66 +464,145 @@ function revisarPassword(p) {
   return '';
 }
 
+// Revisa el paso actual. Devuelve un mensaje de error o '' si está bien.
+function revisarPaso(n) {
+  if (n === 1) {
+    const nombre = $('r-nombre').value.trim(), email = $('r-email').value.trim(), pass = $('r-pass').value;
+    if (!nombre || !email || !pass) return 'Completa nombre, correo y contraseña';
+    if (!/^\S+@\S+\.\S+$/.test(email)) return 'Revisa el correo';
+    const errorPass = revisarPassword(pass);
+    if (errorPass) return errorPass;
+    if (pass !== $('r-pass2').value) return 'Las contraseñas no coinciden';
+  }
+  if (n === 5 && ob.dias.length === 0) return 'Elige al menos un día para entrenar';
+  if (n === 7) {
+    const edad = $('r-edad').value;
+    if (edad && (edad < 14 || edad > 100)) return 'Revisa la edad';
+    if (!$('r-terminos').checked) return 'Debes aceptar los términos y la política de datos';
+  }
+  return '';
+}
+
 formRegistro.addEventListener('submit', async e => {
   e.preventDefault();
-  const nombre = document.getElementById('r-nombre').value.trim();
-  const email = document.getElementById('r-email').value.trim();
-  const password = document.getElementById('r-pass').value;
-
-  if (pasoActual === 1) {
-    if (!nombre || !email || !password) return (errorRegistro.textContent = 'Completa los tres campos');
-    if (!/^\S+@\S+\.\S+$/.test(email)) return (errorRegistro.textContent = 'Revisa el correo');
-    const errorPass = revisarPassword(password);
-    if (errorPass) return (errorRegistro.textContent = errorPass);
-    return irAPaso(2);
-  }
+  const error = revisarPaso(pasoActual);
+  if (error) { errorRegistro.textContent = error; return; }
   if (pasoActual < TOTAL_PASOS) return irAPaso(pasoActual + 1);
+  await crearCuenta();
+});
 
-  // Paso 4: crear la cuenta
-  if (!document.getElementById('r-terminos').checked) {
-    return (errorRegistro.textContent = 'Debes aceptar los términos y la política de datos');
-  }
+// Último paso: se crea la cuenta y FitTrack arma la semana
+async function crearCuenta() {
+  const valor = id => $(id).value;
+  const sensibles = casillaSensibles.checked;
+  const datos = {
+    nombre: valor('r-nombre').trim(),
+    email: valor('r-email').trim(),
+    password: valor('r-pass'),
+    ...ob,
+    edad: valor('r-edad'),
+    altura: valor('r-altura'),
+    acepta_terminos: true,
+    acepta_sensibles: sensibles
+  };
+  if (sensibles) ['peso', 'meta', 'cintura', 'cadera', 'pecho', 'brazo', 'muslo'].forEach(k => { datos[k === 'meta' ? 'meta_peso' : k] = valor('r-' + k); });
 
   btnSiguiente.disabled = true;
+  let respuesta;
   try {
-    const respuesta = await api('/auth/registro', {
-      method: 'POST',
-      body: {
-        nombre, email, password,
-        objetivo: document.querySelector('#r-objetivo .activo').dataset.valor,
-        nivel: document.querySelector('#r-nivel .activo').dataset.valor,
-        minutos: rango.value,
-        acepta_terminos: true,
-        acepta_sensibles: casillaSensibles.checked,
-        peso: casillaSensibles.checked ? document.getElementById('r-peso').value : null,
-        meta_peso: casillaSensibles.checked ? document.getElementById('r-meta').value : null
-      }
-    });
-    // Si Supabase pide confirmar el correo, mostramos el aviso; si no, entramos directo
-    if (respuesta.confirmar) {
-      mostrarRevisaCorreo('Confirma tu cuenta', `Te enviamos un enlace a ${respuesta.email}. Tócalo para activar tu cuenta y empezar a entrenar.`);
-    } else {
-      window.location.href = '/app';
-    }
+    respuesta = await api('/auth/registro', { method: 'POST', body: datos });
   } catch (err) {
-    if (err.message.includes('correo') || err.message.includes('contraseña')) irAPaso(1);
-    errorRegistro.textContent = err.message;
-  } finally {
     btnSiguiente.disabled = false;
+    if (/correo|contraseña|cuenta/i.test(err.message)) irAPaso(1);
+    errorRegistro.textContent = err.message;
+    return;
+  }
+  btnSiguiente.disabled = false;
+  await mostrarGenerando(respuesta);
+}
+
+// Animación "Armando tu semana…" mientras se pide la estructura al servidor
+async function mostrarGenerando(respuesta) {
+  generandoSemana = true;
+  mostrarVista('ob-generando');
+  montarAnimacion($('generando-figura'), 'Sentadilla', 'piernas', { velocidad: 1.4 });
+  const pasos = [...$('generando-lista').children];
+  pasos.forEach(li => li.classList.remove('listo'));
+
+  const pedido = api('/plan/estructura', { method: 'POST', body: ob }).catch(() => null);
+  for (const li of pasos) {
+    await esperar(movimientoReducido ? 80 : 520);
+    li.classList.add('listo');
+  }
+  const semana = await pedido;
+  await esperar(300);
+  generandoSemana = false;
+  mostrarSemana(semana, respuesta);
+}
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+
+// Texto pequeño bajo cada día de entreno
+function detalleEnfoque(dia, pref) {
+  if (dia.enfoque === 'movilidad' && pref.objetivo !== 'movilidad') return 'Recuperación activa';
+  const lugar = { casa: 'En casa', gimnasio: 'En el gimnasio', ambos: 'Casa o gimnasio' }[pref.lugar];
+  return `${NOMBRES_CORTOS[pref.objetivo]} · ${lugar}`;
+}
+
+function mostrarSemana(semana, respuesta) {
+  mostrarVista('ob-semana');
+  const nombre = $('r-nombre').value.trim().split(' ')[0];
+  $('ob-semana-titulo').textContent = `${nombre}, así queda tu semana`;
+  $('ob-semana-lista').innerHTML = semana ? semana.dias.map((d, i) => `
+    <li class="${d.entrena ? '' : 'libre'}" style="animation-delay:${i * 60}ms">
+      <span class="dia">${d.nombre}</span>
+      ${picto(d.picto)}
+      <span><strong>${d.titulo}</strong><small>${d.entrena ? detalleEnfoque(d, semana.preferencias) : d.detalle}</small></span>
+      <span class="min">${d.entrena ? d.minutos + '′' : '—'}</span>
+    </li>`).join('') : '<li class="libre"><span></span><span></span><span><strong>Tu semana se arma al entrar a la app.</strong></span></li>';
+
+  // Con confirmación de correo todavía no hay sesión
+  const confirmar = respuesta && respuesta.confirmar;
+  $('ob-confirmar').hidden = !confirmar;
+  $('ob-ir-app').hidden = confirmar;
+  $('ob-ir-login').hidden = !confirmar;
+  if (confirmar) {
+    $('ob-confirmar-texto').textContent = `Te enviamos un enlace a ${respuesta.email}. Tócalo para activar tu cuenta: tu semana te estará esperando.`;
+    $('l-email').value = respuesta.email;
+  }
+  enfocarPrimero();
+}
+
+// ============================================================
+//  11. LOGIN Y RECUPERAR CONTRASEÑA
+// ============================================================
+$('form-login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const error = $('l-error');
+  error.textContent = '';
+  try {
+    await api('/auth/login', { method: 'POST', body: { email: $('l-email').value, password: $('l-pass').value } });
+    window.location.href = '/app';
+  } catch (err) {
+    error.textContent = err.message;
   }
 });
 
-// ---------- 7. Login ----------
-formLogin.addEventListener('submit', async e => {
+$('ir-recuperar').addEventListener('click', () => {
+  $('rc-email').value = $('l-email').value;
+  mostrarVista('recuperar');
+});
+
+$('form-recuperar').addEventListener('submit', async e => {
   e.preventDefault();
-  const error = document.getElementById('l-error');
+  const email = $('rc-email').value.trim();
+  const error = $('rc-error');
   error.textContent = '';
+  if (!/^\S+@\S+\.\S+$/.test(email)) return (error.textContent = 'Revisa el correo');
   try {
-    await api('/auth/login', {
-      method: 'POST',
-      body: { email: document.getElementById('l-email').value, password: document.getElementById('l-pass').value }
-    });
-    window.location.href = '/app';
+    await api('/auth/recuperar', { method: 'POST', body: { email } });
+    $('rv-titulo').textContent = 'Revisa tu correo';
+    $('rv-texto').textContent = `Si ${email} tiene una cuenta, te llegará un enlace para crear una contraseña nueva.`;
+    mostrarVista('revisa-correo');
   } catch (err) {
     error.textContent = err.message;
   }

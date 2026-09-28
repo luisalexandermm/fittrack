@@ -51,6 +51,9 @@
 
   <!-- ===== Pictogramas de ejercicio (48x48) — figuras propias ===== -->
   <!-- Piernas: sentadilla -->
+  <symbol id="i-casa" viewBox="0 0 24 24"><path d="M3.5 11 12 4l8.5 7M6 9.5V20h12V9.5M10 20v-5h4v5"/></symbol>
+  <symbol id="i-pesa" viewBox="0 0 24 24"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"/></symbol>
+  <symbol id="i-ambos" viewBox="0 0 24 24"><path d="M2.5 11.5 7 8l4.5 3.5M4 10.3V17h6v-6.7M14 9v7M20 9v7M12.5 11v3M21.5 11v3M14 12.5h6"/></symbol>
   <symbol id="p-piernas" viewBox="0 0 48 48">
     <circle cx="27" cy="9" r="4"/>
     <path d="M26 14 20 26"/><path d="M20 26h11l-1 13"/><path d="M24 18h13"/>

@@ -1,42 +1,66 @@
 // ============================================================
-//  plan-semanal.js — qué toca cada día de la semana
-//  Se arma con la meta semanal (días de entreno) y el objetivo.
-//  R = rutina del objetivo · M = movilidad · A = descanso activo · D = descanso
+//  plan-semanal.js — la semana del usuario (qué toca cada día)
+//  La arma el servidor (GET /api/plan) con el generador de rutinas
+//  y se guarda en el perfil. Aquí solo se lee y se consulta.
 // ============================================================
 
-// Patrón de lunes a domingo según los días de entreno por semana
-const PATRONES = {
-  1: 'RDADDAD',
-  2: 'RDADRAD',
-  3: 'RARDRAD',
-  4: 'RARMRDA',
-  5: 'RRARMRD',
-  6: 'RRMRRRD',
-  7: 'RRMRRRM'
-};
+let planSemana = null; // { dias: [7 días], preferencias, guardado, migrado, pendientes }
 
-// Devuelve lo que toca en una fecha "YYYY-MM-DD"
-function actividadDelDia(fecha, perfilUsuario) {
-  const d = new Date(fecha + 'T12:00:00');
-  const indice = (d.getDay() + 6) % 7; // 0 = lunes
-  const patron = PATRONES[perfilUsuario.meta_semanal] || PATRONES[3];
-  const tipo = patron[indice];
+const DIAS_LARGOS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const DIAS_CORTOS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const NOMBRES_LUGAR = { casa: 'En casa', gimnasio: 'En el gimnasio', ambos: 'Casa o gimnasio' };
 
-  const objetivo = perfilUsuario.objetivo;
-  const pictoObjetivo = { grasa: 'p-cardio', musculo: 'p-empuje', resistencia: 'p-piernas', movilidad: 'p-movilidad' }[objetivo];
+// Pide la semana al servidor (solo la primera vez, o si "forzar" es true)
+async function cargarPlan(forzar = false) {
+  if (!planSemana || forzar) planSemana = await api('/plan');
+  return planSemana;
+}
 
-  if (tipo === 'R') return {
-    tipo, entrena: true, objetivo, picto: pictoObjetivo,
-    titulo: `Rutina de ${NOMBRES_CORTOS[objetivo].toLowerCase()}`,
-    detalle: `${perfilUsuario.minutos} min · En casa`, minutos: perfilUsuario.minutos
-  };
-  if (tipo === 'M') return {
-    tipo, entrena: true, objetivo: 'movilidad', picto: 'p-movilidad',
-    titulo: 'Yoga / Movilidad', detalle: '20 min · En casa', minutos: 20
-  };
-  if (tipo === 'A') return {
-    tipo, entrena: false, picto: 'p-caminata',
-    titulo: 'Descanso activo', detalle: '20 min · Caminata suave'
-  };
-  return { tipo, entrena: false, picto: 'p-descanso', titulo: 'Descanso', detalle: 'Recupera tu energía' };
+// Vuelve a armar la semana (o solo un día) con las preferencias actuales
+async function regenerarPlan(dia = null) {
+  planSemana = await api('/plan/regenerar', { method: 'POST', body: dia === null ? {} : { dia } });
+  return planSemana;
+}
+
+// 0 = lunes … 6 = domingo
+function indiceDia(fecha) {
+  return (new Date(fecha + 'T12:00:00').getDay() + 6) % 7;
+}
+
+// Lo que toca en una fecha "YYYY-MM-DD" (la semana se repite cada lunes)
+function actividadDelDia(fecha) {
+  return planSemana.dias[indiceDia(fecha)];
+}
+
+// Estado de cada día de una semana, para Inicio y Calendario:
+//   hecho      ✓ ya entrenó ese día
+//   hoy        → toca hoy y aún no lo hace
+//   proximo    → el siguiente día de entreno
+//   programado ○ un día de entreno que viene después
+//   perdido    ○ era día de entreno y ya pasó sin sesión
+//   descanso   — día libre
+function estadosSemana(lunes, fechasConSesion) {
+  const hoy = hoyTexto();
+  let yaHayProximo = lunes !== lunesDe(hoy); // en otras semanas no se marca "próximo"
+  return [...Array(7)].map((_, i) => {
+    const fecha = sumarDias(lunes, i);
+    const dia = planSemana.dias[i];
+    let estado;
+    if (fechasConSesion.has(fecha)) estado = 'hecho';
+    else if (!dia.entrena) estado = 'descanso';
+    else if (fecha < hoy) estado = 'perdido';
+    else if (fecha === hoy) { estado = 'hoy'; yaHayProximo = true; }
+    else if (!yaHayProximo) { estado = 'proximo'; yaHayProximo = true; }
+    else estado = 'programado';
+    return { fecha, dia, estado, esHoy: fecha === hoy };
+  });
+}
+
+const SIMBOLO_ESTADO = { hecho: '✓', hoy: '→', proximo: '→', programado: '○', perdido: '○', descanso: '—' };
+const TEXTO_ESTADO = { hecho: 'Hecho', hoy: 'Hoy', proximo: 'Próximo', programado: 'Programado', perdido: 'No se hizo', descanso: 'Descanso' };
+
+// Resumen corto de una rutina: "25 min · 5 ejercicios"
+function resumenRutina(rutina) {
+  const principal = rutina.bloques.find(b => b.tipo === 'principal');
+  return `${Math.round(rutina.duracion_seg / 60)} min · ${principal.ejercicios.length} ejercicios`;
 }

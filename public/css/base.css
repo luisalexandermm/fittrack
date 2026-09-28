@@ -1,6 +1,6 @@
 /* ============================================================
    FitTrack — base.css
-   Paleta verde lima + negro verdoso (ver colores abajo).
+   Blanco perlado, grises y negro, con el verde lima como acento controlado.
    Tipografías servidas desde /fuentes (sin Google Fonts).
    Lo usan todas las páginas: landing, app y páginas legales.
    ============================================================ */
@@ -25,13 +25,14 @@
             --acento es para TEXTOS y LÍNEAS: en modo claro es un lima más
             oscuro, porque el lima puro sobre blanco casi no se lee. */
 :root {
-  --fondo: #E8ECEA;            /* gris claro: fondo de la web */
+  --fondo: #F4F5F2;            /* blanco perlado: fondo de la web */
+  --fondo-2: #E8ECEA;          /* gris claro: secciones alternas */
   --superficie: #FFFFFF;       /* tarjetas */
-  --superficie-2: #DDE3E0;     /* rellenos suaves */
+  --superficie-2: #EDF0EE;     /* rellenos suaves */
   --tinta: #050B0A;            /* texto principal */
   --tinta-2: #33403A;          /* texto secundario */
   --piedra: #5F6A65;           /* texto de apoyo (el gris #9AA39F no se lee sobre claro) */
-  --linea: rgba(5, 11, 10, 0.10);
+  --linea: rgba(5, 11, 10, 0.09);
   --linea-fuerte: rgba(5, 11, 10, 0.24);
   --lima: #B8FF3D;             /* verde lima: botones, logo, indicadores */
   --lima-2: #A6F01F;           /* lima al pasar el mouse */
@@ -49,17 +50,21 @@
   --f-titulo: 'Bricolage', system-ui, sans-serif;
   --f-texto: 'Instrument', system-ui, sans-serif;
 
-  --r: 6px;       /* radio pequeño: botones, campos */
-  --r-lg: 14px;   /* radio de tarjetas */
-  --sombra: 0 20px 44px -26px rgba(5, 11, 10, 0.35);
+  --r: 10px;      /* radio pequeño: botones, campos */
+  --r-lg: 20px;   /* radio de tarjetas */
+  --r-xl: 28px;   /* radio de paneles grandes y modales */
+  --sombra: 0 20px 44px -26px rgba(5, 11, 10, 0.28);
+  --sombra-suave: 0 1px 2px rgba(5, 11, 10, .04), 0 8px 24px -12px rgba(5, 11, 10, .12);
+  --curva: cubic-bezier(.2, .8, .2, 1);
   color-scheme: light;
 }
 
 /* ---------- Colores: MODO OSCURO ---------- */
 :root[data-tema="oscuro"] {
   --fondo: #050B0A;
+  --fondo-2: #081110;
   --superficie: #0B1513;
-  --superficie-2: #182D20;
+  --superficie-2: #14231B;
   --tinta: #FFFFFF;
   --tinta-2: #C3CCC8;
   --piedra: #9AA39F;
@@ -70,6 +75,7 @@
   --acento-2: #D4FF7A;
   --noche: #050B0A;
   --sombra: 0 20px 44px -24px rgba(0, 0, 0, 0.85);
+  --sombra-suave: 0 10px 30px -18px rgba(0, 0, 0, .8);
   color-scheme: dark;
 }
 
@@ -220,13 +226,16 @@ input[type=range] { width: 100%; accent-color: var(--lima); }
 @keyframes aparecer { from { opacity: 0; transform: translateY(10px); } }
 
 /* ---------- Ventana modal (en móvil sube desde abajo) ---------- */
-.modal { position: fixed; inset: 0; z-index: 700; background: rgba(12, 10, 9, .6); display: none; align-items: center; justify-content: center; padding: 20px; }
-.modal.abierto { display: flex; animation: aparecer .25s ease; }
-.hoja { background: var(--fondo); color: var(--tinta); border-radius: var(--r-lg); width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; padding: 28px; position: relative; }
-.hoja-cerrar { position: absolute; top: 14px; right: 14px; }
+.modal { position: fixed; inset: 0; z-index: 950; background: rgba(5, 11, 10, .46); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); display: none; align-items: center; justify-content: center; padding: 20px; }
+.modal.abierto { display: flex; animation: fundido .25s ease; }
+.modal.abierto .hoja { animation: subir .35s var(--curva); }
+.hoja { background: var(--fondo); color: var(--tinta); border-radius: var(--r-xl); width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; overscroll-behavior: contain; padding: 28px; position: relative; box-shadow: 0 40px 80px -30px rgba(5, 11, 10, .45); }
+.hoja-cerrar { position: absolute; top: 14px; right: 14px; background: var(--superficie); border: 1px solid var(--linea); border-radius: 50%; z-index: 2; }
+@keyframes fundido { from { opacity: 0; } }
+@keyframes subir { from { opacity: 0; transform: translateY(18px) scale(.98); } }
 @media (max-width: 640px) {
   .modal { align-items: flex-end; padding: 0; }
-  .hoja { border-radius: 16px 16px 0 0; max-height: 90vh; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); }
+  .hoja { border-radius: 24px 24px 0 0; max-height: 92vh; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- Banner de cookies ---------- */
@@ -263,6 +272,25 @@ input[type=range] { width: 100%; accent-color: var(--lima); }
 .legal th, .legal td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--linea); vertical-align: top; }
 .legal th { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; color: var(--piedra); }
 .tabla-scroll { overflow-x: auto; }
+
+/* Pictogramas de ejercicio y comida (img/iconos.svg, símbolos p-* y c-*) */
+.picto { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ---------- Figuras animadas de los ejercicios (js/animaciones.js) ---------- */
+.figura { display: block; width: 100%; height: 100%; overflow: visible; color: var(--tinta); }
+.figura path, .figura line { fill: none; stroke: currentColor; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.figura .fig-torso { stroke-width: 6.5; }
+.figura .fig-cabeza { fill: currentColor; }
+.figura .fig-lejos { opacity: .32; }
+.figura.de-frente .fig-lejos { opacity: 1; }
+.figura .activo { stroke: var(--acento); }
+.figura .fig-suelo { stroke: var(--linea-fuerte); stroke-width: 1.2; }
+.figura .fig-objeto { stroke: var(--piedra); stroke-width: 2.4; opacity: .7; }
+.figura .fig-objeto.relleno { fill: var(--superficie-2); }
+.figura circle.fig-objeto { fill: none; }
+.figura .fig-cable { stroke: var(--piedra); stroke-width: 1.1; opacity: .8; }
+.figura .fig-pesa { fill: currentColor; stroke: none; }
+.figura .fig-pesa-linea { stroke: currentColor; stroke-width: 3; }
 
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {

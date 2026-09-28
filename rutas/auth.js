@@ -6,6 +6,7 @@ const express = require('express');
 const { clienteAuth } = require('../db/supabase');
 const { guardarSesion, borrarSesion, obtenerSesion } = require('../middleware/auth');
 const { hoy, numeroONull, passwordValida, traducirErrorAuth } = require('./utilidades');
+const { limpiarDias } = require('./plan');
 
 const router = express.Router();
 const OBJETIVOS = ['grasa', 'musculo', 'resistencia', 'movilidad'];
@@ -17,7 +18,8 @@ function urlSitio(req) {
 
 // POST /api/auth/registro
 router.post('/registro', async (req, res) => {
-  const { nombre, email, password, objetivo, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso } = req.body;
+  const { nombre, email, password, objetivo, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
+          lugar, dias, edad, altura, cintura, cadera, pecho, brazo, muslo } = req.body;
 
   if (!nombre || !email || !password) return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios' });
   const correo = String(email).trim().toLowerCase();
@@ -33,7 +35,23 @@ router.post('/registro', async (req, res) => {
     return res.status(400).json({ error: 'La meta de peso debe estar entre 20 y 400 kg' });
   }
 
+  // Medidas opcionales del onboarding (solo con autorización de datos sensibles)
+  const medida = v => {
+    const n = sensibles ? numeroONull(v) : null;
+    return n && n > 0 && n < 400 ? n : null;
+  };
+  const pesoNumerico = medida(peso);
+  if (sensibles && peso !== '' && peso !== null && peso !== undefined && (!pesoNumerico || pesoNumerico < 20)) {
+    return res.status(400).json({ error: 'El peso debe estar entre 20 y 400 kg' });
+  }
+  const edadNumerica = numeroONull(edad);
+  const alturaNumerica = numeroONull(altura);
+  if (edadNumerica !== null && (edadNumerica < 14 || edadNumerica > 100)) {
+    return res.status(400).json({ error: 'Revisa la edad' });
+  }
+
   // Estos datos viajan a Supabase y el trigger "crear_perfil" arma el perfil con ellos
+  // (lugar, dias y edad los guarda el trigger nuevo de migracion-onboarding.sql; el viejo los ignora)
   const datosPerfil = {
     nombre: String(nombre).trim().slice(0, 60),
     objetivo: OBJETIVOS.includes(objetivo) ? objetivo : 'grasa',
@@ -41,8 +59,17 @@ router.post('/registro', async (req, res) => {
     minutos: Math.min(Math.max(Number(minutos) || 20, 10), 60),
     acepta_terminos: true,
     acepta_sensibles: sensibles,
-    peso: sensibles ? numeroONull(peso) : null,
+    peso: pesoNumerico,
     meta_peso: metaPesoNumerica,
+    cintura: medida(cintura),
+    cadera: medida(cadera),
+    pecho: medida(pecho),
+    brazo: medida(brazo),
+    muslo: medida(muslo),
+    lugar: ['casa', 'gimnasio', 'ambos'].includes(lugar) ? lugar : 'casa',
+    dias: limpiarDias(dias) || [0, 2, 4],
+    edad: edadNumerica !== null ? Math.round(edadNumerica) : null,
+    altura: alturaNumerica && alturaNumerica >= 50 && alturaNumerica <= 260 ? alturaNumerica : null,
     fecha: hoy()
   };
 

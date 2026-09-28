@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>FitTrack</title>
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#E8ECEA">
+  <meta name="theme-color" content="#F4F5F2">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FitTrack">
-  <link rel="icon" href="/img/logo.png" type="image/png">
+  <link rel="icon" href="/img/logo-simbolo.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/img/pwa-180.png">
   <link rel="stylesheet" href="css/base.css">
@@ -21,7 +21,7 @@
   <!-- ============ Menú lateral (escritorio) ============ -->
   <aside class="lateral">
     <a href="#inicio" class="marca">
-      <img class="marca-simbolo" src="/img/logo.png" alt="" aria-hidden="true">
+      <img class="marca-simbolo" src="/img/logo-simbolo.png" alt="" aria-hidden="true">
       FitTrack
     </a>
     <nav class="menu" aria-label="Secciones">
@@ -47,7 +47,7 @@
   <!-- ============ Barra superior (celular y tablet) ============ -->
   <header class="barra-sup">
     <a href="#inicio" class="marca">
-      <img class="marca-simbolo" src="/img/logo.png" alt="" aria-hidden="true">
+      <img class="marca-simbolo" src="/img/logo-simbolo.png" alt="" aria-hidden="true">
       FitTrack
     </a>
     <div class="barra-sup-acciones">
@@ -62,23 +62,28 @@
     <section class="vista" id="vista-inicio" aria-labelledby="t-inicio">
       <header class="saludo">
         <div>
+          <span class="fecha-hoy rotulo" id="fecha-hoy"></span>
           <h1 id="t-inicio">Hola, <span data-nombre-corto>…</span></h1>
-          <p class="tenue">¿Listo para tu mejor versión?</p>
         </div>
-        <div class="saludo-lado"><span class="chip-racha" id="chip-racha" hidden></span><span class="fecha-hoy rotulo" id="fecha-hoy"></span></div>
+        <div class="saludo-lado"><span class="chip-racha" id="chip-racha" hidden></span></div>
       </header>
-      <div class="inicio-rejilla" id="inicio-contenido"></div>
+      <div id="aviso-preferencias"></div>
+      <div class="inicio-rejilla" id="inicio-contenido">
+        <div class="caja s-12 cargando" aria-hidden="true"></div>
+      </div>
     </section>
 
     <!-- ===================== RUTINAS ===================== -->
     <section class="vista" id="vista-rutinas" aria-labelledby="t-rutinas">
       <header class="cabecera">
-        <div><span class="rotulo">Rutinas</span><h1 id="t-rutinas">Tu rutina</h1></div>
+        <div><span class="rotulo">Rutinas</span><h1 id="t-rutinas">Tu semana</h1></div>
       </header>
+
+      <div class="semana-selector" id="semana-selector" role="tablist" aria-label="Días de la semana"></div>
 
       <div class="rutinas-rejilla">
         <details class="ajustes-rutina caja" id="ajustes-rutina" open>
-          <summary><span><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Ajustar rutina</span><svg class="ic flecha-det"><use href="/img/iconos.svg#i-abajo"/></svg></summary>
+          <summary><span><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Rutina libre</span><svg class="ic flecha-det"><use href="/img/iconos.svg#i-abajo"/></svg></summary>
           <div class="ajustes-cuerpo">
             <div class="campo">
               <span class="rotulo">Objetivo</span>
@@ -98,9 +103,18 @@
               </div>
             </div>
             <div class="campo">
+              <span class="rotulo">Lugar</span>
+              <div class="opciones" id="g-lugar">
+                <button type="button" class="opcion" data-valor="casa">Casa</button>
+                <button type="button" class="opcion" data-valor="gimnasio">Gimnasio</button>
+                <button type="button" class="opcion" data-valor="ambos">Ambos</button>
+              </div>
+            </div>
+            <div class="campo">
               <span class="rotulo">Tiempo: <b class="cifra acento" id="g-minutos-valor">20</b> min</span>
               <input type="range" id="g-minutos" min="10" max="60" step="5" value="20" aria-label="Minutos disponibles">
             </div>
+            <p class="tenue ajustes-nota">Arma una rutina distinta a la de tu semana, para hoy o para guardarla.</p>
             <button class="btn btn-tinta btn-bloque" id="btn-generar">Generar rutina <svg class="ic ic-flecha"><use href="/img/iconos.svg#i-flecha"/></svg></button>
           </div>
         </details>
@@ -225,6 +239,9 @@
             <button class="btn btn-icono btn-linea" id="semana-siguiente" aria-label="Semana siguiente"><svg class="ic"><use href="/img/iconos.svg#i-flecha"/></svg></button>
           </div>
           <div class="semana-dias" id="semana-dias"></div>
+          <ul class="leyenda" aria-label="Qué significa cada símbolo">
+            <li><b class="e-hecho">✓</b>Completado</li><li><b class="e-proximo">→</b>Próximo</li><li><b class="e-programado">○</b>Programado</li><li><b class="e-descanso">—</b>Descanso</li>
+          </ul>
           <div class="lista-dias" id="lista-dias"></div>
         </div>
         <aside>
@@ -244,7 +261,9 @@
             <p class="tenue" data-nivel-largo></p>
           </header>
           <div class="perfil-stats" id="perfil-stats"></div>
-          <h2 class="subtitulo">Mis objetivos</h2>
+          <div class="caja-cabeza"><h2 class="subtitulo">Mis preferencias</h2><button class="btn btn-linea btn-sm" type="button" data-abrir="preferencias"><svg class="ic ic-sm"><use href="/img/iconos.svg#i-editar"/></svg>Editar</button></div>
+          <div class="caja preferencias" id="perfil-preferencias"></div>
+          <h2 class="subtitulo" style="margin-top:28px">Mi objetivo</h2>
           <a href="#progreso" class="caja fila-objetivo" id="perfil-objetivo"></a>
         </div>
 
@@ -252,7 +271,8 @@
           <a href="#progreso"><svg class="ic"><use href="/img/iconos.svg#i-progreso"/></svg>Mi progreso<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
           <a href="#rutinas"><svg class="ic"><use href="/img/iconos.svg#i-rutinas"/></svg>Mis rutinas<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
           <a href="#nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Mi nutrición<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
-          <button type="button" data-abrir="configuracion"><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Configuración<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" data-abrir="preferencias"><svg class="ic"><use href="/img/iconos.svg#i-calendario"/></svg>Preferencias de entreno<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" data-abrir="configuracion"><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Datos personales<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" data-abrir="privacidad"><svg class="ic"><use href="/img/iconos.svg#i-escudo"/></svg>Privacidad y datos<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" data-abrir="seguridad"><svg class="ic"><use href="/img/iconos.svg#i-candado"/></svg>Contraseña<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" class="btn-tema"><svg class="ic"><use href="/img/iconos.svg#i-luna"/></svg>Tema<b data-tema-texto class="valor-fila">Claro</b></button>
@@ -274,28 +294,33 @@
   </nav>
 
   <!-- ============ Reproductor (pantalla completa) ============ -->
-  <div class="reproductor" id="reproductor" hidden>
+  <div class="reproductor" id="reproductor" hidden role="dialog" aria-modal="true" aria-label="Entrenamiento">
     <div class="rep-arriba">
-      <div><span class="rep-fase" id="rep-fase">Prepárate</span><span class="rep-ronda" id="rep-ronda"></span></div>
+      <div class="rep-titulos"><span class="rep-fase" id="rep-fase">Prepárate</span><span class="rep-ronda" id="rep-ronda"></span></div>
+      <span class="rep-contador" id="rep-contador"></span>
       <div class="rep-botones">
         <button class="btn btn-icono" id="rep-sonido" aria-label="Sonido"><svg class="ic"><use href="/img/iconos.svg#i-sonido"/></svg></button>
         <button class="btn btn-icono" id="rep-cerrar" aria-label="Salir"><svg class="ic"><use href="/img/iconos.svg#i-cerrar"/></svg></button>
       </div>
     </div>
-    <div class="rep-barra"><div id="rep-barra"></div></div>
+    <div class="rep-barra" aria-hidden="true"><div id="rep-barra"></div></div>
 
     <div class="rep-centro" id="rep-centro">
-      <div class="rep-info">
-        <div class="rep-picto" id="rep-picto"></div>
-        <span class="rotulo" id="rep-grupo"></span>
-        <h2 id="rep-nombre">Prepárate</h2>
-        <p id="rep-desc"></p>
+      <div class="rep-figura" id="rep-figura"></div>
+      <div class="rep-panel">
+        <div class="rep-info">
+          <span class="rotulo" id="rep-grupo"></span>
+          <h2 id="rep-nombre">Prepárate</h2>
+          <p class="rep-musculos" id="rep-musculos"></p>
+        </div>
+        <div class="rep-tiempo" aria-live="off">
+          <strong class="cifra" id="rep-cuenta">0:00</strong>
+          <span class="rotulo" id="rep-estado">segundos</span>
+        </div>
+        <div class="rep-progreso" aria-hidden="true"><i id="rep-trazo"></i></div>
+        <p class="rep-desc" id="rep-desc"></p>
+        <div class="rep-sigue"><span class="rotulo">Sigue</span><strong id="rep-sigue">—</strong></div>
       </div>
-      <div class="rep-anillo">
-        <svg viewBox="0 0 200 200"><circle class="rep-fondo" cx="100" cy="100" r="88"/><circle class="rep-trazo" id="rep-trazo" cx="100" cy="100" r="88"/></svg>
-        <div class="rep-cuenta"><strong class="cifra" id="rep-cuenta">0</strong><span class="rotulo" id="rep-estado">segundos</span></div>
-      </div>
-      <div class="rep-sigue"><span class="rotulo">Sigue</span><strong id="rep-sigue">—</strong></div>
     </div>
 
     <div class="rep-final" id="rep-final" hidden>
@@ -312,7 +337,7 @@
           <button class="opcion" data-valor="5">Excelente</button>
         </div>
       </div>
-      <input type="text" id="rep-notas" placeholder="Notas (opcional)" maxlength="500">
+      <input type="text" id="rep-notas" placeholder="Notas (opcional)" maxlength="500" aria-label="Notas de la sesión">
       <div class="fila-botones">
         <button class="btn btn-linea" id="rep-descartar">Descartar</button>
         <button class="btn btn-lima" id="rep-guardar">Guardar sesión</button>
@@ -322,7 +347,8 @@
     <div class="rep-controles" id="rep-controles">
       <button class="btn btn-icono" id="rep-anterior" aria-label="Anterior"><svg class="ic"><use href="/img/iconos.svg#i-anterior"/></svg></button>
       <button class="btn rep-play" id="rep-pausa" aria-label="Pausa"><svg class="ic"><use href="/img/iconos.svg#i-pausa"/></svg></button>
-      <button class="btn btn-icono" id="rep-siguiente-btn" aria-label="Siguiente"><svg class="ic"><use href="/img/iconos.svg#i-siguiente"/></svg></button>
+      <button class="btn btn-icono" id="rep-siguiente-btn" aria-label="Saltar ejercicio"><svg class="ic"><use href="/img/iconos.svg#i-siguiente"/></svg></button>
+      <button class="btn btn-linea rep-terminar" id="rep-terminar">Terminar</button>
     </div>
   </div>
 
@@ -349,6 +375,7 @@
   <div id="avisos" aria-live="polite"></div>
 
   <script src="js/api.js"></script>
+  <script src="js/animaciones.js"></script>
   <script src="js/graficas.js"></script>
   <script src="js/plan-semanal.js"></script>
   <script src="js/inicio.js"></script>

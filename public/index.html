@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>FitTrack — Entrena en casa, a tu ritmo</title>
-  <meta name="description" content="Rutinas en casa según tu objetivo, tu tiempo y tu nivel. Registra tu progreso, tus medidas, tus fotos y tu alimentación.">
+  <title>FitTrack — Tu semana de entrenamiento, hecha para ti</title>
+  <meta name="description" content="FitTrack arma tu semana de entrenamiento según tu objetivo, tu nivel, tus días y tu tiempo, en casa o en el gimnasio. Y registra tu progreso: peso, medidas y fotos.">
   <meta name="theme-color" content="#050B0A">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FitTrack">
-  <link rel="icon" href="img/logo.png" type="image/png">
+  <link rel="icon" href="img/logo-simbolo.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/img/pwa-180.png">
+  <link rel="apple-touch-icon" href="img/pwa-180.png">
   <link rel="preload" href="fuentes/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
@@ -137,56 +137,61 @@
     </div>
   </div>
 
-  <!-- Cintas cruzadas -->
-  <div class="cintas" aria-hidden="true">
-    <div class="cinta cinta-a"><div class="cinta-pista">
-      <span>Sin equipo</span><i>✦</i><span>10–60 min</span><i>✦</i><span>51 ejercicios</span><i>✦</i><span>4 objetivos</span><i>✦</i><span>Hecho en Quibdó</span><i>✦</i>
-      <span>Sin equipo</span><i>✦</i><span>10–60 min</span><i>✦</i><span>51 ejercicios</span><i>✦</i><span>4 objetivos</span><i>✦</i><span>Hecho en Quibdó</span><i>✦</i>
-    </div></div>
-    <div class="cinta cinta-b"><div class="cinta-pista">
-      <span>Entrena</span><i>●</i><span>Mide</span><i>●</i><span>Come bien</span><i>●</i><span>Descansa</span><i>●</i><span>Repite</span><i>●</i>
-      <span>Entrena</span><i>●</i><span>Mide</span><i>●</i><span>Come bien</span><i>●</i><span>Descansa</span><i>●</i><span>Repite</span><i>●</i>
-    </div></div>
-  </div>
 
   <main>
+    <!-- Cinta de datos -->
+    <div class="cinta" aria-hidden="true">
+      <div class="cinta-pista">
+        <span>67 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+        <span>67 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+      </div>
+    </div>
+
     <!-- ======================= 01 CÓMO FUNCIONA ======================= -->
     <section class="seccion" id="como">
       <div class="seccion-titulo revelar">
-        <span class="etiqueta-num"> · Cómo funciona</span>
-        <h2>Tres pasos.<br><span class="subrayado">Cero excusas.</span></h2>
+        <span class="etiqueta-num">01 · Cómo funciona</span>
+        <h2>De cero a tu semana<br><span class="tenue-titulo">en un minuto.</span></h2>
       </div>
 
       <ol class="pasos-linea" id="pasos-linea">
-        <li class="paso-item revelar foco">
-          <span class="paso-num"></span>
-          <div class="paso-anim anim-elige" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-          <h3>Dinos qué buscas</h3>
-          <p>Objetivo, nivel y minutos libres. Eso es todo lo que necesitamos para armar tu plan.</p>
+        <li class="paso-item revelar">
+          <span class="paso-num">01</span>
+          <div class="paso-vis vis-chips" aria-hidden="true"><i>Grasa</i><i class="on">Músculo</i><i>Casa</i><i class="on">Gym</i></div>
+          <h3>Cuéntanos qué buscas</h3>
+          <p>Objetivo, nivel y dónde entrenas. Nada más.</p>
         </li>
-        <li class="paso-item revelar foco">
-          <span class="paso-num"></span>
-          <div class="paso-anim anim-reloj" aria-hidden="true"><svg viewBox="0 0 60 60"><circle cx="30" cy="30" r="24"/><circle class="gira" cx="30" cy="30" r="24"/></svg><b>40</b></div>
-          <h3>Dale play</h3>
-          <p>El entrenador te guía con cuenta regresiva, descansos, rondas y pitidos. Solo sigue el ritmo.</p>
+        <li class="paso-item revelar">
+          <span class="paso-num">02</span>
+          <div class="paso-vis vis-dias" aria-hidden="true"><i class="on">L</i><i>M</i><i class="on">M</i><i>J</i><i class="on">V</i><i>S</i><i>D</i></div>
+          <h3>Elige tus días</h3>
+          <p>Los que de verdad puedes, y cuánto tiempo tienes.</p>
         </li>
-        <li class="paso-item revelar foco">
+        <li class="paso-item revelar">
           <span class="paso-num">03</span>
-          <div class="paso-anim anim-sube" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-          <h3>Mira cómo cambias</h3>
-          <p>Peso, medidas, fotos y racha. Ves la tendencia, no el número de un solo día.</p>
+          <div class="paso-vis vis-semana" aria-hidden="true"><i style="--h:70%"></i><i style="--h:18%"></i><i style="--h:56%"></i><i style="--h:18%"></i><i style="--h:84%"></i><i style="--h:40%"></i><i style="--h:18%"></i></div>
+          <h3>FitTrack arma tu semana</h3>
+          <p>Una rutina distinta para cada día de entreno, con descansos.</p>
+        </li>
+        <li class="paso-item revelar">
+          <span class="paso-num">04</span>
+          <div class="paso-vis vis-figura" aria-hidden="true" id="paso-figura"></div>
+          <h3>Entrena y mide</h3>
+          <p>Cada ejercicio animado, con temporizador. Luego ves cómo cambias.</p>
         </li>
         <li class="pasos-barra" aria-hidden="true"><span id="pasos-relleno"></span></li>
       </ol>
     </section>
 
     <!-- ======================= 02 PRUÉBALO (demo interactiva) ======================= -->
-    <section class="seccion-oscura" id="demo">
-      <div class="demo">
-        <div class="demo-controles revelar">
-          <span class="etiqueta-num">02 · Pruébalo sin registrarte</span>
-          <h2>Arma una rutina<br>en <span class="lima">vivo.</span></h2>
+    <section class="seccion seccion-gris" id="demo">
+      <div class="seccion-titulo revelar">
+        <span class="etiqueta-num">02 · Pruébalo sin registrarte</span>
+        <h2>Arma una rutina<br><span class="tenue-titulo">y mira cada movimiento.</span></h2>
+      </div>
 
+      <div class="demo">
+        <div class="demo-controles caja revelar">
           <div class="campo">
             <span class="rotulo">Objetivo</span>
             <div class="chips-demo" id="d-objetivo">
@@ -194,6 +199,13 @@
               <button type="button" class="chip-demo" data-valor="musculo">Músculo</button>
               <button type="button" class="chip-demo" data-valor="resistencia">Resistencia</button>
               <button type="button" class="chip-demo" data-valor="movilidad">Movilidad</button>
+            </div>
+          </div>
+          <div class="campo">
+            <span class="rotulo">Dónde</span>
+            <div class="chips-demo" id="d-lugar">
+              <button type="button" class="chip-demo activo" data-valor="casa">Casa</button>
+              <button type="button" class="chip-demo" data-valor="gimnasio">Gimnasio</button>
             </div>
           </div>
           <div class="campo">
@@ -205,43 +217,43 @@
             </div>
           </div>
           <div class="campo">
-            <span class="rotulo">Tiempo libre: <b class="lima" id="d-minutos-valor">25</b> min</span>
+            <span class="rotulo">Tiempo: <b class="acento" id="d-minutos-valor">25</b> min</span>
             <input type="range" id="d-minutos" min="10" max="60" step="5" value="25" aria-label="Minutos disponibles">
           </div>
         </div>
 
-        <article class="demo-tarjeta revelar foco" id="demo-tarjeta" aria-live="polite">
+        <article class="demo-tarjeta caja revelar" id="demo-tarjeta" aria-live="polite">
           <div class="demo-cabeza">
             <div>
               <span class="rotulo">Tu rutina</span>
               <h3 id="d-titulo">Quema total</h3>
             </div>
-            <button class="btn btn-icono btn-contorno" type="button" id="d-mezclar" aria-label="Otra combinación"><svg class="ic"><use href="img/iconos.svg#i-cambiar"/></svg></button>
+            <button class="btn btn-icono btn-linea" type="button" id="d-mezclar" aria-label="Otra combinación"><svg class="ic"><use href="img/iconos.svg#i-cambiar"/></svg></button>
           </div>
-
           <div class="demo-cifras">
             <div><span class="cifra" id="d-trabajo">30</span><small>s trabajo</small></div>
             <div><span class="cifra" id="d-descanso">30</span><small>s descanso</small></div>
             <div><span class="cifra" id="d-rondas">3</span><small>rondas</small></div>
             <div><span class="cifra" id="d-duracion">23</span><small>min reales</small></div>
           </div>
-
-          <div class="demo-ritmo" aria-hidden="true"><span class="on" id="d-barra-on"></span><span class="off" id="d-barra-off"></span></div>
-
           <ol class="demo-lista" id="d-lista"></ol>
-
-          <div class="demo-pie">
-            <button class="btn btn-contorno" type="button" id="d-probar"><svg class="ic"><use href="img/iconos.svg#i-play"/></svg>Probar 10 segundos</button>
-            <a href="#acceso" class="btn btn-lima" data-ir="registro">Guardar este plan</a>
-          </div>
-
-          <!-- Mini temporizador -->
-          <div class="demo-reloj" id="d-reloj" hidden>
-            <svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="fondo"/><circle cx="60" cy="60" r="52" class="trazo" id="d-trazo"/></svg>
-            <strong class="cifra" id="d-cuenta">10</strong>
-            <span id="d-ejercicio">Sentadilla</span>
-          </div>
+          <p class="demo-ayuda tenue">Toca un ejercicio para ver cómo se hace.</p>
         </article>
+
+        <aside class="demo-vista caja revelar" aria-live="polite">
+          <div class="demo-figura" id="d-figura"></div>
+          <span class="rotulo" id="d-grupo">Piernas</span>
+          <h3 id="d-nombre">Sentadilla</h3>
+          <p class="tenue" id="d-musculos">Cuádriceps · Glúteos · Core</p>
+          <div class="demo-reloj" id="d-reloj" hidden>
+            <span class="cifra" id="d-cuenta">10</span>
+            <div class="vivo-barra"><i id="d-barra"></i></div>
+          </div>
+          <div class="demo-pie">
+            <button class="btn btn-linea" type="button" id="d-probar"><svg class="ic"><use href="img/iconos.svg#i-play"/></svg>Probar 10 s</button>
+            <a href="#acceso" class="btn btn-lima" data-ir="registro">Crear mi semana</a>
+          </div>
+        </aside>
       </div>
     </section>
 
@@ -255,23 +267,23 @@
       <div class="vitrina">
         <div class="vitrina-pestanas" role="tablist" id="vitrina-pestanas">
           <button class="vitrina-tab activo" role="tab" data-pantalla="0">
-            <span class="rotulo">Rutinas</span><strong>Tu circuito del día</strong>
-            <p>Cambia ejercicios que no te gusten y dale play: el temporizador te guía.</p>
+            <span class="rotulo">Semana</span><strong>Tu plan, día por día</strong>
+            <p>Qué toca hoy, qué ya hiciste y qué viene. Cámbialo cuando quieras.</p>
             <i class="tiempo"></i>
           </button>
           <button class="vitrina-tab" role="tab" data-pantalla="1">
+            <span class="rotulo">Entrenamiento</span><strong>Cada movimiento, animado</strong>
+            <p>Temporizador, descansos, siguiente ejercicio y pitidos. Solo sigue el ritmo.</p>
+            <i class="tiempo"></i>
+          </button>
+          <button class="vitrina-tab" role="tab" data-pantalla="2">
             <span class="rotulo">Progreso</span><strong>Lo que cambia, medido</strong>
             <p>Peso con meta, medidas y fotos con comparador antes/después.</p>
             <i class="tiempo"></i>
           </button>
-          <button class="vitrina-tab" role="tab" data-pantalla="2">
-            <span class="rotulo">Nutrición</span><strong>Comida de aquí</strong>
-            <p>Plan del día con recetas de Colombia y del Pacífico, y un consejo diario.</p>
-            <i class="tiempo"></i>
-          </button>
           <button class="vitrina-tab" role="tab" data-pantalla="3">
-            <span class="rotulo">Calendario</span><strong>Tu semana, planeada</strong>
-            <p>Rutina, movilidad, descanso activo y descanso según tus días libres.</p>
+            <span class="rotulo">Nutrición</span><strong>Comida de aquí</strong>
+            <p>Plan del día con recetas de Colombia y del Pacífico.</p>
             <i class="tiempo"></i>
           </button>
         </div>
@@ -279,51 +291,53 @@
         <div class="telefono-escena" id="telefono-escena">
           <div class="telefono" id="telefono">
             <div class="tel-isla"></div>
-            <!-- Pantalla 0: Rutinas -->
+            <!-- Pantalla 0: Semana -->
             <div class="tel-pantalla activa" data-pantalla="0">
-              <div class="tel-banner"><span class="rotulo">≈ 23 min</span><b>QUEMA TOTAL</b><small>Sin equipo · Principiante</small></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-piernas"/></svg></i><span><b>Sentadilla</b>3 rondas · 40 s</span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-empuje"/></svg></i><span><b>Flexiones</b>3 rondas · 40 s</span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-core"/></svg></i><span><b>Plancha</b>3 rondas · 40 s</span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-cardio"/></svg></i><span><b>Burpees</b>3 rondas · 40 s</span></div>
-              <div class="tel-boton">▶ Iniciar rutina</div>
+              <span class="rotulo">Tu semana</span>
+              <div class="tel-dia hecho"><b>Lun</b><span>Full Body<small>25 min</small></span><i>✓</i></div>
+              <div class="tel-dia descanso"><b>Mar</b><span>Descanso activo<small>Caminata</small></span><i>—</i></div>
+              <div class="tel-dia hoy"><b>Mié</b><span>Tren superior<small>25 min</small></span><i>→</i></div>
+              <div class="tel-dia descanso"><b>Jue</b><span>Descanso<small>Recuperación</small></span><i>—</i></div>
+              <div class="tel-dia"><b>Vie</b><span>Piernas + Core<small>25 min</small></span><i>○</i></div>
+              <div class="tel-boton">▶ Empezar</div>
             </div>
-            <!-- Pantalla 1: Progreso -->
-            <div class="tel-pantalla" data-pantalla="1">
+            <!-- Pantalla 1: Entrenamiento -->
+            <div class="tel-pantalla tel-oscura" data-pantalla="1">
+              <span class="rotulo">Ejercicio 2 de 5</span>
+              <div class="tel-figura" id="tel-figura"></div>
+              <b class="tel-nombre">FLEXIONES</b>
+              <div class="tel-grande">00:34</div>
+              <div class="tel-meta"><span style="width:62%"></span></div>
+              <small class="tel-sub">Pecho · Tríceps · Hombros</small>
+            </div>
+            <!-- Pantalla 2: Progreso -->
+            <div class="tel-pantalla" data-pantalla="2">
               <span class="rotulo">Peso</span>
               <div class="tel-grande">72,6<small>kg</small></div>
               <svg class="tel-grafica" viewBox="0 0 200 90"><path class="area" d="M6 18 L38 24 L70 34 L102 38 L134 50 L166 58 L194 66 L194 90 L6 90Z"/><path class="linea" d="M6 18 L38 24 L70 34 L102 38 L134 50 L166 58 L194 66"/><circle cx="194" cy="66" r="4"/></svg>
               <div class="tel-duo"><div><b>−5,4</b><small>kg</small></div><div><b>54%</b><small>de la meta</small></div></div>
               <div class="tel-meta"><span style="width:54%"></span></div>
             </div>
-            <!-- Pantalla 2: Nutrición -->
-            <div class="tel-pantalla" data-pantalla="2">
+            <!-- Pantalla 3: Nutrición -->
+            <div class="tel-pantalla" data-pantalla="3">
               <span class="rotulo">Plan de hoy</span>
               <div class="tel-grande">1.390<small>kcal</small></div>
               <div class="tel-fila"><i><svg><use href="img/iconos.svg#c-desayuno"/></svg></i><span><b>Batido de borojó</b>Desayuno · 360 kcal</span></div>
               <div class="tel-fila"><i><svg><use href="img/iconos.svg#c-almuerzo"/></svg></i><span><b>Pescado sudado</b>Almuerzo · 540 kcal</span></div>
               <div class="tel-fila"><i><svg><use href="img/iconos.svg#c-cena"/></svg></i><span><b>Tortilla de verduras</b>Cena · 390 kcal</span></div>
             </div>
-            <!-- Pantalla 3: Calendario -->
-            <div class="tel-pantalla" data-pantalla="3">
-              <span class="rotulo">Septiembre</span>
-              <div class="tel-semana"><span>L<b class="h"></b></span><span>M<b></b></span><span>M<b class="h"></b></span><span>J<b class="h"></b></span><span>V<b class="hoy"></b></span><span>S<b></b></span><span>D<b></b></span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-cardio"/></svg></i><span><b>Quema total</b>Hecho · 25 min</span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-movilidad"/></svg></i><span><b>Movilidad</b>Hoy · 20 min</span></div>
-              <div class="tel-fila"><i><svg><use href="img/iconos.svg#p-descanso"/></svg></i><span><b>Descanso</b>Recupera energía</span></div>
-            </div>
           </div>
-          <div class="telefono-sombra" aria-hidden="true"></div>
         </div>
       </div>
+      <p class="vitrina-nota tenue">Ejemplos ilustrativos: en tu cuenta verás solo tus datos reales.</p>
     </section>
 
     <!-- Contadores -->
     <section class="contadores" aria-label="FitTrack en números">
-      <div><span class="cifra" data-contar="51">0</span><span class="rotulo">ejercicios</span></div>
+      <div><span class="cifra" data-contar="67">0</span><span class="rotulo">ejercicios animados</span></div>
       <div><span class="cifra" data-contar="20">0</span><span class="rotulo">recetas</span></div>
       <div><span class="cifra" data-contar="4">0</span><span class="rotulo">objetivos</span></div>
-      <div><span class="cifra">0</span><span class="rotulo">equipos necesarios</span></div>
+      <div><span class="cifra" data-contar="7">0</span><span class="rotulo">días, a tu medida</span></div>
     </section>
 
     <!-- ======================= 04 OBJETIVOS ======================= -->
@@ -333,7 +347,7 @@
         <h2>Cuatro formas de entrenar.<br><span class="tenue-titulo">Toca una y pruébala.</span></h2>
       </div>
       <div class="objetivos">
-        <button class="objetivo revelar foco" data-objetivo="grasa" style="--on:40;--off:20">
+        <button class="objetivo revelar" data-objetivo="grasa" style="--on:40;--off:20">
           <span class="cifra">40<i>/</i>20</span>
           <span class="ritmo"><b></b></span>
           <h3>Quemar grasa</h3>
@@ -341,23 +355,23 @@
           <small class="ejemplos">Burpees · Escaladores · Sentadilla con salto</small>
           <span class="objetivo-ir">Probar <svg class="ic ic-sm"><use href="img/iconos.svg#i-flecha"/></svg></span>
         </button>
-        <button class="objetivo revelar foco" data-objetivo="musculo" style="--on:45;--off:30">
+        <button class="objetivo revelar" data-objetivo="musculo" style="--on:45;--off:30">
           <span class="cifra">45<i>/</i>30</span>
           <span class="ritmo"><b></b></span>
           <h3>Ganar músculo</h3>
           <p>Más tiempo bajo tensión y descansos completos.</p>
-          <small class="ejemplos">Flexiones · Zancada búlgara · Fondos en silla</small>
+          <small class="ejemplos">Flexiones · Zancada búlgara · Press con mancuernas</small>
           <span class="objetivo-ir">Probar <svg class="ic ic-sm"><use href="img/iconos.svg#i-flecha"/></svg></span>
         </button>
-        <button class="objetivo revelar foco" data-objetivo="resistencia" style="--on:50;--off:15">
+        <button class="objetivo revelar" data-objetivo="resistencia" style="--on:50;--off:15">
           <span class="cifra">50<i>/</i>15</span>
           <span class="ritmo"><b></b></span>
           <h3>Resistencia</h3>
           <p>Bloques largos con pausas cortas.</p>
-          <small class="ejemplos">Jumping jacks · Plancha · Skater</small>
+          <small class="ejemplos">Jumping jacks · Plancha · Remo en máquina</small>
           <span class="objetivo-ir">Probar <svg class="ic ic-sm"><use href="img/iconos.svg#i-flecha"/></svg></span>
         </button>
-        <button class="objetivo revelar foco" data-objetivo="movilidad" style="--on:45;--off:10">
+        <button class="objetivo revelar" data-objetivo="movilidad" style="--on:45;--off:10">
           <span class="cifra">45<i>/</i>10</span>
           <span class="ritmo"><b></b></span>
           <h3>Movilidad</h3>
@@ -368,124 +382,21 @@
       </div>
     </section>
 
-    <!-- Franja con movimiento al hacer scroll -->
-    <section class="franja" aria-label="Lema">
-      <p class="franja-linea" data-mover="-1">Hecho en Quibdó ✦ Hecho en Quibdó ✦</p>
-      <p class="franja-linea contorno" data-mover="1">Para entrenar donde estés ✦ Para entrenar donde estés ✦</p>
-    </section>
-
-    <!-- ======================= 05 ACCESO ======================= -->
-    <section class="seccion seccion-acceso" id="acceso">
-      <div class="seccion-titulo revelar">
+    <!-- ======================= 05 EMPIEZA ======================= -->
+    <section class="seccion seccion-final" id="acceso">
+      <div class="final revelar">
         <span class="etiqueta-num">05 · Empieza hoy</span>
-        <h2>Tu primer plan<br>en <span class="subrayado">un minuto.</span></h2>
+        <h2>Tu primera semana<br>en <span class="subrayado">un minuto.</span></h2>
         <ul class="lista-check">
-          <li><svg class="ic ic-sm"><use href="img/iconos.svg#i-check"/></svg>Gratis y sin equipo</li>
+          <li><svg class="ic ic-sm"><use href="img/iconos.svg#i-check"/></svg>Gratis, en casa o en el gimnasio</li>
           <li><svg class="ic ic-sm"><use href="img/iconos.svg#i-check"/></svg>Tus datos son tuyos: descárgalos o borra tu cuenta cuando quieras</li>
           <li><svg class="ic ic-sm"><use href="img/iconos.svg#i-check"/></svg>Funciona en celular, tablet y computador</li>
         </ul>
-      </div>
-
-      <div class="revelar panel-acceso">
-        <div class="aviso-servidor" id="aviso-servidor" role="alert" hidden>
-          <strong>La app no está conectada al servidor</strong>
-          <p></p>
-        </div>
-        <div class="pestanas" role="tablist">
-          <button class="pestana activo" data-pestana="registro" role="tab">Crear cuenta</button>
-          <button class="pestana" data-pestana="login" role="tab">Entrar</button>
-        </div>
-
-        <!-- REGISTRO en 4 pasos -->
-        <form id="form-registro" class="formulario" novalidate>
-          <div class="pasos" aria-hidden="true"><span class="hecho"></span><span></span><span></span><span></span></div>
-
-          <div class="paso" data-paso="1">
-            <h3>Empecemos por ti</h3>
-            <div class="campo"><label for="r-nombre">Nombre</label><input id="r-nombre" type="text" autocomplete="given-name" maxlength="60"></div>
-            <div class="campo"><label for="r-email">Correo</label><input id="r-email" type="email" autocomplete="email" maxlength="120"></div>
-            <div class="campo"><label for="r-pass">Contraseña</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="8+ caracteres, letras y números" maxlength="100"></div>
-          </div>
-
-          <div class="paso" data-paso="2" hidden>
-            <h3>¿Cuál es tu objetivo?</h3>
-            <div class="opciones-grandes" id="r-objetivo">
-              <button type="button" class="opcion activo" data-valor="grasa"><strong>Quemar grasa</strong><span>Intervalos intensos</span></button>
-              <button type="button" class="opcion" data-valor="musculo"><strong>Ganar músculo</strong><span>Fuerza con tu peso</span></button>
-              <button type="button" class="opcion" data-valor="resistencia"><strong>Resistencia</strong><span>Aguantar más</span></button>
-              <button type="button" class="opcion" data-valor="movilidad"><strong>Movilidad</strong><span>Postura y soltura</span></button>
-            </div>
-          </div>
-
-          <div class="paso" data-paso="3" hidden>
-            <h3>Nivel y tiempo</h3>
-            <div class="campo">
-              <span class="rotulo">Nivel</span>
-              <div class="opciones" id="r-nivel">
-                <button type="button" class="opcion activo" data-valor="1">Principiante</button>
-                <button type="button" class="opcion" data-valor="2">Intermedio</button>
-                <button type="button" class="opcion" data-valor="3">Avanzado</button>
-              </div>
-            </div>
-            <div class="campo">
-              <span class="rotulo">Minutos por sesión: <b class="cifra acento" id="r-minutos-valor" style="font-size:1.4rem">20</b></span>
-              <input type="range" id="r-minutos" min="10" max="60" step="5" value="20" aria-label="Minutos por sesión">
-            </div>
-          </div>
-
-          <div class="paso" data-paso="4" hidden>
-            <h3>Privacidad</h3>
-            <label class="casilla">
-              <input type="checkbox" id="r-terminos">
-              <span>Acepto los <a href="/terminos" target="_blank">términos</a> y la <a href="/privacidad" target="_blank">política de tratamiento de datos</a>. <b>(Obligatorio)</b></span>
-            </label>
-            <label class="casilla">
-              <input type="checkbox" id="r-sensibles">
-              <span>Autorizo guardar mis <b>datos sensibles</b> (peso, medidas y fotos) para seguir mi progreso. Es opcional y puedo retirarlo cuando quiera.</span>
-            </label>
-            <div class="fila-2" id="r-datos-cuerpo" hidden>
-              <div class="campo"><label for="r-peso">Peso actual</label><div class="con-unidad" data-u="kg"><input id="r-peso" type="number" step="0.1" inputmode="decimal"></div></div>
-              <div class="campo"><label for="r-meta">Meta de peso</label><div class="con-unidad" data-u="kg"><input id="r-meta" type="number" min="20" max="400" step="0.1" inputmode="decimal"></div></div>
-            </div>
-          </div>
-
-          <p class="error-form" id="r-error" role="alert"></p>
-          <div class="fila-botones">
-            <button type="button" class="btn btn-linea" id="r-atras" hidden>Atrás</button>
-            <button type="submit" class="btn btn-lima" id="r-siguiente">Continuar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
-          </div>
-        </form>
-
-        <!-- LOGIN -->
-        <form id="form-login" class="formulario" hidden novalidate>
-          <h3>Qué bueno verte</h3>
-          <div class="campo"><label for="l-email">Correo</label><input id="l-email" type="email" autocomplete="email"></div>
-          <div class="campo"><label for="l-pass">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password"></div>
-          <p class="error-form" id="l-error" role="alert"></p>
-          <button type="submit" class="btn btn-lima btn-bloque">Entrar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
-          <button type="button" class="enlace-simple" id="ir-recuperar">¿Olvidaste tu contraseña?</button>
-        </form>
-
-        <!-- RECUPERAR CONTRASEÑA -->
-        <form id="form-recuperar" class="formulario" hidden novalidate>
-          <h3>Recupera tu acceso</h3>
-          <p class="suave">Escribe tu correo y te enviaremos un enlace para crear una contraseña nueva.</p>
-          <div class="campo"><label for="rc-email">Correo</label><input id="rc-email" type="email" autocomplete="email"></div>
-          <p class="error-form" id="rc-error" role="alert"></p>
-          <button type="submit" class="btn btn-lima btn-bloque">Enviar enlace</button>
-          <button type="button" class="enlace-simple" data-pestana-ir="login">Volver a entrar</button>
-        </form>
-
-        <!-- MENSAJE: revisa tu correo -->
-        <div id="revisa-correo" class="formulario revisa-correo" hidden>
-          <svg class="ic ic-lg acento"><use href="img/iconos.svg#i-check"/></svg>
-          <h3 id="rv-titulo">Revisa tu correo</h3>
-          <p class="suave" id="rv-texto"></p>
-          <p class="tenue" style="font-size:.85rem">¿No llega? Revisa la carpeta de spam o promociones. El enlace vence en 24 horas.</p>
-          <button type="button" class="btn btn-linea btn-bloque" data-pestana-ir="login">Ir a iniciar sesión</button>
+        <div class="hero-botones">
+          <a href="#acceso" class="btn btn-lima iman" data-ir="registro">Crear mi plan <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></a>
+          <a href="#acceso" class="btn btn-linea" data-ir="login">Ya tengo cuenta</a>
         </div>
       </div>
-    
     </section>
   </main>
 
@@ -493,9 +404,8 @@
   <footer class="pie">
     <div class="pie-arriba">
       <div class="pie-marca">
-        <a href="/" class="marca"><img class="marca-simbolo" src="img/logo.png" alt="" aria-hidden="true">FitTrack</a>
-        <p>Entrena en casa, a tu ritmo.<br>Hecho en Quibdó, Chocó.</p>
-        <a href="#acceso" class="btn btn-lima btn-sm" data-ir="registro">Crear cuenta gratis</a>
+        <a href="/" class="marca"><img class="marca-simbolo" src="img/logo-simbolo.png" alt="" aria-hidden="true">FitTrack</a>
+        <p>Tu semana de entreno, a tu ritmo.<br>Hecho en Quibdó, Chocó.</p>
       </div>
       <nav class="pie-col" aria-label="Secciones">
         <span class="rotulo">Explora</span>
@@ -512,9 +422,7 @@
       </nav>
       <div class="pie-col">
         <span class="rotulo">Contacto</span>
-        <a href="mailto:contacto.maturanainnovate@gmail.com
-             " class="pie-social">contacto.maturanainnovate@gmail.com
-</a>
+        <a href="mailto:contacto.maturanainnovate@gmail.com" class="pie-social">contacto.maturanainnovate@gmail.com</a>
         <button class="btn-tema pie-social" type="button"><svg class="ic ic-sm"><use href="img/iconos.svg#i-luna"/></svg>Tema: <span data-tema-texto>Claro</span></button>
       </div>
     </div>
@@ -526,8 +434,208 @@
     </div>
   </footer>
 
+  <!-- ======================= MODAL: REGISTRO / ONBOARDING / LOGIN ======================= -->
+  <div class="acceso-modal" id="acceso-modal" role="dialog" aria-modal="true" aria-labelledby="acceso-titulo" hidden>
+    <div class="acceso-panel" id="acceso-panel">
+      <header class="acceso-cabeza">
+        <button type="button" class="btn btn-icono acceso-atras" id="ob-atras" aria-label="Paso anterior" hidden><svg class="ic"><use href="img/iconos.svg#i-atras"/></svg></button>
+        <div class="acceso-progreso" id="ob-progreso" aria-hidden="true"><i></i></div>
+        <span class="acceso-contador rotulo" id="ob-contador"></span>
+        <button type="button" class="btn btn-icono acceso-cerrar" id="acceso-cerrar" aria-label="Cerrar"><svg class="ic"><use href="img/iconos.svg#i-cerrar"/></svg></button>
+      </header>
+
+      <div class="acceso-cuerpo" id="acceso-cuerpo">
+        <div class="aviso-servidor" id="aviso-servidor" role="alert" hidden>
+          <strong>La app no está conectada al servidor</strong>
+          <p></p>
+        </div>
+
+        <!-- ========== REGISTRO + ONBOARDING (8 pasos) ========== -->
+        <form id="form-registro" class="onboarding" novalidate>
+          <!-- Paso 1: cuenta -->
+          <section class="ob-paso" data-paso="1">
+            <div class="segmento" role="tablist">
+              <button type="button" class="activo" data-vista-ir="registro">Crear cuenta</button>
+              <button type="button" data-vista-ir="login">Entrar</button>
+            </div>
+            <h2 class="ob-titulo" id="acceso-titulo">Empecemos por ti</h2>
+            <p class="ob-sub">En el siguiente minuto armamos tu primera semana.</p>
+            <div class="campo"><label for="r-nombre">Nombre</label><input id="r-nombre" type="text" autocomplete="given-name" maxlength="60"></div>
+            <div class="campo"><label for="r-email">Correo</label><input id="r-email" type="email" autocomplete="email" maxlength="120"></div>
+            <div class="fila-2">
+              <div class="campo"><label for="r-pass">Contraseña</label><input id="r-pass" type="password" autocomplete="new-password" placeholder="8+ letras y números" maxlength="100"></div>
+              <div class="campo"><label for="r-pass2">Confirmar</label><input id="r-pass2" type="password" autocomplete="new-password" maxlength="100"></div>
+            </div>
+          </section>
+
+          <!-- Paso 2: objetivo -->
+          <section class="ob-paso" data-paso="2" hidden>
+            <h2 class="ob-titulo">¿Qué quieres conseguir?</h2>
+            <p class="ob-sub">Define el ritmo de trabajo y descanso de tus rutinas.</p>
+            <div class="ob-opciones" id="r-objetivo">
+              <button type="button" class="ob-opcion activo" data-valor="grasa"><svg class="picto"><use href="img/iconos.svg#p-cardio"/></svg><strong>Definir / perder grasa</strong><span>Intervalos intensos</span></button>
+              <button type="button" class="ob-opcion" data-valor="musculo"><svg class="picto"><use href="img/iconos.svg#p-empuje"/></svg><strong>Ganar músculo</strong><span>Fuerza y tensión</span></button>
+              <button type="button" class="ob-opcion" data-valor="resistencia"><svg class="picto"><use href="img/iconos.svg#p-piernas"/></svg><strong>Mejorar resistencia</strong><span>Aguantar más</span></button>
+              <button type="button" class="ob-opcion" data-valor="movilidad"><svg class="picto"><use href="img/iconos.svg#p-movilidad"/></svg><strong>Mejorar movilidad</strong><span>Postura y soltura</span></button>
+            </div>
+          </section>
+
+          <!-- Paso 3: lugar -->
+          <section class="ob-paso" data-paso="3" hidden>
+            <h2 class="ob-titulo">¿Dónde quieres entrenar?</h2>
+            <p class="ob-sub">Cambia los ejercicios que recibes.</p>
+            <div class="ob-opciones ob-opciones-lista" id="r-lugar">
+              <button type="button" class="ob-opcion activo" data-valor="casa"><svg class="ic ic-lg"><use href="img/iconos.svg#i-casa"/></svg><strong>Casa</strong><span>Solo tu cuerpo y muebles: silla, mesa, pared</span></button>
+              <button type="button" class="ob-opcion" data-valor="gimnasio"><svg class="ic ic-lg"><use href="img/iconos.svg#i-pesa"/></svg><strong>Gimnasio</strong><span>Máquinas, poleas y mancuernas</span></button>
+              <button type="button" class="ob-opcion" data-valor="ambos"><svg class="ic ic-lg"><use href="img/iconos.svg#i-ambos"/></svg><strong>Ambos</strong><span>Mezcla de casa y gimnasio</span></button>
+            </div>
+          </section>
+
+          <!-- Paso 4: nivel -->
+          <section class="ob-paso" data-paso="4" hidden>
+            <h2 class="ob-titulo">¿Cuál es tu nivel?</h2>
+            <p class="ob-sub">Ajusta la dificultad y los tiempos de descanso.</p>
+            <div class="ob-opciones ob-opciones-lista" id="r-nivel">
+              <button type="button" class="ob-opcion activo" data-valor="1"><span class="nivel-barras" data-n="1"><i></i><i></i><i></i></span><strong>Principiante</strong><span>Estoy empezando o volviendo</span></button>
+              <button type="button" class="ob-opcion" data-valor="2"><span class="nivel-barras" data-n="2"><i></i><i></i><i></i></span><strong>Intermedio</strong><span>Entreno con cierta frecuencia</span></button>
+              <button type="button" class="ob-opcion" data-valor="3"><span class="nivel-barras" data-n="3"><i></i><i></i><i></i></span><strong>Avanzado</strong><span>Entreno fuerte y seguido</span></button>
+            </div>
+          </section>
+
+          <!-- Paso 5: días -->
+          <section class="ob-paso" data-paso="5" hidden>
+            <h2 class="ob-titulo">¿Qué días quieres entrenar?</h2>
+            <p class="ob-sub">Elige los que de verdad puedes. Luego lo cambias en tu perfil.</p>
+            <div class="ob-dias" id="r-dias" role="group" aria-label="Días de entrenamiento">
+              <button type="button" class="ob-dia activo" data-dia="0" aria-pressed="true"><b>L</b><span>Lunes</span></button>
+              <button type="button" class="ob-dia" data-dia="1" aria-pressed="false"><b>M</b><span>Martes</span></button>
+              <button type="button" class="ob-dia activo" data-dia="2" aria-pressed="true"><b>X</b><span>Miércoles</span></button>
+              <button type="button" class="ob-dia" data-dia="3" aria-pressed="false"><b>J</b><span>Jueves</span></button>
+              <button type="button" class="ob-dia activo" data-dia="4" aria-pressed="true"><b>V</b><span>Viernes</span></button>
+              <button type="button" class="ob-dia" data-dia="5" aria-pressed="false"><b>S</b><span>Sábado</span></button>
+              <button type="button" class="ob-dia" data-dia="6" aria-pressed="false"><b>D</b><span>Domingo</span></button>
+            </div>
+            <p class="ob-pista" id="r-dias-pista">3 días por semana · un gran comienzo</p>
+          </section>
+
+          <!-- Paso 6: tiempo -->
+          <section class="ob-paso" data-paso="6" hidden>
+            <h2 class="ob-titulo">¿Cuánto tiempo tienes normalmente?</h2>
+            <p class="ob-sub">Cada rutina se ajusta para caber en ese tiempo.</p>
+            <div class="ob-tiempos" id="r-minutos">
+              <button type="button" class="ob-tiempo" data-valor="10"><b>10</b><span>min</span></button>
+              <button type="button" class="ob-tiempo" data-valor="15"><b>15</b><span>min</span></button>
+              <button type="button" class="ob-tiempo activo" data-valor="20"><b>20</b><span>min</span></button>
+              <button type="button" class="ob-tiempo" data-valor="30"><b>30</b><span>min</span></button>
+              <button type="button" class="ob-tiempo" data-valor="45"><b>45</b><span>min</span></button>
+              <button type="button" class="ob-tiempo" data-valor="60"><b>60+</b><span>min</span></button>
+            </div>
+          </section>
+
+          <!-- Paso 7: datos básicos y privacidad -->
+          <section class="ob-paso" data-paso="7" hidden>
+            <h2 class="ob-titulo">Unos datos básicos</h2>
+            <p class="ob-sub">Todo es opcional, menos aceptar los términos.</p>
+            <div class="fila-2">
+              <div class="campo"><label for="r-edad">Edad</label><div class="con-unidad" data-u="años"><input id="r-edad" type="number" min="14" max="100" inputmode="numeric"></div></div>
+              <div class="campo"><label for="r-altura">Altura</label><div class="con-unidad" data-u="cm"><input id="r-altura" type="number" min="50" max="260" inputmode="numeric"></div></div>
+            </div>
+            <label class="casilla">
+              <input type="checkbox" id="r-sensibles">
+              <span>Autorizo guardar mis <b>datos sensibles</b> (peso, medidas y fotos) para seguir mi progreso. Es opcional y puedo retirarlo cuando quiera.</span>
+            </label>
+            <div id="r-datos-cuerpo" class="ob-cuerpo" hidden>
+              <div class="fila-2">
+                <div class="campo"><label for="r-peso">Peso actual</label><div class="con-unidad" data-u="kg"><input id="r-peso" type="number" step="0.1" min="20" max="400" inputmode="decimal"></div></div>
+                <div class="campo"><label for="r-meta">Meta de peso</label><div class="con-unidad" data-u="kg"><input id="r-meta" type="number" min="20" max="400" step="0.1" inputmode="decimal"></div></div>
+              </div>
+              <details class="ob-medidas">
+                <summary>Agregar medidas (opcional)</summary>
+                <div class="fila-3">
+                  <div class="campo"><label for="r-cintura">Cintura</label><div class="con-unidad" data-u="cm"><input id="r-cintura" type="number" step="0.1" inputmode="decimal"></div></div>
+                  <div class="campo"><label for="r-cadera">Cadera</label><div class="con-unidad" data-u="cm"><input id="r-cadera" type="number" step="0.1" inputmode="decimal"></div></div>
+                  <div class="campo"><label for="r-pecho">Pecho</label><div class="con-unidad" data-u="cm"><input id="r-pecho" type="number" step="0.1" inputmode="decimal"></div></div>
+                  <div class="campo"><label for="r-brazo">Brazo</label><div class="con-unidad" data-u="cm"><input id="r-brazo" type="number" step="0.1" inputmode="decimal"></div></div>
+                  <div class="campo"><label for="r-muslo">Muslo</label><div class="con-unidad" data-u="cm"><input id="r-muslo" type="number" step="0.1" inputmode="decimal"></div></div>
+                </div>
+              </details>
+            </div>
+            <label class="casilla">
+              <input type="checkbox" id="r-terminos">
+              <span>Acepto los <a href="/terminos" target="_blank">términos</a> y la <a href="/privacidad" target="_blank">política de tratamiento de datos</a>. <b>(Obligatorio)</b></span>
+            </label>
+          </section>
+
+          <p class="error-form" id="r-error" role="alert"></p>
+          <div class="ob-botones">
+            <button type="submit" class="btn btn-lima btn-bloque" id="r-siguiente">Continuar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
+          </div>
+        </form>
+
+        <!-- Paso 8: FitTrack arma la semana -->
+        <section class="ob-generando" id="ob-generando" hidden aria-live="polite">
+          <div class="generando-figura" id="generando-figura"></div>
+          <h2 class="ob-titulo">Armando tu semana…</h2>
+          <ul class="generando-lista" id="generando-lista">
+            <li>Leyendo tu objetivo</li>
+            <li>Eligiendo ejercicios para tu lugar</li>
+            <li>Repartiendo tus días</li>
+            <li>Ajustando al tiempo que tienes</li>
+          </ul>
+        </section>
+
+        <!-- Paso 9: la semana lista -->
+        <section class="ob-semana" id="ob-semana" hidden>
+          <span class="etiqueta"><i></i>Tu semana está lista</span>
+          <h2 class="ob-titulo" id="ob-semana-titulo">Así queda tu semana</h2>
+          <div class="ob-confirmar" id="ob-confirmar" hidden>
+            <svg class="ic ic-lg acento"><use href="img/iconos.svg#i-check"/></svg>
+            <div><strong>Confirma tu correo para empezar</strong><p class="suave" id="ob-confirmar-texto"></p></div>
+          </div>
+          <ol class="semana-lista" id="ob-semana-lista"></ol>
+          <a href="/app" class="btn btn-lima btn-bloque" id="ob-ir-app">Ir a mi panel <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></a>
+          <button type="button" class="btn btn-linea btn-bloque" data-vista-ir="login" id="ob-ir-login" hidden>Ya confirmé: iniciar sesión</button>
+        </section>
+
+        <!-- ========== LOGIN ========== -->
+        <form id="form-login" class="formulario" hidden novalidate>
+          <div class="segmento" role="tablist">
+            <button type="button" data-vista-ir="registro">Crear cuenta</button>
+            <button type="button" class="activo" data-vista-ir="login">Entrar</button>
+          </div>
+          <h2 class="ob-titulo">Qué bueno verte</h2>
+          <div class="campo"><label for="l-email">Correo</label><input id="l-email" type="email" autocomplete="email"></div>
+          <div class="campo"><label for="l-pass">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password"></div>
+          <p class="error-form" id="l-error" role="alert"></p>
+          <button type="submit" class="btn btn-lima btn-bloque">Entrar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
+          <button type="button" class="enlace-simple" id="ir-recuperar">¿Olvidaste tu contraseña?</button>
+        </form>
+
+        <!-- ========== RECUPERAR CONTRASEÑA ========== -->
+        <form id="form-recuperar" class="formulario" hidden novalidate>
+          <h2 class="ob-titulo">Recupera tu acceso</h2>
+          <p class="suave">Escribe tu correo y te enviaremos un enlace para crear una contraseña nueva.</p>
+          <div class="campo"><label for="rc-email">Correo</label><input id="rc-email" type="email" autocomplete="email"></div>
+          <p class="error-form" id="rc-error" role="alert"></p>
+          <button type="submit" class="btn btn-lima btn-bloque">Enviar enlace</button>
+          <button type="button" class="enlace-simple" data-vista-ir="login">Volver a entrar</button>
+        </form>
+
+        <!-- ========== MENSAJE: revisa tu correo ========== -->
+        <div id="revisa-correo" class="formulario revisa-correo" hidden>
+          <svg class="ic ic-lg acento"><use href="img/iconos.svg#i-check"/></svg>
+          <h2 class="ob-titulo" id="rv-titulo">Revisa tu correo</h2>
+          <p class="suave" id="rv-texto"></p>
+          <p class="tenue" style="font-size:.85rem">¿No llega? Revisa la carpeta de spam o promociones. El enlace vence en 24 horas.</p>
+          <button type="button" class="btn btn-linea btn-bloque" data-vista-ir="login">Ir a iniciar sesión</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="avisos" aria-live="polite"></div>
   <script src="js/api.js"></script>
+  <script src="js/animaciones.js"></script>
   <script src="js/landing.js"></script>
   <script src="js/cookies.js"></script>
 </body>

@@ -1,5 +1,6 @@
 // ============================================================
-//  calendario.js — semana planeada + historial del mes
+//  calendario.js — semana planeada (con estados) + historial del mes
+//  ✓ completado · → próximo · ○ programado · — descanso
 // ============================================================
 
 let lunesVisible = null;   // lunes de la semana que se está viendo
@@ -18,10 +19,11 @@ function prepararCalendario() {
     document.querySelector(`.dia-fila[data-fecha="${diaSeleccionado}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
+  // Tocar un día con entreno abre su rutina
   document.getElementById('lista-dias').addEventListener('click', e => {
-    const fila = e.target.closest('[data-empezar]');
+    const fila = e.target.closest('[data-ver-dia]');
     if (!fila) return;
-    objetivoSugerido = fila.dataset.empezar;
+    diaSugerido = Number(fila.dataset.verDia);
     location.hash = '#rutinas';
   });
 
@@ -34,6 +36,7 @@ function prepararCalendario() {
 }
 
 async function cargarCalendario() {
+  await cargarPlan();
   if (!lunesVisible) {
     lunesVisible = lunesDe(hoyTexto());
     diaSeleccionado = hoyTexto();
@@ -54,49 +57,44 @@ async function cargarSemana() {
 }
 
 function pintarSemana() {
-  const hoy = hoyTexto();
   const fechas = [...Array(7)].map((_, i) => sumarDias(lunesVisible, i));
   const conSesion = fecha => sesionesSemana.filter(s => s.fecha === fecha);
+  const estados = estadosSemana(lunesVisible, new Set(sesionesSemana.map(s => s.fecha)));
 
   // Título: mes (y año) de la semana
   const d = new Date(fechas[3] + 'T12:00:00');
   document.getElementById('mes-titulo').textContent = `${MESES_LARGO[d.getMonth()]} ${d.getFullYear()}`;
 
-  // Fila de 7 días
-  document.getElementById('semana-dias').innerHTML = fechas.map(f => {
-    const dia = new Date(f + 'T12:00:00');
-    const clases = [f === hoy ? 'hoy' : '', f === diaSeleccionado ? 'sel' : '', conSesion(f).length ? 'hecho' : ''].join(' ');
-    return `<button class="dia-chip ${clases}" data-fecha="${f}" type="button" aria-label="${DIAS[dia.getDay()]} ${dia.getDate()}">
-      <span class="rotulo">${DIAS[dia.getDay()].charAt(0)}</span><span class="cifra">${dia.getDate()}</span></button>`;
+  // Fila de 7 días con su símbolo
+  document.getElementById('semana-dias').innerHTML = estados.map(x => {
+    const dia = new Date(x.fecha + 'T12:00:00');
+    const clases = [x.esHoy ? 'hoy' : '', x.fecha === diaSeleccionado ? 'sel' : '', 'e-' + x.estado].join(' ');
+    return `<button class="dia-chip ${clases}" data-fecha="${x.fecha}" type="button" aria-label="${DIAS[dia.getDay()]} ${dia.getDate()}: ${TEXTO_ESTADO[x.estado]}">
+      <span class="rotulo">${DIAS[dia.getDay()].charAt(0)}</span><span class="cifra">${dia.getDate()}</span><b class="simbolo" aria-hidden="true">${SIMBOLO_ESTADO[x.estado]}</b></button>`;
   }).join('');
 
   // Lista con lo que toca cada día
-  document.getElementById('lista-dias').innerHTML = fechas.map(f => {
-    const dia = new Date(f + 'T12:00:00');
-    const act = actividadDelDia(f, perfil);
-    const hechas = conSesion(f);
-    const minutos = hechas.reduce((s, x) => s + x.minutos, 0);
+  document.getElementById('lista-dias').innerHTML = estados.map(x => {
+    const dia = new Date(x.fecha + 'T12:00:00');
+    const act = x.dia;
+    const hechas = conSesion(x.fecha);
+    const minutos = hechas.reduce((s, h) => s + h.minutos, 0);
 
-    let estado = '';
-    let titulo = act.titulo, detalle = act.detalle;
+    let titulo = act.titulo;
+    let detalle = act.entrena ? `${act.minutos} min · ${resumenRutina(act.rutina).split(' · ')[1]}` : act.detalle;
     if (hechas.length) {
-      estado = `<span class="estado hecho">${icono('check', 'ic-sm')}Hecho</span>`;
       titulo = hechas[0].nombre.split(' · ')[0];
       detalle = `${minutos} min${hechas.length > 1 ? ` · ${hechas.length} sesiones` : ''}`;
-    } else if (f === hoy && act.entrena) {
-      estado = `<span class="estado hoy">Hoy</span>`;
-    } else if (f < hoy && act.entrena) {
-      estado = `<span class="estado pendiente">Pendiente</span>`;
     }
-
-    const puedeEmpezar = f === hoy && act.entrena && !hechas.length;
+    const estado = `<span class="estado e-${x.estado}"><b aria-hidden="true">${SIMBOLO_ESTADO[x.estado]}</b>${TEXTO_ESTADO[x.estado]}</span>`;
+    const clicable = act.entrena && !hechas.length;
     return `
-      <${puedeEmpezar ? 'button type="button"' : 'div'} class="dia-fila ${f === diaSeleccionado ? 'sel' : ''}" data-fecha="${f}" ${puedeEmpezar ? `data-empezar="${act.objetivo}"` : ''}>
+      <${clicable ? 'button type="button"' : 'div'} class="dia-fila e-${x.estado} ${x.fecha === diaSeleccionado ? 'sel' : ''}" data-fecha="${x.fecha}" ${clicable ? `data-ver-dia="${act.dia}"` : ''}>
         <span class="fecha"><span class="rotulo">${DIAS[dia.getDay()]}</span><span class="cifra">${dia.getDate()}</span></span>
         <span class="tile">${picto(act.picto)}</span>
         <span><strong>${escapar(titulo)}</strong><small>${detalle}</small></span>
         ${estado}
-      </${puedeEmpezar ? 'button' : 'div'}>`;
+      </${clicable ? 'button' : 'div'}>`;
   }).join('');
 }
 

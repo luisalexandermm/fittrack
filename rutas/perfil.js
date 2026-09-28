@@ -3,6 +3,10 @@
 const express = require('express');
 const { ok } = require('../db/supabase');
 const { numeroONull } = require('./utilidades');
+const { limpiarDias, esColumnaFaltante } = require('./plan');
+
+// Campos que llegaron con la migración del onboarding
+const CAMPOS_NUEVOS = ['lugar', 'dias_entreno', 'edad'];
 
 const router = express.Router();
 
@@ -15,7 +19,7 @@ router.get('/', async (req, res) => {
 
 // PUT /api/perfil  → solo se cambian los campos que llegan
 router.put('/', async (req, res) => {
-  const { nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso } = req.body;
+  const { nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso, lugar, dias_entreno, edad } = req.body;
   const actual = ok(await req.sb.from('perfiles').select('sensibles_ok').eq('id', req.usuarioId).single());
   const cambios = {};
 
@@ -34,8 +38,31 @@ router.put('/', async (req, res) => {
     cambios.meta_peso = m && m >= 20 && m <= 400 ? m : null;
   }
 
-  if (Object.keys(cambios).length) ok(await req.sb.from('perfiles').update(cambios).eq('id', req.usuarioId));
-  res.json({ ok: true });
+  // Preferencias del onboarding
+  if (['casa', 'gimnasio', 'ambos'].includes(lugar)) cambios.lugar = lugar;
+  if (dias_entreno !== undefined) {
+    const dias = limpiarDias(dias_entreno);
+    if (!dias) return res.status(400).json({ error: 'Elige al menos un día para entrenar' });
+    cambios.dias_entreno = dias;
+    cambios.meta_semanal = dias.length; // la meta semanal sigue funcionando igual que antes
+  }
+  if (edad !== undefined) {
+    const e = numeroONull(edad);
+    cambios.edad = e && e >= 14 && e <= 100 ? Math.round(e) : null;
+  }
+
+  if (!Object.keys(cambios).length) return res.json({ ok: true });
+
+  const { error } = await req.sb.from('perfiles').update(cambios).eq('id', req.usuarioId);
+  if (!error) return res.json({ ok: true });
+
+  // Si la base todavía no tiene las columnas nuevas, se guarda lo demás y se avisa
+  if (esColumnaFaltante(error)) {
+    CAMPOS_NUEVOS.forEach(c => delete cambios[c]);
+    if (Object.keys(cambios).length) ok(await req.sb.from('perfiles').update(cambios).eq('id', req.usuarioId));
+    return res.json({ ok: true, falta_migracion: true });
+  }
+  ok({ error });
 });
 
 module.exports = router;
