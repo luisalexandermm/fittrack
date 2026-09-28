@@ -9,7 +9,7 @@ const path = require('path');
 
 require('./db/supabase'); // revisa que existan las llaves de Supabase en .env
 const { requiereLogin, requiereAutorizacionSensibles } = require('./middleware/auth');
-const { cabeceras, limiteAcceso, limiteGeneral, verificarOrigen } = require('./middleware/seguridad');
+const { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteGeneral, verificarOrigen } = require('./middleware/seguridad');
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -25,10 +25,10 @@ app.use(cookieParser());                     // leer cookies (ahí va el token)
 
 // ---------- Rutas de la API ----------
 app.use('/api', limiteGeneral, verificarOrigen);
-app.use('/api/auth/login', limiteAcceso);
-app.use('/api/auth/registro', limiteAcceso);
-app.use('/api/auth/recuperar', limiteAcceso);
-app.use('/api/auth/restablecer', limiteAcceso);
+app.use('/api/auth/login', limiteLogin);
+app.use('/api/auth/registro', limiteRegistro);
+app.use('/api/auth/recuperar', limiteRecuperar);
+app.use('/api/auth/restablecer', limiteRestablecer);
 
 app.use('/api/auth', require('./rutas/auth'));                          // pública
 app.use('/api/perfil', requiereLogin, require('./rutas/perfil'));

@@ -32,14 +32,21 @@ const cabeceras = helmet({
   referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 });
 
-// 2. Máximo 10 intentos de login/registro cada 15 minutos por IP
-const limiteAcceso = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  limit: 10,
-  standardHeaders: 'draft-8',
-  legacyHeaders: false,
-  message: { error: 'Demasiados intentos. Espera 15 minutos y vuelve a probar.' }
-});
+// 2. Los límites de autenticación tienen contadores independientes por ruta.
+function crearLimitadorAcceso(limit) {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    message: { error: 'Demasiados intentos. Espera 15 minutos y vuelve a probar.' }
+  });
+}
+
+const limiteLogin = crearLimitadorAcceso(10);
+const limiteRegistro = crearLimitadorAcceso(30);
+const limiteRecuperar = crearLimitadorAcceso(10);
+const limiteRestablecer = crearLimitadorAcceso(10);
 
 // 3. Límite general de la API: 300 peticiones por minuto por IP
 const limiteGeneral = rateLimit({
@@ -61,4 +68,4 @@ function verificarOrigen(req, res, next) {
   return res.status(403).json({ error: 'Origen no permitido' });
 }
 
-module.exports = { cabeceras, limiteAcceso, limiteGeneral, verificarOrigen };
+module.exports = { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteGeneral, verificarOrigen };
