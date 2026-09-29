@@ -16,7 +16,7 @@ const { generarRutina, prepararCatalogo, CONFIG, LUGARES } = require('./rutinas'
 
 const router = express.Router();        // rutas con sesión
 const routerPublico = express.Router(); // rutas sin sesión (onboarding)
-const VERSION_PLAN = 1;
+const VERSION_PLAN = 2;
 
 // ---------- Enfoques: qué parte del cuerpo se trabaja cada día ----------
 const ENFOQUES = {
@@ -101,20 +101,27 @@ function estructuraSemana(pref) {
 }
 
 // ---------- 2. Rutina de un día (usa el generador de siempre) ----------
-function rutinaDelDia(dia, pref) {
+function rutinaDelDia(dia, pref, ejerciciosUsados = new Set()) {
   const enfoque = ENFOQUES[dia.enfoque];
   const objetivo = dia.enfoque === 'movilidad' ? 'movilidad' : pref.objetivo;
   return generarRutina(objetivo, pref.nivel, dia.minutos, {
     lugar: pref.lugar,
     grupos: enfoque.grupos,
-    titulo: enfoque.titulo
+    titulo: enfoque.titulo,
+    excluir: ejerciciosUsados
   });
 }
 
 // ---------- 3. Semana completa (estructura + rutinas) ----------
 async function construirPlan(pref) {
   await prepararCatalogo();
-  const dias = estructuraSemana(pref).map(dia => (dia.entrena ? { ...dia, rutina: rutinaDelDia(dia, pref) } : dia));
+  const ejerciciosUsados = new Set();
+  const dias = estructuraSemana(pref).map(dia => {
+    if (!dia.entrena) return dia;
+    const rutina = rutinaDelDia(dia, pref, ejerciciosUsados);
+    rutina.bloques.find(b => b.tipo === 'principal').ejercicios.forEach(e => ejerciciosUsados.add(e.id));
+    return { ...dia, rutina };
+  });
   return { version: VERSION_PLAN, creado: hoy(), preferencias: pref, dias };
 }
 
@@ -186,7 +193,11 @@ router.post('/regenerar', async (req, res) => {
     const elegido = plan.dias[dia];
     if (!elegido.entrena) return res.status(400).json({ error: 'Ese día es de descanso' });
     await prepararCatalogo();
-    elegido.rutina = rutinaDelDia(elegido, plan.preferencias || pref);
+    const ejerciciosUsados = new Set(plan.dias.flatMap((otro, indice) => {
+      if (indice === dia || !otro.entrena) return [];
+      return otro.rutina?.bloques.find(b => b.tipo === 'principal')?.ejercicios.map(e => e.id) || [];
+    }));
+    elegido.rutina = rutinaDelDia(elegido, plan.preferencias || pref, ejerciciosUsados);
   } else {
     plan = await construirPlan(pref);
   }
@@ -200,3 +211,4 @@ module.exports.estructuraSemana = estructuraSemana;
 module.exports.preferencias = preferencias;
 module.exports.limpiarDias = limpiarDias;
 module.exports.esColumnaFaltante = esColumnaFaltante;
+module.exports.construirPlan = construirPlan;

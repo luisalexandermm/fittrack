@@ -139,11 +139,19 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
   if (minutos <= 15) porRonda = Math.min(porRonda, 4);
 
   const disponibles = buscarEjercicios('principal', objetivo, nivel, lugar);
-  const delEnfoque = opciones.grupos ? disponibles.filter(e => opciones.grupos.includes(e.grupo)) : disponibles;
-  let principal = elegirEquilibrado(delEnfoque, porRonda, nivel, lugar);
+  const excluidos = new Set(opciones.excluir || []);
+  const sinRepetir = disponibles.filter(e => !excluidos.has(e.id));
+  const cantidadPrincipal = sinRepetir.length ? Math.min(porRonda, sinRepetir.length) : porRonda;
+  const delEnfoque = opciones.grupos ? sinRepetir.filter(e => opciones.grupos.includes(e.grupo)) : sinRepetir;
+  let principal = elegirEquilibrado(delEnfoque, cantidadPrincipal, nivel, lugar);
   // Si el enfoque deja muy pocos ejercicios, se completa con los demás grupos
-  if (opciones.grupos && principal.length < porRonda) {
-    const faltan = elegirEquilibrado(disponibles.filter(e => !principal.includes(e)), porRonda - principal.length, nivel, lugar);
+  if (opciones.grupos && principal.length < cantidadPrincipal) {
+    const faltan = elegirEquilibrado(sinRepetir.filter(e => !principal.includes(e)), cantidadPrincipal - principal.length, nivel, lugar);
+    principal = [...principal, ...faltan];
+  }
+  // Si ya se usaron todos los ejercicios disponibles, repetir antes que dejar la rutina incompleta.
+  if (principal.length < cantidadPrincipal) {
+    const faltan = elegirEquilibrado(disponibles.filter(e => excluidos.has(e.id) && !principal.includes(e)), cantidadPrincipal - principal.length, nivel, lugar);
     principal = [...principal, ...faltan];
   }
   principal = principal.map(e => formatear(e, trabajo));
