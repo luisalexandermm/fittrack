@@ -11,10 +11,14 @@
 //      - El número de rondas se calcula para llenar el tiempo disponible.
 //   3. Enfriamiento: 3 estiramientos de 40 s.
 //
+// El TIEMPO que elige el usuario es solo de actividad (el circuito principal).
+// El calentamiento y el enfriamiento se suman aparte (unos 4–5 minutos).
+//
 // La semana (rutas/plan.js) usa este mismo generador una vez por cada día de entreno.
 
 const express = require('express');
 const { ok, cargarCatalogos } = require('../db/supabase');
+const { metMinutosRutina } = require('./calorias');
 
 const router = express.Router();
 
@@ -139,37 +143,35 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
   if (minutos <= 15) porRonda = Math.min(porRonda, 4);
 
   const disponibles = buscarEjercicios('principal', objetivo, nivel, lugar);
-  const excluidos = new Set(opciones.excluir || []);
-  const sinRepetir = disponibles.filter(e => !excluidos.has(e.id));
-  const cantidadPrincipal = sinRepetir.length ? Math.min(porRonda, sinRepetir.length) : porRonda;
-  const delEnfoque = opciones.grupos ? sinRepetir.filter(e => opciones.grupos.includes(e.grupo)) : sinRepetir;
-  let principal = elegirEquilibrado(delEnfoque, cantidadPrincipal, nivel, lugar);
-  // Si el enfoque deja muy pocos ejercicios, se completa con los demás grupos
-  if (opciones.grupos && principal.length < cantidadPrincipal) {
-    const faltan = elegirEquilibrado(sinRepetir.filter(e => !principal.includes(e)), cantidadPrincipal - principal.length, nivel, lugar);
-    principal = [...principal, ...faltan];
-  }
-  // Si ya se usaron todos los ejercicios disponibles, repetir antes que dejar la rutina incompleta.
-  if (principal.length < cantidadPrincipal) {
-    const faltan = elegirEquilibrado(disponibles.filter(e => excluidos.has(e.id) && !principal.includes(e)), cantidadPrincipal - principal.length, nivel, lugar);
-    principal = [...principal, ...faltan];
-  }
+  let principal = elegirSinRepetir(disponibles, porRonda, nivel, lugar, opciones);
   principal = principal.map(e => formatear(e, trabajo));
 
+  // El tiempo elegido es SOLO el circuito principal (actividad).
+  // Calentamiento y enfriamiento van aparte.
   const segundosSuaves = (calentamiento.length + enfriamiento.length) * SEGUNDOS_SUAVES;
-  const segundosPrincipal = minutos * 60 - segundosSuaves;
+  const segundosActividad = minutos * 60;
   const duracionRonda = principal.length * (trabajo + descanso);
-  // Rondas que caben en el tiempo. Se redondea al número más cercano, pero sin
-  // pasarse más de 3 minutos del tiempo que eligió el usuario.
-  const rondasExactas = (segundosPrincipal + DESCANSO_ENTRE_RONDAS) / (duracionRonda + DESCANSO_ENTRE_RONDAS);
+  // Rondas que caben en el tiempo de actividad: se redondea al número más cercano,
+  // pero sin pasarse más de 3 minutos de lo que eligió el usuario.
+  const rondasExactas = (segundosActividad + DESCANSO_ENTRE_RONDAS) / (duracionRonda + DESCANSO_ENTRE_RONDAS);
   let rondas = Math.max(1, Math.round(rondasExactas));
-  const duracionCon = r => segundosSuaves + r * duracionRonda + (r - 1) * DESCANSO_ENTRE_RONDAS;
-  if (rondas > 1 && duracionCon(rondas) > minutos * 60 + 180) rondas = Math.max(1, Math.floor(rondasExactas));
+  const actividadCon = r => r * duracionRonda + (r - 1) * DESCANSO_ENTRE_RONDAS;
+  if (rondas > 1 && actividadCon(rondas) > segundosActividad + 180) rondas = Math.max(1, Math.floor(rondasExactas));
 
-  const duracionTotal = segundosSuaves + rondas * duracionRonda + (rondas - 1) * DESCANSO_ENTRE_RONDAS;
+  // Ajuste fino: se suben o bajan unos segundos de trabajo (máx. ±10 s) para
+  // que la actividad quede lo más cerca posible del tiempo elegido.
+  const espacios = principal.length * rondas;
+  const sobra = segundosActividad - actividadCon(rondas);
+  const ajuste = Math.max(-10, Math.min(10, Math.round(sobra / espacios / 5) * 5));
+  if (ajuste) {
+    trabajo += ajuste;
+    principal.forEach(e => { e.segundos = trabajo; });
+  }
+  const duracionActividad = rondas * principal.length * (trabajo + descanso) + (rondas - 1) * DESCANSO_ENTRE_RONDAS;
+  const duracionTotal = segundosSuaves + duracionActividad;
 
-  return {
-    nombre: `${opciones.titulo || base.nombre} · ${Math.round(duracionTotal / 60)} min`,
+  const rutina = {
+    nombre: `${opciones.titulo || base.nombre} · ${Math.round(duracionActividad / 60)} min`,
     objetivo,
     nivel,
     minutos,
@@ -178,13 +180,54 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
     descanso,
     rondas,
     descanso_ronda: DESCANSO_ENTRE_RONDAS,
-    duracion_seg: duracionTotal,
+    duracion_seg: duracionTotal,            // todo: calentamiento + actividad + enfriamiento
+    actividad_seg: duracionActividad,       // solo el circuito (lo que eligió el usuario)
+    suaves_seg: segundosSuaves,             // calentamiento + enfriamiento
     bloques: [
       { tipo: 'calentamiento', titulo: 'Calentamiento', rondas: 1, ejercicios: calentamiento },
       { tipo: 'principal', titulo: 'Circuito principal', rondas, ejercicios: principal },
       { tipo: 'enfriamiento', titulo: 'Enfriamiento', rondas: 1, ejercicios: enfriamiento }
     ]
   };
+  // Esfuerzo de la rutina (para estimar calorías con el peso de cada usuario)
+  rutina.met_min = metMinutosRutina(rutina);
+  return rutina;
+}
+
+// Convierte "excluir" (un Set, un arreglo o una lista de ellos) en una lista de Sets,
+// del más importante al menos importante.
+function capasDeExclusion(excluir) {
+  if (!excluir) return [];
+  const lista = Array.isArray(excluir) && excluir.some(x => x instanceof Set || Array.isArray(x)) ? excluir : [excluir];
+  return lista.map(x => new Set(x instanceof Set ? x : (x || [])));
+}
+
+// Elige los ejercicios del circuito evitando repeticiones, en este orden de importancia:
+//   1. los del día de entreno anterior (nunca se repiten si hay otros)
+//   2. los que ya salieron esta semana
+//   3. los de la semana pasada (para que cada semana cambie)
+// Si no alcanzan, se va relajando la regla menos importante primero.
+function elegirSinRepetir(disponibles, cantidad, nivel, lugar, opciones) {
+  const capas = capasDeExclusion(opciones.excluir);
+  const total = Math.min(cantidad, disponibles.length);
+  let elegidos = [];
+  // Se empieza evitando todo; si faltan ejercicios, se completa relajando una regla a la vez
+  for (let usar = capas.length; usar >= 0 && elegidos.length < total; usar--) {
+    const evitar = capas.slice(0, usar);
+    const libres = disponibles.filter(e => !elegidos.includes(e) && !evitar.some(capa => capa.has(e.id)));
+    elegidos = [...elegidos, ...elegirConEnfoque(libres, total - elegidos.length, nivel, lugar, opciones.grupos)];
+  }
+  return elegidos;
+}
+
+// Primero los grupos del enfoque del día; si no alcanzan, se completa con otros grupos
+function elegirConEnfoque(libres, cantidad, nivel, lugar, grupos) {
+  if (!grupos) return elegirEquilibrado(libres, cantidad, nivel, lugar);
+  let elegidos = elegirEquilibrado(libres.filter(e => grupos.includes(e.grupo)), cantidad, nivel, lugar);
+  if (elegidos.length < cantidad) {
+    elegidos = [...elegidos, ...elegirEquilibrado(libres.filter(e => !elegidos.includes(e)), cantidad - elegidos.length, nivel, lugar)];
+  }
+  return elegidos;
 }
 
 // POST /api/rutinas/generar  → crea una rutina nueva (sin guardarla)

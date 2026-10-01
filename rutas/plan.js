@@ -7,16 +7,22 @@
 //
 //  Se guarda en perfiles.plan_semanal (jsonb). Las sesiones que ya hiciste
 //  viven en la tabla "sesiones", así que cambiar el plan nunca las toca.
+//
+//  Variedad:
+//   - Un día de entreno nunca repite los ejercicios del día de entreno anterior.
+//   - Dentro de la semana se evita repetir (solo si no hay más opciones).
+//   - Cada lunes se arma una semana nueva que evita los ejercicios de la anterior.
 // ============================================================
 
 const express = require('express');
 const { ok } = require('../db/supabase');
 const { hoy } = require('./utilidades');
+const { lunesDe } = require('./fechas');
 const { generarRutina, prepararCatalogo, CONFIG, LUGARES } = require('./rutinas');
 
 const router = express.Router();        // rutas con sesión
 const routerPublico = express.Router(); // rutas sin sesión (onboarding)
-const VERSION_PLAN = 2;
+const VERSION_PLAN = 3; // 3: tiempo = actividad, semana con fecha y variedad semanal
 
 // ---------- Enfoques: qué parte del cuerpo se trabaja cada día ----------
 const ENFOQUES = {
@@ -101,33 +107,55 @@ function estructuraSemana(pref) {
 }
 
 // ---------- 2. Rutina de un día (usa el generador de siempre) ----------
-function rutinaDelDia(dia, pref, ejerciciosUsados = new Set()) {
+// evitar = [ids del día anterior, ids de la semana, ids de la semana pasada]
+function rutinaDelDia(dia, pref, evitar = []) {
   const enfoque = ENFOQUES[dia.enfoque];
   const objetivo = dia.enfoque === 'movilidad' ? 'movilidad' : pref.objetivo;
   return generarRutina(objetivo, pref.nivel, dia.minutos, {
     lugar: pref.lugar,
     grupos: enfoque.grupos,
     titulo: enfoque.titulo,
-    excluir: ejerciciosUsados
+    excluir: evitar
   });
 }
 
+// Ids de los ejercicios principales de un día del plan
+function idsDelDia(dia) {
+  if (!dia || !dia.entrena || !dia.rutina) return [];
+  const principal = dia.rutina.bloques.find(b => b.tipo === 'principal');
+  return principal ? principal.ejercicios.map(e => e.id) : [];
+}
+
+// Todos los ids de un plan (para que la semana siguiente sea distinta)
+function idsDelPlan(plan) {
+  return new Set(plan && Array.isArray(plan.dias) ? plan.dias.flatMap(idsDelDia) : []);
+}
+
 // ---------- 3. Semana completa (estructura + rutinas) ----------
-async function construirPlan(pref) {
+// semanaPasada: ids que conviene no repetir porque salieron la semana anterior
+async function construirPlan(pref, semanaPasada = new Set()) {
   await prepararCatalogo();
-  const ejerciciosUsados = new Set();
+  const usadosSemana = new Set();
+  let anterior = new Set();
   const dias = estructuraSemana(pref).map(dia => {
     if (!dia.entrena) return dia;
-    const rutina = rutinaDelDia(dia, pref, ejerciciosUsados);
-    rutina.bloques.find(b => b.tipo === 'principal').ejercicios.forEach(e => ejerciciosUsados.add(e.id));
+    const rutina = rutinaDelDia(dia, pref, [anterior, usadosSemana, semanaPasada]);
+    const ids = idsDelDia({ entrena: true, rutina });
+    ids.forEach(id => usadosSemana.add(id));
+    anterior = new Set(ids);
     return { ...dia, rutina };
   });
-  return { version: VERSION_PLAN, creado: hoy(), preferencias: pref, dias };
+  return { version: VERSION_PLAN, semana: lunesDe(hoy()), creado: hoy(), preferencias: pref, dias };
 }
 
 // ¿El plan guardado sirve todavía? (existe y tiene los 7 días)
 function planValido(plan) {
   return plan && plan.version === VERSION_PLAN && Array.isArray(plan.dias) && plan.dias.length === 7;
+}
+
+// ¿El plan es de esta semana? Si es de una semana pasada, toca armar uno nuevo
+function esDeEstaSemana(plan) {
+  return plan.semana === lunesDe(hoy());
 }
 
 // Guarda el plan en el perfil. Si la base todavía no tiene la columna
@@ -171,10 +199,11 @@ router.get('/', async (req, res) => {
   const migrado = 'lugar' in perfil;               // ¿ya se ejecutó migracion-onboarding.sql?
   const pendientes = migrado && !perfil.dias_entreno; // usuario antiguo que no ha elegido sus días
 
-  if (planValido(perfil.plan_semanal)) {
+  if (planValido(perfil.plan_semanal) && esDeEstaSemana(perfil.plan_semanal)) {
     return res.json({ ...perfil.plan_semanal, guardado: true, migrado, pendientes });
   }
-  const plan = await construirPlan(preferencias(perfil));
+  // Semana nueva (o plan viejo): se arma otra evitando los ejercicios de la anterior
+  const plan = await construirPlan(preferencias(perfil), idsDelPlan(perfil.plan_semanal));
   const guardado = await guardarPlan(req, plan);
   res.json({ ...plan, guardado, migrado, pendientes });
 });
@@ -193,13 +222,15 @@ router.post('/regenerar', async (req, res) => {
     const elegido = plan.dias[dia];
     if (!elegido.entrena) return res.status(400).json({ error: 'Ese día es de descanso' });
     await prepararCatalogo();
-    const ejerciciosUsados = new Set(plan.dias.flatMap((otro, indice) => {
-      if (indice === dia || !otro.entrena) return [];
-      return otro.rutina?.bloques.find(b => b.tipo === 'principal')?.ejercicios.map(e => e.id) || [];
-    }));
-    elegido.rutina = rutinaDelDia(elegido, plan.preferencias || pref, ejerciciosUsados);
+    // Evitar: el día de entreno anterior y el siguiente, el resto de la semana y lo que ya tenía este día
+    const entrenos = plan.dias.filter(d => d.entrena).map(d => d.dia);
+    const pos = entrenos.indexOf(dia);
+    const vecinos = new Set([...idsDelDia(plan.dias[entrenos[pos - 1]]), ...idsDelDia(plan.dias[entrenos[pos + 1]])]);
+    const restoSemana = new Set(plan.dias.filter(d => d.dia !== dia).flatMap(idsDelDia));
+    elegido.rutina = rutinaDelDia(elegido, plan.preferencias || pref, [vecinos, restoSemana, new Set(idsDelDia(elegido))]);
   } else {
-    plan = await construirPlan(pref);
+    // Rehacer la semana: evitar los ejercicios de la semana que se reemplaza
+    plan = await construirPlan(pref, idsDelPlan(perfil.plan_semanal));
   }
   const guardado = await guardarPlan(req, plan);
   res.json({ ...plan, guardado, migrado: 'lugar' in perfil, pendientes: false });
@@ -212,3 +243,4 @@ module.exports.preferencias = preferencias;
 module.exports.limpiarDias = limpiarDias;
 module.exports.esColumnaFaltante = esColumnaFaltante;
 module.exports.construirPlan = construirPlan;
+module.exports.idsDelPlan = idsDelPlan;

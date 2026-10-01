@@ -142,8 +142,8 @@
     <!-- Cinta de datos -->
     <div class="cinta" aria-hidden="true">
       <div class="cinta-pista">
-        <span>67 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
-        <span>67 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+        <span>108 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+        <span>108 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
       </div>
     </div>
 
@@ -234,7 +234,7 @@
             <div><span class="cifra" id="d-trabajo">30</span><small>s trabajo</small></div>
             <div><span class="cifra" id="d-descanso">30</span><small>s descanso</small></div>
             <div><span class="cifra" id="d-rondas">3</span><small>rondas</small></div>
-            <div><span class="cifra" id="d-duracion">23</span><small>min reales</small></div>
+            <div><span class="cifra" id="d-duracion">23</span><small>min de actividad</small></div>
           </div>
           <ol class="demo-lista" id="d-lista"></ol>
           <p class="demo-ayuda tenue">Toca un ejercicio para ver cómo se hace.</p>
@@ -334,7 +334,7 @@
 
     <!-- Contadores -->
     <section class="contadores" aria-label="FitTrack en números">
-      <div><span class="cifra" data-contar="67">0</span><span class="rotulo">ejercicios animados</span></div>
+      <div><span class="cifra" data-contar="108">0</span><span class="rotulo">ejercicios animados</span></div>
       <div><span class="cifra" data-contar="20">0</span><span class="rotulo">recetas</span></div>
       <div><span class="cifra" data-contar="4">0</span><span class="rotulo">objetivos</span></div>
       <div><span class="cifra" data-contar="7">0</span><span class="rotulo">días, a tu medida</span></div>
@@ -521,7 +521,7 @@
           <!-- Paso 6: tiempo -->
           <section class="ob-paso" data-paso="6" hidden>
             <h2 class="ob-titulo">¿Cuánto tiempo tienes normalmente?</h2>
-            <p class="ob-sub">Cada rutina se ajusta para caber en ese tiempo.</p>
+            <p class="ob-sub">Es tu tiempo de <b>actividad</b>. El calentamiento y el enfriamiento (unos 4 minutos) van aparte.</p>
             <div class="ob-tiempos" id="r-minutos">
               <button type="button" class="ob-tiempo" data-valor="10"><b>10</b><span>min</span></button>
               <button type="button" class="ob-tiempo" data-valor="15"><b>15</b><span>min</span></button>
@@ -535,7 +535,14 @@
           <!-- Paso 7: datos básicos y privacidad -->
           <section class="ob-paso" data-paso="7" hidden>
             <h2 class="ob-titulo">Unos datos básicos</h2>
-            <p class="ob-sub">Todo es opcional, menos aceptar los términos.</p>
+            <p class="ob-sub">Todo es opcional, menos aceptar los términos. Con tu peso y tu cintura calculamos las calorías de cada entrenamiento.</p>
+            <div class="campo"><span class="rotulo">Sexo</span>
+              <div class="chips-demo" id="r-sexo">
+                <button type="button" class="chip-demo" data-valor="hombre">Hombre</button>
+                <button type="button" class="chip-demo" data-valor="mujer">Mujer</button>
+                <button type="button" class="chip-demo activo" data-valor="">Prefiero no decir</button>
+              </div>
+            </div>
             <div class="fila-2">
               <div class="campo"><label for="r-edad">Edad</label><div class="con-unidad" data-u="años"><input id="r-edad" type="number" min="14" max="100" inputmode="numeric"></div></div>
               <div class="campo"><label for="r-altura">Altura</label><div class="con-unidad" data-u="cm"><input id="r-altura" type="number" min="50" max="260" inputmode="numeric"></div></div>

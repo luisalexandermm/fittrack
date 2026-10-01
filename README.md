@@ -17,7 +17,7 @@ Supabase → **New project**. Elige una región cercana (por ejemplo *São Paulo
 ### 2. Crea las tablas
 Supabase → **SQL Editor** → **New query**:
 1. Pega todo el archivo `supabase/esquema.sql` → **Run**.
-2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 67 ejercicios —51 de casa y 16 de gimnasio—, 20 recetas y 13 consejos).
+2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 108 ejercicios —85 de casa y 23 de gimnasio—, 20 recetas y 13 consejos).
 
 Eso crea las tablas, las reglas de seguridad (RLS), el trigger que arma el perfil al registrarse y el bucket **privado** `fotos` en Storage. Puedes ejecutarlos otra vez sin romper nada.
 
@@ -40,6 +40,14 @@ La migración **solo agrega** cosas y se puede ejecutar varias veces:
 No cambia ninguna política RLS, no borra columnas ni usuarios, y `datos.sql` agrega los ejercicios nuevos **al final**, así que los ids de siempre no cambian.
 Los usuarios antiguos quedan con "casa" y sus días de siempre, y en Inicio ven una tarjeta para completar sus preferencias.
 Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan lugar y días.
+
+### Migración de calorías (v6, una sola vez)
+Si ya ejecutaste `migracion-onboarding.sql`, ejecuta ahora **en este orden**:
+1. `supabase/migracion-calorias.sql` → agrega `perfiles.sexo` (opcional) y `sesiones.kcal`, y actualiza el trigger de registro para guardar el sexo.
+2. `supabase/datos.sql` → trae los 41 ejercicios nuevos (van al final, los ids de siempre no cambian).
+
+Solo agrega columnas; no toca RLS ni datos. Si vuelves a ejecutar `migracion-onboarding.sql` después, corre otra vez `migracion-calorias.sql` (las dos actualizan el mismo trigger).
+Sin esta migración la app sigue funcionando: las calorías se calculan al vuelo con la duración de cada sesión.
 
 ### 3. Configura el inicio de sesión
 Supabase → **Authentication → URL Configuration**:
@@ -154,7 +162,7 @@ fittrack/
 ├── server.js                 → arranca Express, seguridad, rutas y frontend
 ├── db/
 │   ├── supabase.js           → conexión con Supabase y catálogos en memoria
-│   ├── ejercicios.js         → 67 ejercicios con equipo y músculos (fuente de datos.sql)
+│   ├── ejercicios.js         → 108 ejercicios con equipo y músculos (fuente de datos.sql)
 │   ├── recetas.js            → 20 recetas (desayuno, almuerzo, cena, snack)
 │   └── consejos.js           → consejos del día
 ├── middleware/
@@ -165,7 +173,9 @@ fittrack/
 │   ├── perfil.js             → ver y editar perfil
 │   ├── cuenta.js             → exportar datos, contraseña, autorización, borrar cuenta
 │   ├── rutinas.js            → GENERADOR de rutinas + guardadas
-│   ├── plan.js               → la SEMANA: usa el generador una vez por día y la guarda en el perfil
+│   ├── plan.js               → la SEMANA: usa el generador una vez por día, sin repetir y nueva cada lunes
+│   ├── calorias.js           → MET, kcal, kg estimados y % de grasa por cintura
+│   ├── fechas.js             → lunes de la semana y sumar días
 │   ├── sesiones.js           → entrenamientos completados
 │   ├── medidas.js            → peso y medidas
 │   ├── fotos.js              → fotos en Supabase Storage (privadas)
@@ -175,6 +185,7 @@ fittrack/
 ├── supabase/
 │   ├── esquema.sql           → tablas, RLS, trigger y bucket de fotos (instalación nueva)
 │   ├── migracion-onboarding.sql → solo si tu base ya existía: agrega lo del onboarding
+│   ├── migracion-calorias.sql   → después de la anterior: sexo y kcal por sesión
 │   ├── datos.sql             → ejercicios, recetas y consejos (ejecutar 2.º)
 │   ├── generar-datos.js      → regenera datos.sql si cambias los catálogos (npm run sql)
 │   └── plantillas-correo.md  → correos de Supabase en español
@@ -222,7 +233,27 @@ El modo oscuro está en el bloque `:root[data-tema="oscuro"]` del mismo archivo.
 - **Lugar**: en casa solo entran ejercicios sin equipo o con muebles (`equipo` = ninguno o casa); en gimnasio y ambos también los de máquinas y pesas (en gimnasio van primero).
 - **Enfoque** (opcional): limita los grupos del circuito (tren superior, piernas + core, cardio…).
 
+## Calorías y kg estimados
+
+`rutas/calorias.js` estima lo que gastas con la fórmula estándar de MET:
+
+```
+kcal = MET × 3,5 × peso (kg) / 200  × minutos        7.700 kcal ≈ 1 kg de grasa
+```
+
+- **MET por tipo de ejercicio** (Compendio de Actividades Físicas): cardio 8 · piernas 6 · empuje y tirón 5 · core 4 · movilidad 2,5 · calentamiento 3,5 · enfriamiento 2,3 · descanso 2. El **nivel** lo ajusta (×0,85 principiante, ×1,15 avanzado).
+- Cada rutina trae `met_min` (su esfuerzo, sin depender del peso); la app lo multiplica por tu peso para mostrar "≈ 160 kcal".
+- Al terminar, el reproductor manda los **segundos reales** que hiciste de cada tipo (piernas, cardio, descanso…) y el servidor calcula las kcal con **tu peso de ese día**. Se guardan en `sesiones.kcal`.
+- Sin peso registrado se usa uno de referencia (75 kg hombre, 62 kg mujer, 70 kg sin dato) y la app lo avisa.
+- **Inicio**: calorías de la semana frente a las planeadas, y la barra "Hacia tu meta" con dos líneas: lo **estimado** por tus entrenamientos (kg = kcal / 7.700) y lo **medido** en la báscula. La gráfica de peso dibuja las dos.
+- **% de grasa estimado** con la cintura (fórmula RFM): hombres `64 − 20 × altura/cintura`, mujeres `76 − 20 × altura/cintura`. Se muestra solo si no registraste un % medido.
+- Es una estimación conservadora: no cuenta lo que comes. Por eso siempre se muestra al lado de la báscula.
+
 ## Cómo se arma la semana
+
+**El tiempo que eliges es tiempo de actividad**: el circuito principal dura eso (se ajustan rondas y unos segundos de trabajo para cuadrar). El calentamiento y el enfriamiento, unos 4–5 minutos, van aparte.
+
+**Variedad**: un día de entreno **nunca repite** los ejercicios del día de entreno anterior; dentro de la semana se evita repetir; y **cada lunes** se arma una semana nueva que evita los ejercicios de la semana pasada (`plan.semana` guarda el lunes de cada plan).
 
 `rutas/plan.js` reparte un **enfoque** a cada día de entreno según el objetivo (por ejemplo, grasa: Full Body → Cardio intenso → Piernas + Core → Movilidad → Tren superior…; con 1–2 días, siempre Full Body) y llama al generador de arriba una vez por día. Los días libres quedan como *descanso activo* o *descanso*.
 La semana se guarda en `perfiles.plan_semanal` y se repite cada lunes. Se vuelve a armar cuando el usuario cambia sus preferencias y dice que sí, o con "Otra versión de este día". Las sesiones hechas están en `sesiones`, así que nunca se pierden.

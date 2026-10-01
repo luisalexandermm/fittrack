@@ -5,16 +5,171 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Página no encontrada — FitTrack</title>
   <meta name="robots" content="noindex">
-  <link rel="icon" href="/img/logo-simbolo.png" type="image/png">
-  <link rel="stylesheet" href="/css/base.css">
-  <script src="/js/tema.js"></script>
+  <meta name="theme-color" content="#050B0A">
+  <link rel="icon" href="img/logo-simbolo.png" type="image/png">
+  <link rel="stylesheet" href="css/base.css">
+  <script src="js/tema.js"></script>
+  <style>
+    .pagina-404 {
+      --fondo: rgb(12, 0, 0);
+      --tinta: #FFFFFF;
+      --piedra: #9AA39F;
+      min-height: 100svh;
+      padding: 0 clamp(20px, 6vw, 88px);
+      overflow: hidden;
+      background-color: var(--fondo);
+      background-image: linear-gradient(rgba(184, 255, 61, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(184, 255, 61, .035) 1px, transparent 1px);
+      background-size: 56px 56px;
+      color: var(--tinta);
+    }
+    .error-nav {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 88px;
+      border-bottom: 1px solid rgba(255, 255, 255, .1);
+    }
+    .error-nav .marca { color: #fff; }
+    .error-nav .marca-simbolo { width: 32px; height: 32px; }
+    .error-nav .rotulo { color: var(--piedra); }
+    .error-main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(300px, .9fr);
+      align-items: center;
+      gap: clamp(20px, 5vw, 72px);
+      width: min(1180px, 100%);
+      min-height: calc(100svh - 89px);
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+    .error-copy { position: relative; z-index: 1; }
+    .error-codigo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      color: var(--lima);
+      font-size: .76rem;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+    .error-codigo::before { content: ''; width: 28px; height: 2px; background: currentColor; }
+    .error-titulo {
+      max-width: 680px;
+      font-family: var(--f-display);
+      font-size: clamp(4.4rem, 10vw, 9rem);
+      font-weight: 900;
+      line-height: .82;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    .error-titulo span { display: block; color: var(--lima); }
+    .error-descripcion {
+      max-width: 390px;
+      margin: 26px 0 30px;
+      color: #B7C0BC;
+      font-size: 1.05rem;
+    }
+    .error-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
+    .error-ilustracion {
+      position: relative;
+      width: min(100%, 510px);
+      justify-self: end;
+      animation: entrar-ruta .8s .12s both;
+    }
+    .error-ilustracion svg { width: 100%; overflow: visible; }
+    .ruta-trazo {
+      fill: none;
+      stroke: rgba(255, 255, 255, .13);
+      stroke-width: 2;
+      stroke-dasharray: 3 9;
+    }
+    .ruta-activa {
+      fill: none;
+      stroke: var(--lima);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-dasharray: 1 12;
+      animation: recorrer-ruta 18s linear infinite;
+    }
+    .ruta-punto { fill: var(--lima); filter: drop-shadow(0 0 8px rgba(184, 255, 61, .7)); }
+    .ruta-etiqueta {
+      position: absolute;
+      right: 2%;
+      bottom: 10%;
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      background: #0B1513;
+      color: #fff;
+      font-family: var(--f-display);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transform: rotate(-5deg);
+    }
+    .ruta-etiqueta span { color: var(--lima); }
+    @keyframes recorrer-ruta { to { stroke-dashoffset: -260; } }
+    @keyframes entrar-ruta { from { opacity: 0; transform: translate(16px, 8px) rotate(3deg); } }
+    @media (max-width: 760px) {
+      .pagina-404 { padding-inline: 22px; }
+      .error-nav { min-height: 72px; }
+      .error-nav .rotulo { font-size: .62rem; }
+      .error-main {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        min-height: calc(100svh - 73px);
+        padding: 48px 0 32px;
+      }
+      .error-titulo { font-size: clamp(4.3rem, 17vw, 7rem); }
+      .error-descripcion { margin: 20px 0 24px; }
+      .error-ilustracion { width: min(78%, 340px); justify-self: center; margin: -8px 0 -18px; }
+      .ruta-etiqueta { right: -14%; bottom: 8%; }
+    }
+    @media (max-width: 390px) {
+      .error-nav .rotulo { display: none; }
+      .error-titulo { font-size: 4.1rem; }
+      .error-acciones { align-items: flex-start; flex-direction: column; gap: 10px; }
+      .error-ilustracion { width: 68%; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
 </head>
-<body style="background:var(--noche);color:var(--sobre-noche);display:grid;place-items:center;min-height:100svh;padding:24px;text-align:center">
-  <main>
-    <p class="cifra" style="font-size:clamp(7rem,30vw,16rem);font-weight:900;line-height:.85">4<span style="color:#B8FF3D">0</span>4</p>
-    <h1 style="margin:24px 0 10px;font-size:1.6rem">Esta página se fue a descansar</h1>
-    <p style="color:var(--sobre-noche-2);margin-bottom:28px">El enlace no existe o cambió de lugar.</p>
-    <a href="/" class="btn btn-lima">Volver al inicio</a>
+<body class="pagina-404">
+  <header class="error-nav">
+    <a href="/" class="marca" aria-label="FitTrack, ir al inicio">
+      <img class="marca-simbolo" src="/img/logo.png" alt="" aria-hidden="true">
+      FitTrack
+    </a>
+    <span class="rotulo">Error 404 · Fuera de ruta</span>
+  </header>
+  <main class="error-main">
+    <section class="error-copy" aria-labelledby="error-titulo">
+      <p class="error-codigo">Coordenadas no encontradas</p>
+      <h1 class="error-titulo" id="error-titulo">Te saliste <span>de la ruta.</span></h1>
+      <p class="error-descripcion">Este enlace no existe o cambió de lugar. No pasa nada: retomemos desde el inicio.</p>
+      <div class="error-acciones">
+        <a href="/" class="btn btn-lima">Volver al inicio <svg class="ic ic-flecha" aria-hidden="true"><use href="/img/iconos.svg#i-flecha"/></svg></a>
+      </div>
+    </section>
+    <div class="error-ilustracion" aria-hidden="true">
+      <svg viewBox="0 0 520 440" fill="none">
+        <path class="ruta-trazo" d="M103 249c-34-75 21-159 107-178 79-18 160 21 190 87 31 68 1 145-56 188-61 46-161 54-218 10-16-12-27-27-33-43"/>
+        <path class="ruta-trazo" d="M142 248c-23-54 17-116 77-129 57-12 114 14 137 61 22 48 0 102-41 133-44 33-116 38-157 7-9-7-14-14-16-23"/>
+        <path class="ruta-activa" d="M108 263c-28-77 29-160 111-177 76-16 153 21 181 83 29 64 2 137-53 179-58 44-153 51-207 10-21-16-33-36-37-57"/>
+        <path d="m84 299 25-4-12 23" stroke="#B8FF3D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="108" cy="263" r="7" class="ruta-punto"/>
+        <circle cx="400" cy="169" r="6" fill="#050B0A" stroke="#B8FF3D" stroke-width="3"/>
+        <path d="M260 127v66m0 38v7" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="260" cy="287" r="7" fill="#fff"/>
+      </svg>
+      <p class="ruta-etiqueta"><span>Ruta</span> interrumpida</p>
+    </div>
   </main>
 </body>
 </html>

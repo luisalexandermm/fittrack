@@ -11,7 +11,8 @@ const $ = id => document.getElementById(id);
 const rep = {
   pasos: [], indice: 0, restante: 0, pausado: false, intervalo: null,
   segundosHechos: 0, sonido: true, rutina: null, rutinaId: null, bloqueoPantalla: null,
-  figura: null, totalEjercicios: 0
+  figura: null, totalEjercicios: 0,
+  segundosPorTipo: {}   // { calentamiento, descanso, enfriamiento, piernas, cardio… } para las calorías
 };
 
 // ---------- Construir la lista de pasos ----------
@@ -21,7 +22,7 @@ function construirPasos(rutina) {
   for (const bloque of rutina.bloques) {
     for (let ronda = 1; ronda <= bloque.rondas; ronda++) {
       bloque.ejercicios.forEach((ej, i) => {
-        pasos.push({ tipo: 'trabajo', fase: bloque.titulo, ronda: bloque.rondas > 1 ? `Ronda ${ronda} de ${bloque.rondas}` : '', ...ej, tipo: 'trabajo' });
+        pasos.push({ tipo: 'trabajo', fase: bloque.titulo, ronda: bloque.rondas > 1 ? `Ronda ${ronda} de ${bloque.rondas}` : '', ...ej, tipo: 'trabajo', bloque: bloque.tipo });
 
         // Descansos solo en el circuito principal
         if (bloque.tipo !== 'principal') return;
@@ -68,6 +69,7 @@ async function iniciarReproductor(rutina, rutinaId) {
   rep.pasos = construirPasos(rutina);
   rep.totalEjercicios = rep.pasos.filter(p => p.tipo === 'trabajo').length;
   rep.segundosHechos = 0;
+  rep.segundosPorTipo = {};
   rep.pausado = false;
   actualizarBotonPausa();
 
@@ -108,9 +110,25 @@ function tic() {
   if (rep.pausado) return;
   rep.restante--;
   rep.segundosHechos++;
+  contarSegundo(rep.pasos[rep.indice]);
   if (rep.restante > 0 && rep.restante <= 3) pitar(660);
   if (rep.restante <= 0) return irAPasoRep(rep.indice + 1);
   pintarTiempo();
+}
+
+// Suma un segundo al tipo de esfuerzo que se está haciendo (lo usa el servidor para las calorías)
+function contarSegundo(paso) {
+  let tipo = null;
+  if (paso.tipo === 'descanso') tipo = 'descanso';
+  if (paso.tipo === 'trabajo') tipo = paso.bloque === 'principal' ? paso.grupo : paso.bloque;
+  if (tipo) rep.segundosPorTipo[tipo] = (rep.segundosPorTipo[tipo] || 0) + 1;
+}
+
+// Calorías aproximadas de lo hecho hasta ahora (la cifra final la calcula el servidor)
+function kcalHastaAhora() {
+  const total = kcalRutina(rep.rutina);
+  if (!total) return null;
+  return Math.round(total * Math.min(rep.segundosHechos / rep.rutina.duracion_seg, 1));
 }
 
 function pintarPaso() {
@@ -192,11 +210,13 @@ function terminarRutina() {
   $('rep-final-texto').textContent = completa
     ? `${minutos} ${minutos === 1 ? 'minuto' : 'minutos'} de ${NOMBRES_CORTOS[rep.rutina.objetivo].toLowerCase()}. Cada sesión suma.`
     : `Terminaste antes: ${minutos} ${minutos === 1 ? 'minuto' : 'minutos'} y ${hechos} de ${rep.totalEjercicios} ejercicios. También cuenta.`;
+  const kcal = kcalHastaAhora();
+  $('rep-final-kcal').innerHTML = kcal ? `${icono('fuego', 'ic-sm')}≈ <b>${numero(kcal)} kcal</b> · ${numero(kcal / 7.7)} g de grasa` : '';
 }
 
 async function guardarSesion() {
   try {
-    await api('/sesiones', {
+    const respuesta = await api('/sesiones', {
       method: 'POST',
       body: {
         rutina_id: rep.rutinaId,
@@ -205,12 +225,13 @@ async function guardarSesion() {
         minutos: Math.max(1, Math.round(rep.segundosHechos / 60)),
         sensacion: valorSeleccionado('rep-sensacion'),
         notas: $('rep-notas').value,
-        fecha: hoyTexto()
+        fecha: hoyTexto(),
+        segundos: rep.segundosPorTipo
       }
     });
     $('rep-notas').value = '';
     cerrarReproductor();
-    avisar('Sesión guardada');
+    avisar(respuesta.kcal ? `Sesión guardada · ≈ ${numero(respuesta.kcal)} kcal` : 'Sesión guardada');
     // El calendario y la semana se actualizan con la sesión nueva
     if (location.hash === '#inicio' || location.hash === '') cargarInicio();
     else location.hash = '#inicio';

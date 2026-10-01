@@ -207,7 +207,8 @@ function pintarRutina() {
       <div class="banner-texto">
         <span class="rotulo">${esDelPlan ? DIAS_LARGOS[diaActual] : (rutinaActualId ? 'Rutina guardada' : 'Rutina libre')}</span>
         <h2>${escapar(titulo)}</h2>
-        <p>${icono('reloj', 'ic-sm')}≈ ${Math.round(r.duracion_seg / 60)} min · ${lugar} · ${NOMBRES_NIVEL[r.nivel]}</p>
+        <p>${icono('reloj', 'ic-sm')}${minutosActividad(r)} min de actividad${minutosSuaves(r) ? ` + ${minutosSuaves(r)} de calentamiento y enfriamiento` : ''} · ${lugar} · ${NOMBRES_NIVEL[r.nivel]}</p>
+        ${kcalRutina(r) ? `<p class="banner-kcal">${icono('fuego', 'ic-sm')}≈ ${numero(kcalRutina(r))} kcal · ${numero(kcalRutina(r) / 7.7)} g de grasa</p>` : ''}
       </div>
       <div class="banner-figura" id="banner-figura"></div>
     </div>

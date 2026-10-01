@@ -19,7 +19,7 @@ function urlSitio(req) {
 // POST /api/auth/registro
 router.post('/registro', async (req, res) => {
   const { nombre, email, password, objetivo, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
-          lugar, dias, edad, altura, cintura, cadera, pecho, brazo, muslo } = req.body;
+          lugar, dias, edad, altura, sexo, cintura, cadera, pecho, brazo, muslo } = req.body;
 
   if (!nombre || !email || !password) return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios' });
   const correo = String(email).trim().toLowerCase();
@@ -70,6 +70,7 @@ router.post('/registro', async (req, res) => {
     dias: limpiarDias(dias) || [0, 2, 4],
     edad: edadNumerica !== null ? Math.round(edadNumerica) : null,
     altura: alturaNumerica && alturaNumerica >= 50 && alturaNumerica <= 260 ? alturaNumerica : null,
+    sexo: ['hombre', 'mujer', 'otro'].includes(sexo) ? sexo : null,
     fecha: hoy()
   };
 

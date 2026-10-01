@@ -76,9 +76,13 @@ function abrirAutorizacion() {
 
 // ---------- Pestaña Peso ----------
 function pintarPanelPeso(r) {
-  const pesos = medidas.filter(m => m.peso !== null).map(m => ({ etiqueta: diaMes(m.fecha), valor: m.peso }));
+  const pesos = medidas.filter(m => m.peso !== null).map(m => ({ fecha: m.fecha, valor: m.peso }));
   const meta = perfil.meta_peso;
+  // El anillo se llena con lo estimado por tus entrenamientos (si la meta es bajar);
+  // debajo se ve lo que marca la báscula.
   const progreso = r.peso ? r.peso.progreso : null;
+  const estimado = r.peso ? r.peso.progreso_estimado : null;
+  const anillo = estimado != null ? Math.max(estimado, progreso || 0) : progreso;
 
   const cambio = r.peso ? r.peso.cambio : null;
   const stat = (ic, valor, unidad, etiqueta) => `
@@ -96,22 +100,29 @@ function pintarPanelPeso(r) {
       </div>
       <div class="caja s-4 anillo-meta">
         <span class="rotulo">Objetivo</span>
-        ${anilloPorcentaje(meta && r.peso ? progreso : null)}
+        ${anilloPorcentaje(meta && r.peso ? anillo : null)}
         <div>
           <strong>${NOMBRES_OBJETIVO[perfil.objetivo]}</strong>
           <p class="tenue" style="font-size:.9rem">${meta ? `Meta: ${numero(meta, 1)} kg` : 'Sin meta de peso'}</p>
         </div>
-        <div class="barra" style="width:100%"><i style="width:${progreso || 0}%"></i></div>
+        ${estimado != null ? `
+          <div class="barra-doble" style="width:100%"><span class="barra-pista"><i class="b-estimado" style="width:${estimado}%"></i></span><span class="barra-pista"><i class="b-medido" style="width:${progreso || 0}%"></i></span></div>
+          <div class="meta-cifras compacta">
+            <div><span class="punto-l estimado"></span><b>${estimado}%</b><small>Entrenamientos · −${numero(r.calorias.kg_total, 2)} kg</small></div>
+            <div><span class="punto-l medido"></span><b>${progreso ?? 0}%</b><small>Báscula</small></div>
+          </div>`
+        : `<div class="barra" style="width:100%"><i style="width:${progreso || 0}%"></i></div>`}
         ${perfil.sensibles_ok ? `<button class="btn btn-linea btn-sm" type="button" data-editar-meta>${icono('editar', 'ic-sm')}${meta ? 'Cambiar meta' : 'Definir meta'}</button>` : ''}
       </div>
       <div class="stats3 s-12">
         ${stat('bascula', cambio != null ? (cambio > 0 ? '+' : '') + numero(cambio, 1) : null, 'kg', 'Desde el inicio')}
-        ${stat('gota', r.grasa != null ? numero(r.grasa, 1) : null, '%', 'Grasa corporal')}
+        ${r.grasa != null ? stat('gota', numero(r.grasa, 1), '%', 'Grasa corporal')
+          : stat('gota', r.grasa_estimada != null ? numero(r.grasa_estimada, 1) : null, '%', r.grasa_estimada != null ? 'Grasa estimada (por cintura)' : 'Grasa corporal')}
         ${stat('regla', r.cintura != null ? numero(r.cintura, 1) : null, 'cm', 'Cintura')}
       </div>
     </div>`;
 
-  graficaLinea('grafica-peso', pesos, 'kg', meta);
+  graficaLinea('grafica-peso', pesos, 'kg', meta, r.peso ? r.peso.historial_estimado.map(p => ({ fecha: p.fecha, valor: p.peso })) : null);
 }
 
 // ---------- Pestaña Medidas ----------

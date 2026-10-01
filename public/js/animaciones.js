@@ -514,6 +514,217 @@
     dur: 2000, activo: ['torso']
   };
 
+
+  // ---------- MOVIMIENTOS NUEVOS (v6) ----------
+  M.talones = { cuadros: [pose({ b1: A(14, 26) }), pose({ h: [60, 58], b1: A(14, 26), m1: P(64, 103), m2: P(59, 103) })], dur: 700, activo: ['piernas'] };
+
+  M.pulsoSentadilla = { cuadros: [sentadillaAbajo, { ...sentadillaAbajo, h: [45, 81], t: 146 }], dur: 380, activo: ['piernas'] };
+
+  M.stepUp = {
+    cuadros: [
+      { h: [56, 66], t: 178, b1: A(10, 20), b2: A(-10, 0), m1: P(70, 90, 1), m2: P(52, 107) },
+      { h: [64, 52], t: 182, b1: A(-10, 10), b2: A(20, 40), m1: P(70, 90, 1), m2: A(-20, -60) }
+    ], dur: 800, activo: ['piernas'], extras: [{ tipo: 'caja', x: 62, y: 92, w: 26, h: 18 }]
+  };
+
+  // En cuatro apoyos: patada de glúteo hacia el techo
+  M.patadaGluteo = {
+    cuadros: [{ h: [42, 84], t: 104, c: 115, b1: A(0, 0), b2: A(-2, -2), m1: A(0, -90), m2: A(-2, -92) },
+              { h: [42, 84], t: 104, c: 115, b1: A(0, 0), b2: A(-2, -2), m1: A(-110, 180), m2: A(-2, -92) }],
+    dur: 800, activo: ['piernas']
+  };
+
+  M.cosaca = {
+    frente: true,
+    cuadros: [
+      { h: [42, 84], t: 172, b1: A(60, 90), b2: A(40, 80), m1: P(88, 107), m2: P(34, 107, -1) },
+      { h: [60, 72], t: 180, b1: A(20, 30), b2: A(-20, -30), m1: P(86, 107), m2: P(34, 107) },
+      { h: [78, 84], t: 188, b1: A(-40, -80), b2: A(-60, -90), m1: P(86, 107, 1), m2: P(32, 107) },
+      { h: [60, 72], t: 180, b1: A(20, 30), b2: A(-20, -30), m1: P(86, 107), m2: P(34, 107) }
+    ], dur: 900, activo: ['piernas']
+  };
+
+  M.puenteUnaPierna = { cuadros: [{ ...puenteAbajo, m1: A(110, 110) }, { ...puenteArriba, m1: A(118, 118) }], dur: 900, activo: ['piernas'] };
+
+  M.flexionDeclinada = {
+    cuadros: [
+      { h: [42, 84], t: 124, c: 126, b1: P(72, suelo, -1), b2: P(70, suelo, -1), m1: P(14, 88), m2: P(16, 88) },
+      { h: [44, 90], t: 108, c: 110, b1: P(72, suelo, -1), b2: P(70, suelo, -1), m1: P(14, 88), m2: P(16, 88) }
+    ], dur: 850, activo: ['brazos', 'torso'], extras: [{ tipo: 'caja', x: 2, y: 90, w: 22, h: 20 }]
+  };
+
+  M.planchaFlexion = { cuadros: [plancha, { ...plancha, b1: P(72, suelo, -1) }, flexArriba, { ...plancha, b2: P(70, suelo, -1) }], dur: 600, activo: ['brazos', 'torso'] };
+
+  M.flexionHindu = { cuadros: [perro, { h: [48, 92], t: 96, c: 98, b1: P(84, suelo, -1), b2: P(82, suelo, -1), m1: P(28, 107), m2: P(30, 107) }, cobra], dur: 800, activo: ['brazos'] };
+
+  // Inclinado con la espalda recta, tira hacia el ombligo
+  M.remoMochila = {
+    cuadros: [
+      { h: [50, 72], t: 128, c: 120, b1: A(2, 2), b2: A(0, 0), m1: P(62, 107), m2: P(57, 107) },
+      { h: [50, 72], t: 128, c: 120, b1: A(-60, 40), b2: A(-62, 38), m1: P(62, 107), m2: P(57, 107) }
+    ], dur: 900, activo: ['brazos', 'torso'], extras: [{ tipo: 'pesa', en: 'mano1', grande: true }]
+  };
+
+  M.angeles = {
+    cuadros: [
+      { h: [50, 103], t: 98, c: 100, b1: A(165, 165), b2: A(163, 163), m1: A(-92, -92), m2: A(-92, -92) },
+      { h: [50, 103], t: 98, c: 100, b1: A(-80, -80), b2: A(-82, -82), m1: A(-92, -92), m2: A(-92, -92) }
+    ], dur: 1100, activo: ['brazos', 'torso']
+  };
+
+  M.supermanAlterno = {
+    cuadros: [
+      { h: [50, 103], t: 92, c: 94, b1: A(106, 108), b2: A(88, 88), m1: A(-90, -90), m2: A(-100, -102) },
+      { h: [50, 103], t: 92, c: 94, b1: A(88, 88), b2: A(106, 108), m1: A(-100, -102), m2: A(-90, -90) }
+    ], dur: 650, activo: ['torso']
+  };
+
+  // Boca arriba: piernas estiradas suben y bajan
+  M.elevacionPiernas = {
+    cuadros: [{ ...acostado, b1: A(-90, -90), b2: A(-88, -88), m1: A(98, 98), m2: A(96, 96) },
+              { ...acostado, b1: A(-90, -90), b2: A(-88, -88), m1: A(178, 178), m2: A(176, 176) }],
+    dur: 1000, activo: ['torso']
+  };
+
+  M.tijerasAbs = {
+    cuadros: [{ ...acostado, b1: A(-90, -90), b2: A(-88, -88), m1: A(118, 118), m2: A(104, 104) },
+              { ...acostado, b1: A(-90, -90), b2: A(-88, -88), m1: A(104, 104), m2: A(118, 118) }],
+    dur: 320, activo: ['torso']
+  };
+
+  M.toquesTalon = {
+    cuadros: [
+      { h: [62, 103], t: -112, c: -125, b1: A(60, 60), b2: A(80, 80), m1: P(84, 107, 1), m2: P(81, 107, 1) },
+      { h: [62, 103], t: -112, c: -125, b1: A(80, 80), b2: A(60, 60), m1: P(84, 107, 1), m2: P(81, 107, 1) }
+    ], dur: 450, activo: ['torso']
+  };
+
+  // Sentado, inclinado atrás, gira de lado a lado (vista de frente)
+  M.giroRuso = {
+    frente: true,
+    cuadros: [
+      { h: [60, 100], t: 196, c: 190, b1: R(14, 22, -1), b2: R(10, 24, 1), m1: P(76, 100, -1), m2: P(46, 100, 1) },
+      { h: [60, 100], t: 164, c: 170, b1: R(-10, 24, -1), b2: R(-14, 22, 1), m1: P(76, 100, -1), m2: P(46, 100, 1) }
+    ], dur: 550, activo: ['torso']
+  };
+
+  M.escaladoresCruzados = { cuadros: [{ ...flexArriba, m1: P(56, 98, 1) }, { ...flexArriba, m2: P(56, 98, 1) }], dur: 340, activo: ['torso', 'piernas'] };
+
+  M.comba = {
+    cuadros: [pose({ b1: A(30, 60), b2: A(-30, 20) }), pose({ h: [60, 59], b1: A(36, 64), b2: A(-24, 24), m1: P(62, 102), m2: P(57, 102) })],
+    dur: 220, activo: ['piernas']
+  };
+
+  const talonAtras = pose({ m1: A(-10, -150), b1: A(-40, 60), b2: A(40, 120) });
+  M.talonesGluteo = { cuadros: [talonAtras, pose({ h: [60, 62] }), espejo(talonAtras), pose({ h: [60, 62] })], dur: 240, activo: ['piernas'] };
+
+  const sprint = { h: [60, 64], t: 170, b1: A(-60, 40), b2: A(70, 140), m1: A(80, 10), m2: A(-30, -100) };
+  M.sprint = { cuadros: [sprint, espejo(sprint)], dur: 200, activo: ['piernas'] };
+
+  M.jackSentadilla = {
+    frente: true,
+    cuadros: [
+      { h: [60, 64], t: 180, b1: A(10, 6), b2: A(-10, -6), m1: P(64, 107), m2: P(56, 107) },
+      { h: [60, 82], t: 180, b1: A(40, 120), b2: A(-40, -120), m1: P(82, 107, 1), m2: P(38, 107, -1) }
+    ], dur: 450, activo: ['piernas']
+  };
+
+  M.estrella = {
+    frente: true,
+    cuadros: [
+      { h: [60, 80], t: 180, b1: A(20, 20), b2: A(-20, -20), m1: P(70, 107, 1), m2: P(50, 107, -1) },
+      { h: [60, 54], t: 180, b1: A(140, 140), b2: A(-140, -140), m1: P(82, 96), m2: P(38, 96) }
+    ], dur: 420, activo: ['piernas', 'brazos']
+  };
+
+  M.estiramientoMundo = {
+    cuadros: [
+      { h: [56, 88], t: 128, c: 120, b1: P(84, suelo, -1), b2: P(82, suelo, -1), m1: P(80, 107), m2: P(26, 105, 1) },
+      { h: [56, 88], t: 140, c: 150, b1: A(178, 178), b2: P(82, suelo, -1), m1: P(80, 107), m2: P(26, 105, 1) }
+    ], dur: 1300, activo: ['torso']
+  };
+
+  M.circulosCadera4 = {
+    abierto: true,
+    cuadros: [0, 90, 180, 270, 360].map(g => ({ h: [42, 84], t: 104, c: 115, b1: A(0, 0), b2: A(-2, -2), m1: A(-35 + Math.sin(rad(g)) * 35, -95 + Math.cos(rad(g)) * 20), m2: A(-2, -92) })),
+    dur: 450, activo: ['piernas']
+  };
+
+  M.bisagra = {
+    cuadros: [pose({ b1: A(30, 120), b2: A(26, 116) }), { h: [50, 68], t: 106, c: 104, b1: A(20, 110), b2: A(18, 108), m1: P(62, 107), m2: P(57, 107) }],
+    dur: 1100, activo: ['piernas']
+  };
+
+  // De lado en el suelo: el brazo de arriba se abre como un libro
+  M.libro = {
+    cuadros: [
+      { h: [50, 102], t: 92, c: 94, b1: A(80, 80), b2: A(82, 82), m1: A(70, -100), m2: A(72, -98) },
+      { h: [50, 102], t: 92, c: 94, b1: A(178, 178), b2: A(82, 82), m1: A(70, -100), m2: A(72, -98) }
+    ], dur: 1300, activo: ['torso', 'brazos']
+  };
+
+  M.figura4 = {
+    cuadros: [
+      { ...acostado, b1: A(60, 100), b2: A(62, 102), m1: A(150, 50), m2: A(120, 220) },
+      { ...acostado, b1: A(70, 110), b2: A(72, 112), m1: A(160, 60), m2: A(132, 230) }
+    ], dur: 1600, activo: ['piernas']
+  };
+
+  M.cobraSuave = { cuadros: [{ ...cobra, t: 108, c: 112 }, { ...cobra, t: 124, c: 140 }], dur: 1600, activo: ['torso'] };
+
+  M.triceps = { cuadros: [pose({ b1: A(170, 10), b2: A(-10, -2) }), pose({ b1: A(176, 4), b2: A(-160, 160) })], dur: 1600, activo: ['brazos'] };
+
+  M.rotacionTronco = {
+    frente: true,
+    cuadros: [
+      { h: [60, 64], t: 180, b1: A(60, 60), b2: A(-110, -110), m1: P(70, 107), m2: P(50, 107) },
+      { h: [60, 64], t: 180, b1: A(110, 110), b2: A(-60, -60), m1: P(70, 107), m2: P(50, 107) }
+    ], dur: 700, activo: ['torso']
+  };
+
+  M.balanceoPierna = {
+    cuadros: [pose({ b2: A(-80, -80), m1: A(60, 60) }), pose({ b2: A(-80, -80), m1: A(-30, -30) })],
+    dur: 650, activo: ['piernas'], extras: [{ tipo: 'pared', x: 30 }]
+  };
+
+  M.hipThrust = {
+    cuadros: [
+      { h: [56, 98], t: -120, c: -110, b1: A(80, 100), b2: A(78, 98), m1: P(84, 107, 1), m2: P(81, 107, 1) },
+      { h: [58, 84], t: -94, c: -100, b1: A(70, 100), b2: A(68, 98), m1: P(84, 107, 1), m2: P(81, 107, 1) }
+    ], dur: 1000, activo: ['piernas'], extras: [{ tipo: 'caja', x: 18, y: 86, w: 26, h: 24 }, { tipo: 'barra', en: 'mano1', ancho: 18 }]
+  };
+
+  M.zancadaPesas = { ...M.zancada, extras: [{ tipo: 'pesa', en: 'mano1' }] };
+
+  M.curl = { cuadros: [pose({ b1: A(4, 4), b2: A(-2, -2) }), pose({ b1: A(6, 160), b2: A(-2, 156) })], dur: 900, activo: ['brazos'], extras: [{ tipo: 'pesa', en: 'mano1' }] };
+
+  M.pushdown = {
+    cuadros: [pose({ t: 174, b1: A(10, 130), b2: A(8, 128) }), pose({ t: 174, b1: A(10, 14), b2: A(8, 12) })],
+    dur: 900, activo: ['brazos'], extras: [{ tipo: 'pared', x: 96 }, { tipo: 'cuerda', desde: [96, 14], en: 'mano1' }]
+  };
+
+  M.aperturas = {
+    cuadros: [
+      { h: [72, 83], t: -90, c: -92, b1: A(178, 178), b2: A(176, 176), m1: P(92, 107, 1), m2: P(89, 107, 1) },
+      { h: [72, 83], t: -90, c: -92, b1: A(100, 120), b2: A(98, 118), m1: P(92, 107, 1), m2: P(89, 107, 1) }
+    ], dur: 1100, activo: ['brazos', 'torso'], extras: [{ tipo: 'caja', x: 28, y: 87, w: 50, h: 23 }, { tipo: 'pesa', en: 'mano1' }]
+  };
+
+  M.eliptica = {
+    cuadros: [
+      pose({ h: [60, 58], t: 176, m1: P(72, 99), m2: P(50, 101), b1: A(60, 120), b2: A(30, 110) }),
+      pose({ h: [60, 58], t: 176, m1: P(50, 101), m2: P(72, 99), b1: A(30, 110), b2: A(60, 120) })
+    ], dur: 600, activo: ['piernas', 'brazos'],
+    extras: [{ tipo: 'linea', desde: [40, 104], hasta: [90, 104] }, { tipo: 'linea', desde: [86, 104], hasta: [90, 40] }]
+  };
+
+  M.farmer = {
+    cuadros: [
+      pose({ m1: P(72, 107), m2: P(48, 107), b1: A(2, 2), b2: A(-2, -2) }),
+      pose({ m1: P(48, 107), m2: P(72, 107), b1: A(2, 2), b2: A(-2, -2) })
+    ], dur: 600, activo: ['torso'], extras: [{ tipo: 'pesa', en: 'mano1', grande: true }]
+  };
+
   M.descanso = {
     cuadros: [pose({ b1: A(8, 14), b2: A(-4, 2) }), pose({ b1: A(8, 16), b2: A(-4, 4), t: 178 })],
     dur: 1800, activo: []
@@ -589,7 +800,48 @@
     'Swing con kettlebell': 'swing',
     'Sprints en bicicleta estática': 'bici',
     'Remo en máquina': 'remoMaquina',
-    'Caminata inclinada en cinta': 'caminata'
+    'Caminata inclinada en cinta': 'caminata',
+    'Jumping jacks suaves': 'jumpingJacks',
+    'Balanceo de piernas': 'balanceoPierna',
+    'Rotación de tronco de pie': 'rotacionTronco',
+    'Zancada inversa': 'zancada',
+    'Elevación de talones': 'talones',
+    'Sentadilla con pulso': 'pulsoSentadilla',
+    'Subida a escalón (step-up)': 'stepUp',
+    'Patada de glúteo en 4 apoyos': 'patadaGluteo',
+    'Sentadilla cosaca': 'cosaca',
+    'Puente de glúteo a una pierna': 'puenteUnaPierna',
+    'Flexiones abiertas': 'flexion',
+    'Flexiones declinadas (pies en silla)': 'flexionDeclinada',
+    'Plancha a flexión': 'planchaFlexion',
+    'Flexión hindú': 'flexionHindu',
+    'Remo con mochila': 'remoMochila',
+    'Ángeles en el suelo': 'angeles',
+    'Superman con brazos alternos': 'supermanAlterno',
+    'Elevación de piernas': 'elevacionPiernas',
+    'Giro ruso': 'giroRuso',
+    'Tijeras abdominales': 'tijerasAbs',
+    'Toques de talón': 'toquesTalon',
+    'Escaladores cruzados': 'escaladoresCruzados',
+    'Saltar la cuerda (sin cuerda)': 'comba',
+    'Talones al glúteo': 'talonesGluteo',
+    'Sprint en el sitio': 'sprint',
+    'Jumping jack con sentadilla': 'jackSentadilla',
+    'Saltos de estrella': 'estrella',
+    'El estiramiento más grande del mundo': 'estiramientoMundo',
+    'Círculos de cadera en 4 apoyos': 'circulosCadera4',
+    'Bisagra de cadera': 'bisagra',
+    'Rotación de hombros en el suelo': 'libro',
+    'Estiramiento de glúteo (figura 4)': 'figura4',
+    'Cobra suave': 'cobraSuave',
+    'Estiramiento de tríceps': 'triceps',
+    'Hip thrust con barra': 'hipThrust',
+    'Zancadas con mancuernas': 'zancadaPesas',
+    'Curl de bíceps con mancuernas': 'curl',
+    'Extensión de tríceps en polea': 'pushdown',
+    'Aperturas con mancuernas': 'aperturas',
+    'Elíptica a intervalos': 'eliptica',
+    'Farmer walk (caminata con pesas)': 'farmer'
   };
 
   // Si aparece un ejercicio nuevo sin movimiento propio, se usa uno de su grupo
@@ -619,7 +871,18 @@
     'Swing con kettlebell': 'Kettlebell',
     'Sprints en bicicleta estática': 'Bicicleta estática',
     'Remo en máquina': 'Máquina de remo',
-    'Caminata inclinada en cinta': 'Cinta de correr'
+    'Caminata inclinada en cinta': 'Cinta de correr',
+    'Balanceo de piernas': 'Pared para apoyarte',
+    'Subida a escalón (step-up)': 'Escalón o silla firme',
+    'Flexiones declinadas (pies en silla)': 'Silla firme',
+    'Remo con mochila': 'Mochila con peso (libros, botellas)',
+    'Hip thrust con barra': 'Banco y barra',
+    'Zancadas con mancuernas': 'Mancuernas',
+    'Curl de bíceps con mancuernas': 'Mancuernas',
+    'Extensión de tríceps en polea': 'Polea alta',
+    'Aperturas con mancuernas': 'Banco y mancuernas',
+    'Elíptica a intervalos': 'Elíptica',
+    'Farmer walk (caminata con pesas)': 'Mancuernas o kettlebells'
   };
 
   function patronDe(nombre, grupo) {

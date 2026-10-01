@@ -76,7 +76,7 @@ function abrirPreferencias() {
       <div class="campo"><span class="rotulo">Días para entrenar</span>
         <div class="dias-elegir" id="p-dias">${DIAS_CORTOS.map((d, i) => `<button type="button" class="${dias.includes(i) ? 'activo' : ''}" data-dia="${i}" aria-pressed="${dias.includes(i)}" aria-label="${DIAS_LARGOS[i]}">${d.charAt(0)}</button>`).join('')}</div>
       </div>
-      <div class="campo"><span class="rotulo">Tiempo por sesión</span>
+      <div class="campo"><span class="rotulo">Tiempo de actividad por sesión <small class="tenue">(sin contar calentamiento)</small></span>
         <div class="opciones" id="p-minutos">${[10, 15, 20, 30, 45, 60].map(m => opcion(m, m === 60 ? '60+ min' : m + ' min', cercano(perfil.minutos))).join('')}</div>
       </div>
       <p class="error-form" id="p-pref-error" role="alert"></p>
@@ -161,7 +161,14 @@ function abrirConfiguracion() {
       <span class="rotulo">Datos personales</span>
       <h2>Tu perfil</h2>
       <div class="campo"><label for="c-nombre">Nombre</label><input id="c-nombre" type="text" maxlength="60" value="${escapar(perfil.nombre)}"></div>
-      <div class="fila-2">
+      <div class="fila-3">
+        <div class="campo"><label for="c-sexo">Sexo</label>
+          <select id="c-sexo">
+            <option value="">Prefiero no decir</option>
+            <option value="hombre" ${perfil.sexo === 'hombre' ? 'selected' : ''}>Hombre</option>
+            <option value="mujer" ${perfil.sexo === 'mujer' ? 'selected' : ''}>Mujer</option>
+          </select>
+        </div>
         <div class="campo"><label for="c-edad">Edad</label><div class="con-unidad" data-u="años"><input id="c-edad" type="number" min="14" max="100" inputmode="numeric" value="${perfil.edad || ''}"></div></div>
         <div class="campo"><label for="c-altura">Altura (para el IMC)</label><div class="con-unidad" data-u="cm"><input id="c-altura" type="number" inputmode="numeric" value="${perfil.altura_cm || ''}"></div></div>
       </div>
@@ -178,6 +185,7 @@ function abrirConfiguracion() {
       const cuerpo = { nombre: document.getElementById('c-nombre').value, altura_cm: document.getElementById('c-altura').value };
       // La edad solo se manda si la base ya tiene esa columna (migración del onboarding)
       if ('edad' in perfil) cuerpo.edad = document.getElementById('c-edad').value;
+      if ('sexo' in perfil) cuerpo.sexo = document.getElementById('c-sexo').value;
       await api('/perfil', { method: 'PUT', body: cuerpo });
       await recargarPerfil();
       cerrarModal();

@@ -790,3 +790,55 @@ button.dia-fila:hover { background: var(--superficie); }
 .ej-mini > .figura { position: absolute; top: 2px; left: 2px; width: calc(100% - 4px); height: calc(100% - 4px); }
 .ficha-figura > .figura { position: absolute; top: 6px; left: 6px; width: calc(100% - 12px); height: calc(100% - 12px); }
 .rep-figura > .figura { position: absolute; top: 6px; left: 6px; width: calc(100% - 12px); height: calc(100% - 12px); }
+
+
+/* ======================= CALORÍAS Y META ESTIMADA (v6) ======================= */
+.t-kcal, .t-meta { display: flex; flex-direction: column; gap: 10px; }
+.t-kcal .rotulo .ic { vertical-align: -3px; margin-right: 4px; color: var(--acento); }
+.kcal-grande { display: flex; align-items: baseline; gap: 10px; }
+.kcal-grande .cifra { font-size: clamp(2.8rem, 5vw, 3.6rem); }
+.kcal-grande small { color: var(--piedra); font-weight: 600; }
+.kcal-detalle { font-size: .9rem; color: var(--tinta-2); }
+.kcal-detalle b { color: var(--tinta); }
+.kcal-nota { font-size: .8rem; color: var(--piedra); line-height: 1.45; }
+.kcal-nota a { color: var(--acento); font-weight: 600; }
+.barra-meta { height: 12px; border-radius: 99px; }
+.barra-meta i { width: 0; border-radius: 99px; transition: width 1.1s cubic-bezier(.2, .8, .2, 1); }
+
+/* Dos barras: estimado por entrenamientos (lima rayado) y medido en báscula (negro) */
+.barra-doble { display: grid; gap: 6px; }
+.barra-doble i { display: block; height: 10px; width: 0; border-radius: 99px; transition: width 1.2s cubic-bezier(.2, .8, .2, 1); min-width: 0; }
+.barra-doble { --fondo-barra: var(--superficie-2); }
+.barra-doble::before, .barra-doble::after { content: none; }
+.barra-doble .b-estimado { background: repeating-linear-gradient(-45deg, var(--lima) 0 6px, color-mix(in srgb, var(--lima) 60%, transparent) 6px 12px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--acento) 40%, transparent); }
+.barra-doble .b-medido { background: var(--tinta); }
+.barra-pista { height: 10px; border-radius: 99px; background: var(--superficie-2); overflow: hidden; }
+.meta-cifras { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.meta-cifras > div { display: grid; grid-template-columns: 12px auto; grid-template-rows: auto auto; column-gap: 8px; align-items: center; }
+.meta-cifras b { font-family: var(--f-display); font-weight: 800; font-size: 1.8rem; line-height: 1; }
+.meta-cifras small { grid-column: 2; font-size: .78rem; color: var(--piedra); }
+.meta-cifras.compacta b { font-size: 1.3rem; }
+.meta-cifras.compacta { width: 100%; text-align: left; }
+.punto-l { width: 12px; height: 12px; border-radius: 4px; }
+.punto-l.estimado { background: repeating-linear-gradient(-45deg, var(--lima) 0 3px, color-mix(in srgb, var(--lima) 55%, transparent) 3px 6px); border: 1px solid var(--acento); }
+.punto-l.medido { background: var(--tinta); }
+
+/* Gráfica de peso: línea estimada punteada */
+.grafica .linea-estimada { fill: none; stroke: var(--acento); stroke-width: 2; stroke-dasharray: 5 6; opacity: .9; }
+.grafica .punto-estimado { fill: var(--lima); stroke: var(--acento); stroke-width: 2; }
+.leyenda-grafica { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 10px; font-size: .8rem; color: var(--tinta-2); }
+.leyenda-grafica span { display: inline-flex; align-items: center; gap: 8px; }
+.leyenda-grafica i { width: 22px; height: 0; border-top: 2.5px solid var(--acento); }
+.leyenda-grafica .l-estimado { border-top-style: dashed; }
+
+.banner-kcal { margin-top: 6px; font-weight: 600; color: var(--acento) !important; }
+.banner-kcal .ic, .rep-final-kcal .ic { display: inline-block; vertical-align: -3px; margin-right: 4px; }
+.rep-final-kcal { color: #B8FF3D !important; font-size: 1.05rem; }
+.rep-final-kcal b { color: #fff; }
+
+@media (max-width: 900px) {
+  .t-kcal, .t-meta { grid-column: span 12; }
+}
+@media (max-width: 560px) {
+  .meta-cifras { grid-template-columns: 1fr; }
+}

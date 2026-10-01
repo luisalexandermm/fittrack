@@ -62,5 +62,25 @@ const TEXTO_ESTADO = { hecho: 'Hecho', hoy: 'Hoy', proximo: 'Próximo', programa
 // Resumen corto de una rutina: "25 min · 5 ejercicios"
 function resumenRutina(rutina) {
   const principal = rutina.bloques.find(b => b.tipo === 'principal');
-  return `${Math.round(rutina.duracion_seg / 60)} min · ${principal.ejercicios.length} ejercicios`;
+  return `${minutosActividad(rutina)} min · ${principal.ejercicios.length} ejercicios`;
+}
+
+// ---------- Calorías (estimación) ----------
+// La rutina trae "met_min" (esfuerzo, sin depender del peso). Con tu peso:
+//   kcal = met_min × 3,5 × peso / 200
+// Si no has registrado tu peso, se usa uno de referencia (75 kg hombre, 62 kg mujer, 70 kg sin dato).
+function pesoParaCalorias() {
+  if (perfil.peso_actual) return perfil.peso_actual;
+  return { hombre: 75, mujer: 62 }[perfil.sexo] || 70;
+}
+function kcalRutina(rutina) {
+  return rutina && rutina.met_min ? Math.round(rutina.met_min * 3.5 * pesoParaCalorias() / 200) : null;
+}
+
+// Minutos de actividad (lo que eligió el usuario) y de calentamiento + enfriamiento
+function minutosActividad(rutina) {
+  return Math.round((rutina.actividad_seg || rutina.duracion_seg) / 60);
+}
+function minutosSuaves(rutina) {
+  return rutina.suaves_seg ? Math.round(rutina.suaves_seg / 60) : 0;
 }

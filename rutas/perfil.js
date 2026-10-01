@@ -6,7 +6,7 @@ const { numeroONull } = require('./utilidades');
 const { limpiarDias, esColumnaFaltante } = require('./plan');
 
 // Campos que llegaron con la migración del onboarding
-const CAMPOS_NUEVOS = ['lugar', 'dias_entreno', 'edad'];
+const CAMPOS_NUEVOS = ['lugar', 'dias_entreno', 'edad', 'sexo'];
 
 const router = express.Router();
 
@@ -14,12 +14,14 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const perfil = ok(await req.sb.from('perfiles').select('*').eq('id', req.usuarioId).maybeSingle());
   if (!perfil) return res.status(404).json({ error: 'No se encontró tu perfil. Revisa que ejecutaste supabase/esquema.sql antes de registrarte.' });
-  res.json({ ...perfil, email: req.usuario.email });
+  // Último peso registrado: la app lo usa para estimar las calorías de cada rutina
+  const ultimo = ok(await req.sb.from('medidas').select('peso').not('peso', 'is', null).order('fecha', { ascending: false }).order('id', { ascending: false }).limit(1));
+  res.json({ ...perfil, email: req.usuario.email, peso_actual: ultimo[0] ? ultimo[0].peso : null });
 });
 
 // PUT /api/perfil  → solo se cambian los campos que llegan
 router.put('/', async (req, res) => {
-  const { nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso, lugar, dias_entreno, edad } = req.body;
+  const { nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso, lugar, dias_entreno, edad, sexo } = req.body;
   const actual = ok(await req.sb.from('perfiles').select('sensibles_ok').eq('id', req.usuarioId).single());
   const cambios = {};
 
@@ -46,6 +48,7 @@ router.put('/', async (req, res) => {
     cambios.dias_entreno = dias;
     cambios.meta_semanal = dias.length; // la meta semanal sigue funcionando igual que antes
   }
+  if (sexo !== undefined) cambios.sexo = ['hombre', 'mujer', 'otro'].includes(sexo) ? sexo : null;
   if (edad !== undefined) {
     const e = numeroONull(edad);
     cambios.edad = e && e >= 14 && e <= 100 ? Math.round(e) : null;

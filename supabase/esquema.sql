@@ -147,6 +147,17 @@ alter table public.ejercicios
 
 
 
+-- Sexo (opcional): solo se usa para estimar el % de grasa con la cintura
+-- y el peso de referencia de las calorías si aún no registraste tu peso.
+alter table public.perfiles
+  add column if not exists sexo text
+  check (sexo is null or sexo in ('hombre', 'mujer', 'otro'));
+
+-- Calorías estimadas de cada sesión (MET × peso × tiempo). Se calcula en el servidor.
+alter table public.sesiones
+  add column if not exists kcal smallint
+  check (kcal is null or kcal between 0 and 5000);
+
 create index if not exists rutinas_usuario_idx  on public.rutinas  (usuario_id);
 create index if not exists sesiones_usuario_idx on public.sesiones (usuario_id, fecha desc);
 create index if not exists medidas_usuario_idx  on public.medidas  (usuario_id, fecha);
@@ -177,7 +188,7 @@ begin
   end if;
 
   insert into public.perfiles (id, nombre, objetivo, nivel, minutos, meta_semanal, meta_peso,
-                               lugar, dias_entreno, edad, altura_cm, terminos_fecha, sensibles_ok, sensibles_fecha)
+                               lugar, dias_entreno, edad, altura_cm, sexo, terminos_fecha, sensibles_ok, sensibles_fecha)
   values (
     new.id,
     coalesce(nullif(left(datos ->> 'nombre', 60), ''), 'Atleta'),
@@ -190,6 +201,7 @@ begin
     dias,
     nullif(datos ->> 'edad', '')::smallint,
     nullif(datos ->> 'altura', '')::double precision,
+    case when datos ->> 'sexo' in ('hombre', 'mujer', 'otro') then datos ->> 'sexo' end,
     now(),
     sensibles,
     case when sensibles then now() end

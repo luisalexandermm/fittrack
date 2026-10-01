@@ -172,7 +172,7 @@ async function calcularDemo() {
   animarNumero('d-trabajo', r.trabajo);
   animarNumero('d-descanso', r.descanso);
   animarNumero('d-rondas', r.rondas);
-  animarNumero('d-duracion', Math.round(r.duracion_seg / 60));
+  animarNumero('d-duracion', Math.round((r.actividad_seg || r.duracion_seg) / 60));
   $('d-lista').innerHTML = principal.ejercicios.map((e, i) => `
     <li><button type="button" data-i="${i}" style="animation-delay:${i * 50}ms">
       <span class="n">${i + 1}</span>
@@ -436,6 +436,11 @@ eleccionUnica('r-objetivo', 'objetivo');
 eleccionUnica('r-lugar', 'lugar');
 eleccionUnica('r-nivel', 'nivel', Number);
 eleccionUnica('r-minutos', 'minutos', Number);
+// Sexo (opcional): solo marca la opción elegida; se lee al crear la cuenta
+$('r-sexo').addEventListener('click', e => {
+  const b = e.target.closest('[data-valor]');
+  if (b) $('r-sexo').querySelectorAll('[data-valor]').forEach(o => o.classList.toggle('activo', o === b));
+});
 
 // Días: se pueden elegir varios
 $('r-dias').addEventListener('click', e => {
@@ -501,6 +506,7 @@ async function crearCuenta() {
     password: valor('r-pass'),
     ...ob,
     edad: valor('r-edad'),
+    sexo: ($('r-sexo').querySelector('.activo') || {}).dataset?.valor || null,
     altura: valor('r-altura'),
     acepta_terminos: true,
     acepta_sensibles: sensibles
