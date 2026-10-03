@@ -208,7 +208,9 @@ fittrack/
         ├── plan-semanal.js   → la semana del servidor y el estado de cada día
         ├── graficas.js       → barras, línea y anillo en SVG
         ├── inicio.js · rutinas.js · reproductor.js · progreso.js · fotos.js
-        └── nutricion.js · calendario.js · perfil.js
+        ├── nutricion.js · calendario.js · perfil.js
+        ├── error-404.js      → la 404 "Esta página pesa 404 kg" (3 intentos, se suelta un disco)
+        └── vendor/gsap.min.js → GSAP 3.15 (licencia gratuita de GSAP), solo lo usa la 404
 ```
 
 ## Colores (cámbialos en `public/css/base.css`)

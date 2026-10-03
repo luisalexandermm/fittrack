@@ -6,17 +6,25 @@
   <title>Página no encontrada — FitTrack</title>
   <meta name="robots" content="noindex">
   <meta name="theme-color" content="#050B0A">
-  <link rel="icon" href="img/logo-simbolo.png" type="image/png">
-  <link rel="stylesheet" href="css/base.css">
-  <script src="js/tema.js"></script>
+  <!-- Rutas absolutas (/css, /js, /img): esta página se muestra en CUALQUIER dirección
+       que no exista (por ejemplo /algo/que/no/existe), y una ruta relativa se rompería ahí. -->
+  <link rel="icon" href="/img/logo-simbolo.png" type="image/png">
+  <link rel="stylesheet" href="/css/base.css">
+  <script src="/js/tema.js"></script>
+  <!-- GSAP va guardado en el proyecto (la CSP solo permite scripts de este mismo servidor) -->
+  <script src="/js/vendor/gsap.min.js" defer></script>
+  <script src="/js/error-404.js" defer></script>
   <style>
     .pagina-404 {
       --fondo: rgb(12, 0, 0);
       --tinta: #FFFFFF;
       --piedra: #9AA39F;
+      --linea-fuerte: rgba(255, 255, 255, .24);
+      --superficie-2: rgba(255, 255, 255, .06);
+      --acento: #B8FF3D;
       min-height: 100svh;
       padding: 0 clamp(20px, 6vw, 88px);
-      overflow: hidden;
+      overflow-x: hidden;
       background-color: var(--fondo);
       background-image: linear-gradient(rgba(184, 255, 61, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(184, 255, 61, .035) 1px, transparent 1px);
       background-size: 56px 56px;
@@ -24,7 +32,7 @@
     }
     .error-nav {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -36,15 +44,17 @@
     .error-nav .rotulo { color: var(--piedra); }
     .error-main {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) minmax(300px, .9fr);
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
       align-items: center;
-      gap: clamp(20px, 5vw, 72px);
+      gap: clamp(20px, 4vw, 56px);
       width: min(1180px, 100%);
       min-height: calc(100svh - 89px);
       margin: 0 auto;
-      padding: 48px 0 72px;
+      padding: 40px 0 64px;
     }
-    .error-copy { position: relative; z-index: 1; }
+
+    /* ---------- Texto ---------- */
+    .error-copy { position: relative; z-index: 2; }
     .error-codigo {
       display: flex;
       align-items: center;
@@ -58,85 +68,133 @@
     }
     .error-codigo::before { content: ''; width: 28px; height: 2px; background: currentColor; }
     .error-titulo {
-      max-width: 680px;
+      max-width: 640px;
       font-family: var(--f-display);
-      font-size: clamp(4.4rem, 10vw, 9rem);
+      font-size: clamp(3.4rem, 7vw, 7.4rem);
       font-weight: 900;
-      line-height: .82;
+      line-height: .84;
       letter-spacing: 0;
       text-transform: uppercase;
     }
-    .error-titulo span { display: block; color: var(--lima); }
+    .error-titulo .linea { display: block; white-space: nowrap; }
+    .error-titulo .lima { color: var(--lima); }
     .error-descripcion {
-      max-width: 390px;
+      max-width: 410px;
       margin: 26px 0 30px;
       color: #B7C0BC;
       font-size: 1.05rem;
     }
-    .error-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; }
-    .error-ilustracion {
+    .error-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+    .error-acciones .btn-linea { color: #fff; }
+
+    /* ---------- Escena: la barra de 404 kg ---------- */
+    .error-escena {
       position: relative;
-      width: min(100%, 510px);
+      width: min(100%, 540px);
       justify-self: end;
-      animation: entrar-ruta .8s .12s both;
+      perspective: 1100px;
     }
-    .error-ilustracion svg { width: 100%; overflow: visible; }
-    .ruta-trazo {
-      fill: none;
-      stroke: rgba(255, 255, 255, .13);
-      stroke-width: 2;
-      stroke-dasharray: 3 9;
+    .escena-3d {
+      position: relative;
+      transform-style: preserve-3d;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
-    .ruta-activa {
-      fill: none;
-      stroke: var(--lima);
-      stroke-width: 3;
-      stroke-linecap: round;
-      stroke-dasharray: 1 12;
-      animation: recorrer-ruta 18s linear infinite;
-    }
-    .ruta-punto { fill: var(--lima); filter: drop-shadow(0 0 8px rgba(184, 255, 61, .7)); }
-    .ruta-etiqueta {
+    .escena-3d svg { position: relative; display: block; width: 100%; overflow: visible; }
+    /* "404" gigante de fondo: va más atrás (translateZ) y se mueve distinto al inclinar */
+    .capa-404 {
       position: absolute;
-      right: 2%;
-      bottom: 10%;
-      padding: 10px 14px;
-      border: 1px solid rgba(255, 255, 255, .14);
-      background: #0B1513;
-      color: #fff;
+      inset: 2% 0 auto;
+      color: transparent;
       font-family: var(--f-display);
-      font-size: 1.1rem;
-      font-weight: 800;
-      letter-spacing: .04em;
-      text-transform: uppercase;
-      transform: rotate(-5deg);
+      font-size: clamp(9rem, 21vw, 17rem);
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      -webkit-text-stroke: 1.5px rgba(184, 255, 61, .16);
+      transform: translateZ(-140px) scale(1.12);
+      pointer-events: none;
+      user-select: none;
     }
-    .ruta-etiqueta span { color: var(--lima); }
-    @keyframes recorrer-ruta { to { stroke-dashoffset: -260; } }
-    @keyframes entrar-ruta { from { opacity: 0; transform: translate(16px, 8px) rotate(3deg); } }
-    @media (max-width: 760px) {
+    .globo {
+      position: absolute;
+      top: 2%;
+      left: 0;
+      max-width: 230px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 14px 14px 14px 4px;
+      background: rgba(11, 21, 19, .92);
+      color: #E6ECE9;
+      font-size: .9rem;
+      line-height: 1.35;
+      transform: translateZ(80px);
+      box-shadow: 0 18px 40px -20px rgba(0, 0, 0, .9);
+    }
+    .globo b { color: var(--lima); font-weight: 700; }
+    .marcador {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 6px;
+      color: var(--piedra);
+      font-size: .74rem;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+    }
+    .marcador .reps { display: flex; gap: 6px; }
+    .marcador .rep {
+      width: 22px;
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, .14);
+      transition: background .3s;
+    }
+    .marcador .rep.lleno { background: var(--lima); }
+
+    /* Piezas del dibujo */
+    .figura { fill: none; stroke: #fff; stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+    .cabeza { stroke: #fff; stroke-width: 7; }
+    .ojo { fill: #fff; }
+    .boca { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+    .ojo-x { fill: none; stroke: #fff; stroke-width: 2.4; stroke-linecap: round; }
+    .eje { fill: none; stroke: #C9D1CD; stroke-width: 7; stroke-linecap: round; }
+    .disco-grande { fill: #14231B; stroke: #B8FF3D; stroke-width: 3; }
+    .disco-chico { fill: #0B1513; stroke: rgba(184, 255, 61, .55); stroke-width: 2.5; }
+    .disco-centro { fill: #050B0A; }
+    .collarin { fill: #9AA39F; }
+    .mano { fill: #fff; }
+    .etiqueta-404 { fill: #B8FF3D; }
+    .etiqueta-texto { fill: #050B0A; font-family: var(--f-display); font-size: 14px; font-weight: 900; letter-spacing: .04em; }
+    .sombra-piso { fill: rgba(0, 0, 0, .45); }
+    .piso { stroke: rgba(255, 255, 255, .12); stroke-width: 2; stroke-dasharray: 2 8; }
+
+    @media (max-width: 860px) {
       .pagina-404 { padding-inline: 22px; }
       .error-nav { min-height: 72px; }
       .error-nav .rotulo { font-size: .62rem; }
       .error-main {
         grid-template-columns: 1fr;
-        gap: 12px;
+        gap: 4px;
         min-height: calc(100svh - 73px);
-        padding: 48px 0 32px;
+        padding: 36px 0 32px;
       }
-      .error-titulo { font-size: clamp(4.3rem, 17vw, 7rem); }
-      .error-descripcion { margin: 20px 0 24px; }
-      .error-ilustracion { width: min(78%, 340px); justify-self: center; margin: -8px 0 -18px; }
-      .ruta-etiqueta { right: -14%; bottom: 8%; }
+      .error-titulo { font-size: clamp(3.2rem, 14vw, 6.4rem); }
+      .error-descripcion { margin: 18px 0 22px; }
+      .error-escena { width: min(100%, 440px); justify-self: center; margin-top: 18px; }
+      /* En el celular el globo va arriba del dibujo para no tapar al muñeco */
+      .escena-3d { display: flex; flex-direction: column; }
+      .globo { order: -1; position: relative; top: 0; max-width: 300px; margin: 0 auto 4px; font-size: .86rem; text-align: center; border-radius: 14px; }
     }
     @media (max-width: 390px) {
       .error-nav .rotulo { display: none; }
-      .error-titulo { font-size: 4.1rem; }
-      .error-acciones { align-items: flex-start; flex-direction: column; gap: 10px; }
-      .error-ilustracion { width: 68%; }
+      .error-titulo { font-size: 3.2rem; }
+      .error-acciones .btn { flex: 1 1 100%; }
     }
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
     }
   </style>
 </head>
@@ -146,29 +204,101 @@
       <img class="marca-simbolo" src="/img/logo.png" alt="" aria-hidden="true">
       FitTrack
     </a>
-    <span class="rotulo">Error 404 · Fuera de ruta</span>
+    <span class="rotulo">Error 404 · Página no encontrada</span>
   </header>
+
   <main class="error-main">
     <section class="error-copy" aria-labelledby="error-titulo">
-      <p class="error-codigo">Coordenadas no encontradas</p>
-      <h1 class="error-titulo" id="error-titulo">Te saliste <span>de la ruta.</span></h1>
-      <p class="error-descripcion">Este enlace no existe o cambió de lugar. No pasa nada: retomemos desde el inicio.</p>
+      <p class="error-codigo">Error 404 · Serie fallida</p>
+      <h1 class="error-titulo" id="error-titulo">
+        <span class="linea">Esta página</span>
+        <span class="linea lima">pesa 404 kg.</span>
+      </h1>
+      <p class="error-descripcion">El enlace que abriste no existe o cambió de lugar. Puedes intentar levantarla, pero ya te contamos cómo termina: mejor vuelve al inicio y sigue con tu plan.</p>
       <div class="error-acciones">
-        <a href="/" class="btn btn-lima">Volver al inicio <svg class="ic ic-flecha" aria-hidden="true"><use href="/img/iconos.svg#i-flecha"/></svg></a>
+        <a href="/" class="btn btn-lima" id="btn-inicio">Volver al inicio <svg class="ic ic-flecha" aria-hidden="true"><use href="/img/iconos.svg#i-flecha"/></svg></a>
+        <!-- Sin JavaScript no hay animación, así que el botón empieza oculto -->
+        <button type="button" class="btn btn-linea" id="btn-levantar" hidden>
+          <svg class="ic" aria-hidden="true"><use href="/img/iconos.svg#i-pesa"/></svg>
+          <span>Intentar levantarla</span>
+        </button>
       </div>
     </section>
-    <div class="error-ilustracion" aria-hidden="true">
-      <svg viewBox="0 0 520 440" fill="none">
-        <path class="ruta-trazo" d="M103 249c-34-75 21-159 107-178 79-18 160 21 190 87 31 68 1 145-56 188-61 46-161 54-218 10-16-12-27-27-33-43"/>
-        <path class="ruta-trazo" d="M142 248c-23-54 17-116 77-129 57-12 114 14 137 61 22 48 0 102-41 133-44 33-116 38-157 7-9-7-14-14-16-23"/>
-        <path class="ruta-activa" d="M108 263c-28-77 29-160 111-177 76-16 153 21 181 83 29 64 2 137-53 179-58 44-153 51-207 10-21-16-33-36-37-57"/>
-        <path d="m84 299 25-4-12 23" stroke="#B8FF3D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-        <circle cx="108" cy="263" r="7" class="ruta-punto"/>
-        <circle cx="400" cy="169" r="6" fill="#050B0A" stroke="#B8FF3D" stroke-width="3"/>
-        <path d="M260 127v66m0 38v7" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="260" cy="287" r="7" fill="#fff"/>
-      </svg>
-      <p class="ruta-etiqueta"><span>Ruta</span> interrumpida</p>
+
+    <div class="error-escena">
+      <div class="escena-3d" id="escena">
+        <span class="capa-404" aria-hidden="true">404</span>
+
+        <!-- Dibujo: muñeco de palitos frente a una barra de 404 kg.
+             Las coordenadas de abajo son la pose "de pie"; el JS las mueve. -->
+        <svg viewBox="-20 0 600 440" aria-hidden="true">
+          <line class="piso" x1="-20" y1="384" x2="580" y2="384"/>
+          <ellipse class="sombra-piso" cx="260" cy="388" rx="220" ry="10"/>
+
+          <!-- Muñeco -->
+          <g id="muneco">
+            <polyline id="pierna-i" class="figura" points="252,250 240,318 230,384 218,384"/>
+            <polyline id="pierna-d" class="figura" points="268,250 280,318 290,384 302,384"/>
+            <line id="torso" class="figura" x1="260" y1="144" x2="260" y2="250"/>
+            <polyline id="brazo-i" class="figura" points="244,152 226,200 246,244"/>
+            <polyline id="brazo-d" class="figura" points="276,152 294,200 274,244"/>
+            <circle id="cabeza" class="cabeza" cx="260" cy="118" r="20" fill="#0B1513"/>
+            <g id="ojos">
+              <ellipse id="ojo-i" class="ojo" cx="253" cy="116" rx="2.6" ry="2.6"/>
+              <ellipse id="ojo-d" class="ojo" cx="267" cy="116" rx="2.6" ry="2.6"/>
+            </g>
+            <path id="ojos-x" class="ojo-x" d="" opacity="0"/>
+            <path id="boca" class="boca" d="M253 127 L267 127"/>
+          </g>
+
+          <!-- Barra -->
+          <g id="barra-caida">
+            <g id="barra-inclina">
+              <path id="eje" class="eje" d="M40 322 Q260 322 480 322"/>
+              <g class="sigue" data-x="105">
+                <g id="discos-i">
+                  <ellipse class="disco-grande" cx="92" cy="322" rx="18" ry="62"/>
+                  <ellipse class="disco-centro" cx="92" cy="322" rx="5" ry="13"/>
+                  <ellipse class="disco-chico" cx="118" cy="322" rx="14" ry="48"/>
+                  <rect class="collarin" x="132" y="311" width="8" height="22" rx="2"/>
+                </g>
+              </g>
+              <g class="sigue" data-x="168">
+                <g id="etiqueta">
+                  <line x1="168" y1="324" x2="168" y2="338" stroke="#9AA39F" stroke-width="2"/>
+                  <rect class="etiqueta-404" x="142" y="338" width="52" height="24" rx="4"/>
+                  <text class="etiqueta-texto" x="168" y="355" text-anchor="middle">404 KG</text>
+                </g>
+              </g>
+            </g>
+            <!-- Discos derechos: van aparte porque en el tercer intento se sueltan -->
+            <g class="sigue" data-x="415">
+              <g id="discos-d-desliza">
+                <g id="discos-d">
+                  <rect class="collarin" x="380" y="311" width="8" height="22" rx="2"/>
+                  <ellipse class="disco-chico" cx="402" cy="322" rx="14" ry="48"/>
+                  <ellipse class="disco-grande" cx="428" cy="322" rx="18" ry="62"/>
+                  <ellipse class="disco-centro" cx="428" cy="322" rx="5" ry="13"/>
+                </g>
+              </g>
+            </g>
+          </g>
+
+          <!-- Manos encima de la barra (para que se vea el agarre) -->
+          <circle id="mano-i" class="mano" cx="246" cy="244" r="5.5"/>
+          <circle id="mano-d" class="mano" cx="274" cy="244" r="5.5"/>
+
+          <!-- Polvo de magnesio, sudor y polvo del piso -->
+          <g id="particulas"></g>
+        </svg>
+
+        <p class="globo" id="globo" aria-live="polite">¿En serio? Esta barra no aparece en <b>ningún plan</b>.</p>
+      </div>
+
+      <div class="marcador" aria-hidden="true">
+        Intentos
+        <span class="reps"><i class="rep"></i><i class="rep"></i><i class="rep"></i></span>
+      </div>
     </div>
   </main>
 </body>
