@@ -124,6 +124,10 @@ El símbolo del logo (`img/logo-simbolo.png`) es el corredor recortado de tu `lo
 
 Funciona en celular, tablet y escritorio: en pantallas de 1024 px o menos el menú lateral se cambia por una barra arriba y otra abajo.
 
+### Instalar en iPhone o iPad
+
+Abre el enlace público de FitTrack directamente en **Safari**, toca **Compartir** → **Agregar a pantalla de inicio** → **Agregar**. iOS no muestra un botón automático de descarga para sitios web: se instala desde ese menú y queda como un ícono en la pantalla de inicio. No se necesita cuenta de Vercel ni descargarla del App Store. El sitio debe estar publicado con HTTPS para que la instalación y el registro funcionen.
+
 ---
 
 ## Seguridad

@@ -403,6 +403,11 @@
 .vitrina.pausada .vitrina-tab.activo .tiempo { animation-play-state: paused; }
 @keyframes llenar { to { transform: scaleX(1); } }
 .vitrina-nota { font-size: .8rem; margin-top: 18px; }
+.instalar-ayuda { max-width: 800px; margin: 30px auto 0; }
+.instalar-ayuda h3 { margin: 8px 0 14px; font-family: var(--f-titulo); font-size: 1.35rem; }
+.instalar-ayuda ol { padding-left: 22px; }
+.instalar-ayuda li + li { margin-top: 8px; }
+.instalar-ayuda p { margin-top: 14px; font-size: .9rem; }
 
 .telefono-escena { display: grid; place-items: center; perspective: 1200px; padding: 20px 0; }
 .telefono {

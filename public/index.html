@@ -9,9 +9,10 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FitTrack">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="icon" href="img/logo-simbolo.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="img/pwa-180.png">
+  <link rel="apple-touch-icon" href="/img/pwa-180.png">
   <link rel="preload" href="fuentes/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
@@ -330,6 +331,17 @@
         </div>
       </div>
       <p class="vitrina-nota tenue">Ejemplos ilustrativos: en tu cuenta verás solo tus datos reales.</p>
+      <aside class="instalar-ayuda caja revelar" id="instalar" aria-labelledby="instalar-titulo">
+        <div>
+          <span class="rotulo">iPhone y iPad</span>
+          <h3 id="instalar-titulo">Agrega FitTrack a tu pantalla de inicio</h3>
+          <ol>
+            <li>Abre esta página directamente en <strong>Safari</strong> y toca <strong>Compartir</strong> <span aria-label="Compartir">↑</span>.</li>
+            <li>Elige <strong>Agregar a pantalla de inicio</strong> y luego toca <strong>Agregar</strong>.</li>
+          </ol>
+          <p class="tenue">Si abriste el enlace desde otra app, ábrelo en Safari. Solo necesitas tu cuenta de FitTrack; no necesitas una cuenta de Vercel ni descargar nada del App Store.</p>
+        </div>
+      </aside>
     </section>
 
     <!-- Contadores -->
