@@ -120,7 +120,7 @@ El símbolo del logo (`img/logo-simbolo.png`) es el corredor recortado de tu `lo
 | **Rutinas** | La rutina de cada día de la semana, ficha de cada ejercicio (animación, músculos, duración, descanso, nivel, equipo e instrucciones), cambiar ejercicios, otra versión del día, rutina libre y rutinas guardadas |
 | **Entrenamiento** | Pantalla completa: ejercicio X de N, figura animada, contador, barra de progreso, músculos, siguiente ejercicio, pausa, saltar, anterior y terminar antes (se guarda lo hecho) |
 | **Progreso** | Pestañas Peso (gráfica con meta, anillo de avance, estadísticas), Medidas (gráfica y tabla) y Fotos (galería privada y comparador antes/después) |
-| **Nutrición** | Plan de comidas del día según el objetivo, cambiar opciones, 20 recetas con ingredientes y pasos, consejo del día |
+| **Nutrición** | Plan diario con recetas etiquetadas para los objetivos elegidos; el enfoque rota entre metas según los días de entreno y descanso. Puedes cambiar cada comida por otra opción del mismo enfoque. |
 | **Calendario** | Tu semana con estados y leyenda, días cumplidos e historial del mes |
 | **Perfil** | Preferencias de entreno (objetivo, nivel, lugar, días, tiempo; al cambiarlas pregunta si actualizar la semana), datos personales, privacidad y datos, contraseña, tema claro/oscuro |
 

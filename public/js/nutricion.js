@@ -40,7 +40,7 @@ function pintarPlan(tipDelDia) {
       <button class="comida-texto" type="button" data-ver-receta="${c.receta.id}">
         <span class="rotulo">${NOMBRES_COMIDA[c.tipo]}</span>
         <strong>${escapar(c.receta.nombre)}</strong>
-        <small>${c.receta.kcal} kcal · ${c.receta.proteina} g proteína · ${c.receta.minutos} min</small>
+        <small>${NOMBRES_CORTOS[c.objetivo] || NOMBRES_CORTOS[planHoy.objetivo]} · ${c.receta.kcal} kcal · ${c.receta.proteina} g proteína · ${c.receta.minutos} min</small>
       </button>
       <button class="btn btn-icono" type="button" data-cambiar-comida="${i}" aria-label="Otra opción de ${NOMBRES_COMIDA[c.tipo].toLowerCase()}">${icono('cambiar')}</button>
     </div>`).join('');
@@ -49,7 +49,7 @@ function pintarPlan(tipDelDia) {
     <div class="rejilla-plan">
       <div>
         <div class="plan-cabeza">
-          <div><h2 class="subtitulo" style="margin:0">Plan de hoy</h2><span class="tenue" style="font-size:.9rem">Pensado para: ${NOMBRES_CORTOS[planHoy.objetivo].toLowerCase()}</span></div>
+          <div><h2 class="subtitulo" style="margin:0">Plan de hoy</h2><span class="tenue" style="font-size:.9rem">Pensado para: ${(planHoy.objetivos || [planHoy.objetivo]).map(o => NOMBRES_CORTOS[o].toLowerCase()).join(' · ')}</span></div>
           <div style="text-align:right"><span class="cifra kcal">≈ ${numero(kcal)}</span> <span class="tenue">kcal</span><br><span class="tenue" style="font-size:.85rem">${proteina} g de proteína</span></div>
         </div>
         ${filas}
@@ -65,7 +65,7 @@ function pintarPlan(tipDelDia) {
 async function cambiarComida(indice) {
   const comida = planHoy.comidas[indice];
   try {
-    comida.receta = await api(`/nutricion/alternativa?tipo=${comida.tipo}&excluir=${comida.receta.id}`);
+    comida.receta = await api(`/nutricion/alternativa?tipo=${comida.tipo}&objetivo=${comida.objetivo}&fecha=${planHoy.fecha}&excluir=${comida.receta.id}`);
     const consejos = await api('/nutricion/consejos');
     pintarPlan(consejos.del_dia);
   } catch (err) {
