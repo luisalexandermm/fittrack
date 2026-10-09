@@ -9,12 +9,25 @@ let diaActual = null;         // 0–6 si es la rutina de un día de la semana; 
 let diaSugerido = null;       // lo ponen Inicio y Calendario al tocar un día
 let objetivoSugerido = null;  // compatibilidad: el calendario puede sugerir un objetivo
 let configuradorListo = false;
+let objetivosRutina = [];
 let rutinasGuardadas = [];
 
 const PICTO_GRUPO = { piernas: 'p-piernas', empuje: 'p-empuje', tiron: 'p-tiron', core: 'p-core', cardio: 'p-cardio', movilidad: 'p-movilidad' };
 
 function prepararRutinas() {
-  seleccionUnica('g-objetivo');
+  document.getElementById('g-objetivo').addEventListener('click', e => {
+    const boton = e.target.closest('[data-objetivo]');
+    if (!boton) return;
+    const objetivo = boton.dataset.objetivo;
+    if (objetivosRutina.includes(objetivo)) {
+      if (objetivosRutina.length === 1) return avisar('Elige al menos un objetivo', 'error');
+      objetivosRutina = objetivosRutina.filter(o => o !== objetivo);
+    } else {
+      if (objetivosRutina.length === 4) return avisar('Puedes elegir hasta 4 objetivos', 'error');
+      objetivosRutina.push(objetivo);
+    }
+    pintarObjetivosRutina();
+  });
   seleccionUnica('g-nivel');
   seleccionUnica('g-lugar');
   const rango = document.getElementById('g-minutos');
@@ -67,7 +80,11 @@ async function cargarRutinas() {
   await cargarPlan();
   // Valores del perfil en el configurador de rutina libre (solo la primera vez)
   if (!configuradorListo) {
-    marcarOpcion('g-objetivo', perfil.objetivo);
+    const objetivosPerfil = perfil.objetivos_dias && typeof perfil.objetivos_dias === 'object'
+      ? Object.keys(perfil.objetivos_dias).filter(o => ['grasa', 'musculo', 'resistencia', 'movilidad'].includes(o))
+      : [];
+    objetivosRutina = objetivosPerfil.length ? objetivosPerfil : [perfil.objetivo || 'grasa'];
+    pintarObjetivosRutina();
     marcarOpcion('g-nivel', perfil.nivel);
     marcarOpcion('g-lugar', perfil.lugar || planSemana.preferencias.lugar || 'casa');
     document.getElementById('g-minutos').value = perfil.minutos;
@@ -82,6 +99,14 @@ async function cargarRutinas() {
     pintarSelectorSemana();
   }
   cargarGuardadas();
+}
+
+function pintarObjetivosRutina() {
+  document.querySelectorAll('#g-objetivo [data-objetivo]').forEach(boton => {
+    const activo = objetivosRutina.includes(boton.dataset.objetivo);
+    boton.classList.toggle('activo', activo);
+    boton.setAttribute('aria-pressed', String(activo));
+  });
 }
 
 // ---------- Semana ----------
@@ -153,7 +178,7 @@ async function generarRutina() {
     rutinaActual = await api('/rutinas/generar', {
       method: 'POST',
       body: {
-        objetivo: valorSeleccionado('g-objetivo'),
+        objetivos: objetivosRutina,
         nivel: valorSeleccionado('g-nivel'),
         lugar: valorSeleccionado('g-lugar'),
         minutos: document.getElementById('g-minutos').value
@@ -213,7 +238,7 @@ function pintarRutina() {
       <div class="banner-figura" id="banner-figura"></div>
     </div>
     <div class="chips-info">
-      <span>${NOMBRES_CORTOS[r.objetivo]}</span>
+      <span>${(r.objetivos || [r.objetivo]).map(o => NOMBRES_CORTOS[o]).join(' · ')}</span>
       <span>${r.trabajo} s trabajo</span>
       <span>${r.descanso} s descanso</span>
       <span>${r.rondas} rondas</span>
@@ -274,7 +299,8 @@ async function cambiarEjercicio(indice) {
   const actual = principal.ejercicios[indice];
   const usados = principal.ejercicios.map(e => e.id).join(',');
   try {
-    const nuevo = await api(`/rutinas/alternativa?grupo=${actual.grupo}&objetivo=${rutinaActual.objetivo}&nivel=${rutinaActual.nivel}&lugar=${rutinaActual.lugar || 'casa'}&excluir=${usados}`);
+    const objetivos = rutinaActual.objetivos || [rutinaActual.objetivo];
+    const nuevo = await api(`/rutinas/alternativa?grupo=${actual.grupo}&objetivos=${objetivos.join(',')}&nivel=${rutinaActual.nivel}&lugar=${rutinaActual.lugar || 'casa'}&excluir=${usados}`);
     principal.ejercicios[indice] = {
       id: nuevo.id, nombre: nuevo.nombre, grupo: nuevo.grupo, nivel: nuevo.nivel, descripcion: nuevo.descripcion,
       equipo: nuevo.equipo || 'ninguno', musculos: nuevo.musculos || '', segundos: actual.segundos
@@ -326,7 +352,7 @@ async function cargarGuardadas() {
   }
   lista.innerHTML = rutinasGuardadas.map(r => `
     <div class="caja guardada">
-      <span class="rotulo">${NOMBRES_CORTOS[r.objetivo] || r.objetivo} · ${r.minutos} min</span>
+      <span class="rotulo">${(r.contenido.objetivos || [r.objetivo]).map(o => NOMBRES_CORTOS[o] || o).join(' · ')} · ${r.minutos} min</span>
       <h3>${escapar(r.nombre)}</h3>
       <div class="fila">
         <button class="btn btn-linea btn-sm" data-accion="abrir" data-id="${r.id}">Abrir</button>

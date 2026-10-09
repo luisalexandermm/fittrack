@@ -57,8 +57,10 @@ function sirveEnLugar(ejercicio, lugar) {
 
 // Busca ejercicios de una fase que sirvan para el objetivo, el nivel y el lugar
 function buscarEjercicios(fase, objetivo, nivel, lugar = 'casa') {
+  const objetivos = Array.isArray(objetivo) ? objetivo : [objetivo];
   return EJERCICIOS.filter(e =>
-    e.fase === fase && e.nivel <= nivel && e.objetivos.split(',').includes(objetivo) && sirveEnLugar(e, lugar));
+    e.fase === fase && e.nivel <= nivel &&
+    objetivos.some(o => e.objetivos.split(',').includes(o)) && sirveEnLugar(e, lugar));
 }
 
 // Elige "cantidad" ejercicios intentando que sean de grupos distintos
@@ -118,12 +120,17 @@ function formatear(ejercicio, segundos) {
 //   grupos  → lista de grupos para el circuito, ej: ['empuje', 'tiron', 'core']
 //   titulo  → nombre que se muestra (por defecto el del objetivo)
 function generarRutina(objetivo, nivel, minutos, opciones = {}) {
-  const base = CONFIG[objetivo];
+  const objetivos = [...new Set(Array.isArray(objetivo) ? objetivo : [objetivo])];
+  if (!objetivos.length || objetivos.length > 4 || objetivos.some(o => !Object.hasOwn(CONFIG, o))) {
+    throw new Error('Elige entre 1 y 4 objetivos válidos');
+  }
+  const base = CONFIG[objetivos[0]];
   const lugar = opciones.lugar || 'casa';
 
+  // Una rutina combinada usa el promedio de trabajo y descanso de sus objetivos.
+  let trabajo = Math.round(objetivos.reduce((total, o) => total + CONFIG[o].trabajo, 0) / objetivos.length);
+  let descanso = Math.round(objetivos.reduce((total, o) => total + CONFIG[o].descanso, 0) / objetivos.length);
   // Ajuste por nivel: principiante trabaja menos y descansa más; avanzado al revés
-  let trabajo = base.trabajo;
-  let descanso = base.descanso;
   if (nivel === 1) { trabajo -= 10; descanso += 10; }
   if (nivel === 3) { trabajo += 10; descanso = Math.max(10, descanso - 5); }
 
@@ -142,8 +149,24 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
   let porRonda = nivel + 3;              // 4, 5 o 6 ejercicios
   if (minutos <= 15) porRonda = Math.min(porRonda, 4);
 
-  const disponibles = buscarEjercicios('principal', objetivo, nivel, lugar);
-  let principal = elegirSinRepetir(disponibles, porRonda, nivel, lugar, opciones);
+  const disponibles = buscarEjercicios('principal', objetivos, nivel, lugar);
+  let elegidos = [];
+  if (objetivos.length > 1) {
+    for (const meta of objetivos) {
+      const candidatos = mezclar(disponibles.filter(e => e.objetivos.split(',').includes(meta) && !elegidos.includes(e)));
+      const exclusivo = candidatos.filter(e => objetivos.filter(o => e.objetivos.split(',').includes(o)).length === 1);
+      const elegido = exclusivo[0] || candidatos[0];
+      if (elegido) elegidos.push(elegido);
+    }
+  }
+  const faltan = porRonda - elegidos.length;
+  if (faltan > 0) {
+    elegidos = [
+      ...elegidos,
+      ...elegirSinRepetir(disponibles.filter(e => !elegidos.includes(e)), faltan, nivel, lugar, opciones)
+    ];
+  }
+  let principal = elegirSinRepetir(elegidos, porRonda, nivel, lugar, opciones);
   principal = principal.map(e => formatear(e, trabajo));
 
   // El tiempo elegido es SOLO el circuito principal (actividad).
@@ -171,8 +194,9 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
   const duracionTotal = segundosSuaves + duracionActividad;
 
   const rutina = {
-    nombre: `${opciones.titulo || base.nombre} · ${Math.round(duracionActividad / 60)} min`,
-    objetivo,
+    nombre: `${opciones.titulo || (objetivos.length > 1 ? 'Rutina combinada' : base.nombre)} · ${Math.round(duracionActividad / 60)} min`,
+    objetivo: objetivos[0],
+    objetivos,
     nivel,
     minutos,
     lugar,
@@ -236,12 +260,16 @@ router.post('/generar', async (req, res) => {
   // select('*'): funciona aunque la base todavía no tenga la columna "lugar"
   const perfil = ok(await req.sb.from('perfiles').select('*').eq('id', req.usuarioId).single());
 
-  const objetivo = CONFIG[req.body.objetivo] ? req.body.objetivo : perfil.objetivo;
+  const objetivosRecibidos = Array.isArray(req.body.objetivos) ? req.body.objetivos : [req.body.objetivo];
+  const objetivos = [...new Set(objetivosRecibidos.filter(o => Object.hasOwn(CONFIG, o)))];
+  if (!objetivos.length || objetivos.length !== objetivosRecibidos.length || objetivos.length > 4) {
+    return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos válidos' });
+  }
   const nivel = [1, 2, 3].includes(Number(req.body.nivel)) ? Number(req.body.nivel) : perfil.nivel;
   const minutos = Math.min(Math.max(Number(req.body.minutos) || perfil.minutos, 10), 60);
   const lugar = LUGARES.includes(req.body.lugar) ? req.body.lugar : (perfil.lugar || 'casa');
 
-  res.json(generarRutina(objetivo, nivel, minutos, { lugar }));
+  res.json(generarRutina(objetivos, nivel, minutos, { lugar }));
 });
 
 // GET /api/rutinas/alternativa?grupo=core&objetivo=grasa&nivel=2&excluir=3,5
@@ -249,16 +277,21 @@ router.post('/generar', async (req, res) => {
 router.get('/alternativa', async (req, res) => {
   EJERCICIOS = (await cargarCatalogos()).ejercicios;
   const { grupo, objetivo } = req.query;
+  const objetivos = String(req.query.objetivos || objetivo || '')
+    .split(',')
+    .filter((o, i, lista) => Object.hasOwn(CONFIG, o) && lista.indexOf(o) === i)
+    .slice(0, 4);
+  if (!objetivos.length) return res.status(400).json({ error: 'Objetivo inválido' });
   const nivel = Number(req.query.nivel) || 1;
   const excluir = String(req.query.excluir || '').split(',').map(Number);
   const lugar = LUGARES.includes(req.query.lugar) ? req.query.lugar : 'casa';
 
-  let opciones = buscarEjercicios('principal', objetivo, nivel, lugar)
+  let opciones = buscarEjercicios('principal', objetivos, nivel, lugar)
     .filter(e => e.grupo === grupo && !excluir.includes(e.id));
 
   // Si no hay del mismo grupo, cualquier otro que sirva para el objetivo
   if (opciones.length === 0) {
-    opciones = buscarEjercicios('principal', objetivo, nivel, lugar).filter(e => !excluir.includes(e.id));
+    opciones = buscarEjercicios('principal', objetivos, nivel, lugar).filter(e => !excluir.includes(e.id));
   }
   if (opciones.length === 0) return res.status(404).json({ error: 'No hay alternativas' });
 
@@ -304,3 +337,4 @@ module.exports.generarRutina = generarRutina;
 module.exports.prepararCatalogo = prepararCatalogo;
 module.exports.CONFIG = CONFIG;
 module.exports.LUGARES = LUGARES;
+module.exports.buscarEjercicios = buscarEjercicios;
