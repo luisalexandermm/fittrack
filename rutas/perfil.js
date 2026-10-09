@@ -3,10 +3,10 @@
 const express = require('express');
 const { ok } = require('../db/supabase');
 const { numeroONull } = require('./utilidades');
-const { limpiarDias, esColumnaFaltante } = require('./plan');
+const { limpiarDias, limpiarObjetivosDias, esColumnaFaltante } = require('./plan');
 
 // Campos que llegaron con la migración del onboarding
-const CAMPOS_NUEVOS = ['lugar', 'dias_entreno', 'edad', 'sexo'];
+const CAMPOS_NUEVOS = ['lugar', 'dias_entreno', 'edad', 'sexo', 'objetivos_dias'];
 
 const router = express.Router();
 
@@ -21,8 +21,8 @@ router.get('/', async (req, res) => {
 
 // PUT /api/perfil  → solo se cambian los campos que llegan
 router.put('/', async (req, res) => {
-  const { nombre, objetivo, nivel, minutos, meta_semanal, altura_cm, meta_peso, lugar, dias_entreno, edad, sexo } = req.body;
-  const actual = ok(await req.sb.from('perfiles').select('sensibles_ok').eq('id', req.usuarioId).single());
+  const { nombre, objetivo, objetivos_dias, nivel, minutos, meta_semanal, altura_cm, meta_peso, lugar, dias_entreno, edad, sexo } = req.body;
+  const actual = ok(await req.sb.from('perfiles').select('*').eq('id', req.usuarioId).single());
   const cambios = {};
 
   if (nombre) cambios.nombre = String(nombre).trim().slice(0, 60);
@@ -42,11 +42,24 @@ router.put('/', async (req, res) => {
 
   // Preferencias del onboarding
   if (['casa', 'gimnasio', 'ambos'].includes(lugar)) cambios.lugar = lugar;
-  if (dias_entreno !== undefined) {
-    const dias = limpiarDias(dias_entreno);
-    if (!dias) return res.status(400).json({ error: 'Elige al menos un día para entrenar' });
+  if (objetivos_dias !== undefined) {
+    const mapa = limpiarObjetivosDias(objetivos_dias);
+    if (!mapa) return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos y asigna días distintos a cada uno' });
+    const dias = [...new Set(Object.values(mapa).flat())].sort((a, b) => a - b);
+    cambios.objetivos_dias = mapa;
+    cambios.objetivo = Object.keys(mapa)[0];
     cambios.dias_entreno = dias;
-    cambios.meta_semanal = dias.length; // la meta semanal sigue funcionando igual que antes
+    cambios.meta_semanal = dias.length;
+  } else if (['grasa', 'musculo', 'resistencia', 'movilidad'].includes(objetivo) || dias_entreno !== undefined) {
+    const dias = dias_entreno === undefined
+      ? limpiarDias(actual.dias_entreno) || [0, 2, 4]
+      : limpiarDias(dias_entreno);
+    if (!dias) return res.status(400).json({ error: 'Elige al menos un día para entrenar' });
+    const objetivoActual = ['grasa', 'musculo', 'resistencia', 'movilidad'].includes(objetivo) ? objetivo : actual.objetivo;
+    cambios.objetivo = objetivoActual;
+    cambios.objetivos_dias = { [objetivoActual]: dias };
+    cambios.dias_entreno = dias;
+    cambios.meta_semanal = dias.length;
   }
   if (sexo !== undefined) cambios.sexo = ['hombre', 'mujer', 'otro'].includes(sexo) ? sexo : null;
   if (edad !== undefined) {

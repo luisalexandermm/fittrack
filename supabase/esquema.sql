@@ -13,6 +13,7 @@ create table if not exists public.perfiles (
   id               uuid primary key references auth.users (id) on delete cascade,
   nombre           text not null check (char_length(nombre) between 1 and 60),
   objetivo         text not null default 'grasa' check (objetivo in ('grasa', 'musculo', 'resistencia', 'movilidad')),
+  objetivos_dias   jsonb check (objetivos_dias is null or (jsonb_typeof(objetivos_dias) = 'object' and pg_column_size(objetivos_dias) < 2000)),
   nivel            smallint not null default 1 check (nivel between 1 and 3),
   minutos          smallint not null default 20 check (minutos between 10 and 60),
   meta_semanal     smallint not null default 3 check (meta_semanal between 1 and 7),
@@ -136,6 +137,10 @@ alter table public.perfiles
   add column if not exists plan_semanal jsonb
   check (plan_semanal is null or pg_column_size(plan_semanal) < 60000);
 
+alter table public.perfiles
+  add column if not exists objetivos_dias jsonb
+  check (objetivos_dias is null or (jsonb_typeof(objetivos_dias) = 'object' and pg_column_size(objetivos_dias) < 2000));
+
 
 -- ninguno = solo tu cuerpo · casa = silla, mesa, pared, toalla · gimnasio = máquinas y pesas
 alter table public.ejercicios
@@ -179,6 +184,7 @@ declare
   datos jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   sensibles boolean := coalesce((datos ->> 'acepta_sensibles')::boolean, false);
   dias smallint[] := null;
+  objetivos jsonb := datos -> 'objetivos_dias';
 begin
   -- Días elegidos en el registro (si llegan bien formados)
   if jsonb_typeof(datos -> 'dias') = 'array' and jsonb_array_length(datos -> 'dias') between 1 and 7 then
@@ -186,13 +192,17 @@ begin
     from jsonb_array_elements_text(datos -> 'dias') as d
     where d ~ '^[0-6]$';
   end if;
+  if coalesce(jsonb_typeof(objetivos), '') <> 'object' then
+    objetivos := jsonb_build_object(coalesce(datos ->> 'objetivo', 'grasa'), to_jsonb(dias));
+  end if;
 
-  insert into public.perfiles (id, nombre, objetivo, nivel, minutos, meta_semanal, meta_peso,
+  insert into public.perfiles (id, nombre, objetivo, objetivos_dias, nivel, minutos, meta_semanal, meta_peso,
                                lugar, dias_entreno, edad, altura_cm, sexo, terminos_fecha, sensibles_ok, sensibles_fecha)
   values (
     new.id,
     coalesce(nullif(left(datos ->> 'nombre', 60), ''), 'Atleta'),
     coalesce(datos ->> 'objetivo', 'grasa'),
+    objetivos,
     coalesce((datos ->> 'nivel')::smallint, 1),
     coalesce((datos ->> 'minutos')::smallint, 20),
     coalesce(cardinality(dias), 3),

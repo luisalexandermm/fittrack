@@ -2,7 +2,7 @@
 //  Plan semanal: qué rutina toca cada día de la semana.
 //
 //  Se arma con las preferencias del perfil:
-//    objetivo · nivel · minutos · lugar · días de entreno
+//    objetivos/días · nivel · minutos · lugar
 //  y usa el MISMO generador de rutinas (rutas/rutinas.js) una vez por día.
 //
 //  Se guarda en perfiles.plan_semanal (jsonb). Las sesiones que ya hiciste
@@ -22,7 +22,7 @@ const { generarRutina, prepararCatalogo, CONFIG, LUGARES } = require('./rutinas'
 
 const router = express.Router();        // rutas con sesión
 const routerPublico = express.Router(); // rutas sin sesión (onboarding)
-const VERSION_PLAN = 3; // 3: tiempo = actividad, semana con fecha y variedad semanal
+const VERSION_PLAN = 4; // 4: cada día tiene el objetivo que le asignó el usuario
 
 // ---------- Enfoques: qué parte del cuerpo se trabaja cada día ----------
 const ENFOQUES = {
@@ -56,6 +56,27 @@ function limpiarDias(dias) {
   return limpios.length ? limpios : null;
 }
 
+// Cada objetivo debe tener al menos un día y ningún día puede repetirse.
+function limpiarObjetivosDias(objetivosDias) {
+  if (!objetivosDias || typeof objetivosDias !== 'object' || Array.isArray(objetivosDias)) return null;
+  const objetivos = Object.keys(objetivosDias);
+  if (!objetivos.length || objetivos.length > 4 || objetivos.some(o => !Object.hasOwn(CONFIG, o))) return null;
+
+  const resultado = {};
+  const diasUsados = new Set();
+  for (const objetivo of objetivos) {
+    const dias = limpiarDias(objetivosDias[objetivo]);
+    if (!dias || dias.length !== objetivosDias[objetivo].length || dias.some(d => diasUsados.has(d))) return null;
+    dias.forEach(d => diasUsados.add(d));
+    resultado[objetivo] = dias;
+  }
+  return resultado;
+}
+
+function mapearDiasObjetivos(objetivosDias) {
+  return Object.entries(objetivosDias).flatMap(([objetivo, dias]) => dias.map(dia => ({ dia, objetivo })));
+}
+
 // Días de entreno del perfil (o los del patrón viejo si todavía no los eligió)
 function diasDelPerfil(perfil) {
   const elegidos = limpiarDias(perfil.dias_entreno);
@@ -66,26 +87,28 @@ function diasDelPerfil(perfil) {
 
 // Preferencias "limpias" a partir del perfil o de lo que manda el onboarding
 function preferencias(datos) {
+  const dias = diasDelPerfil(datos);
+  const objetivosDias = limpiarObjetivosDias(datos.objetivos_dias) ||
+    { [Object.hasOwn(CONFIG, datos.objetivo) ? datos.objetivo : 'grasa']: dias };
   return {
-    objetivo: CONFIG[datos.objetivo] ? datos.objetivo : 'grasa',
+    objetivo: Object.keys(objetivosDias)[0],
+    objetivos_dias: objetivosDias,
     nivel: [1, 2, 3].includes(Number(datos.nivel)) ? Number(datos.nivel) : 1,
     minutos: Math.min(Math.max(Number(datos.minutos) || 20, 10), 60),
     lugar: LUGARES.includes(datos.lugar) ? datos.lugar : 'casa',
-    dias: diasDelPerfil(datos)
+    dias: [...new Set(Object.values(objetivosDias).flat())].sort((a, b) => a - b)
   };
 }
 
 // ---------- 1. Estructura de la semana (sin ejercicios) ----------
 // Siempre da el mismo resultado para las mismas preferencias.
 function estructuraSemana(pref) {
-  const secuencia = pref.dias.length <= 2 && pref.objetivo !== 'movilidad'
-    ? ['full', 'full']                    // con 1–2 días, cuerpo completo cada vez
-    : SECUENCIAS[pref.objetivo];
-
-  let numeroEntreno = 0;
+  const porDia = new Map(mapearDiasObjetivos(pref.objetivos_dias || { [pref.objetivo]: pref.dias }).map(x => [x.dia, x.objetivo]));
+  const numeroPorObjetivo = {};
   let descansosSeguidos = 0;
   return NOMBRES_DIA.map((nombre, dia) => {
-    if (!pref.dias.includes(dia)) {
+    const objetivo = porDia.get(dia);
+    if (!objetivo) {
       descansosSeguidos++;
       // El primer día libre después de entrenar es "descanso activo" (caminar, estirar)
       const activo = descansosSeguidos === 1 && dia > 0;
@@ -98,11 +121,15 @@ function estructuraSemana(pref) {
       };
     }
     descansosSeguidos = 0;
+    const secuencia = pref.dias.length <= 2 && objetivo !== 'movilidad'
+      ? ['full', 'full']
+      : SECUENCIAS[objetivo];
+    const numeroEntreno = numeroPorObjetivo[objetivo] || 0;
     const enfoque = secuencia[numeroEntreno % secuencia.length];
-    numeroEntreno++;
+    numeroPorObjetivo[objetivo] = numeroEntreno + 1;
     // Si el objetivo no es movilidad, el día de movilidad es corto (máx. 20 min)
-    const minutos = enfoque === 'movilidad' && pref.objetivo !== 'movilidad' ? Math.min(pref.minutos, 20) : pref.minutos;
-    return { dia, nombre, entrena: true, tipo: 'entreno', enfoque, titulo: ENFOQUES[enfoque].titulo, minutos, picto: ENFOQUES[enfoque].picto };
+    const minutos = enfoque === 'movilidad' && objetivo !== 'movilidad' ? Math.min(pref.minutos, 20) : pref.minutos;
+    return { dia, nombre, entrena: true, tipo: 'entreno', objetivo, enfoque, titulo: ENFOQUES[enfoque].titulo, minutos, picto: ENFOQUES[enfoque].picto };
   });
 }
 
@@ -110,7 +137,7 @@ function estructuraSemana(pref) {
 // evitar = [ids del día anterior, ids de la semana, ids de la semana pasada]
 function rutinaDelDia(dia, pref, evitar = []) {
   const enfoque = ENFOQUES[dia.enfoque];
-  const objetivo = dia.enfoque === 'movilidad' ? 'movilidad' : pref.objetivo;
+  const objetivo = dia.enfoque === 'movilidad' ? 'movilidad' : dia.objetivo || pref.objetivo;
   return generarRutina(objetivo, pref.nivel, dia.minutos, {
     lugar: pref.lugar,
     grupos: enfoque.grupos,
@@ -181,6 +208,9 @@ function esColumnaFaltante(error) {
 // POST /api/plan/estructura  (pública, la usa el onboarding antes de crear la cuenta)
 // { objetivo, nivel, minutos, lugar, dias } → los 7 días con enfoque y minutos
 routerPublico.post('/estructura', (req, res) => {
+  if (req.body.objetivos_dias !== undefined && !limpiarObjetivosDias(req.body.objetivos_dias)) {
+    return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos y asigna días distintos a cada uno' });
+  }
   const pref = preferencias({ ...req.body, dias_entreno: req.body.dias });
   res.json({ preferencias: pref, dias: estructuraSemana(pref) });
 });
@@ -241,6 +271,7 @@ module.exports.publico = routerPublico;
 module.exports.estructuraSemana = estructuraSemana;
 module.exports.preferencias = preferencias;
 module.exports.limpiarDias = limpiarDias;
+module.exports.limpiarObjetivosDias = limpiarObjetivosDias;
 module.exports.esColumnaFaltante = esColumnaFaltante;
 module.exports.construirPlan = construirPlan;
 module.exports.idsDelPlan = idsDelPlan;

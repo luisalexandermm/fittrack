@@ -23,7 +23,7 @@ Eso crea las tablas, las reglas de seguridad (RLS), el trigger que arma el perfi
 
 ### ¿Tu base ya tenía usuarios? Ejecuta la migración (una sola vez)
 Si ya habías ejecutado el `esquema.sql` anterior, **no borres nada**: ejecuta en el SQL Editor, en este orden:
-1. `supabase/migracion-onboarding.sql`
+1. `supabase/migracion-onboarding.sql` → agrega los objetivos múltiples y la asignación de días.
 2. `supabase/datos.sql`
 
 La migración **solo agrega** cosas y se puede ejecutar varias veces:
@@ -34,19 +34,21 @@ La migración **solo agrega** cosas y se puede ejecutar varias veces:
 | `perfiles.dias_entreno` (0 = lunes … 6 = domingo) | los días que eligió; si está vacío se calculan con `meta_semanal` como antes |
 | `perfiles.edad` (opcional) | dato básico del onboarding |
 | `perfiles.plan_semanal` (jsonb) | la semana generada: qué rutina toca cada día |
+| `perfiles.objetivos_dias` (jsonb) | hasta cuatro objetivos y los días asignados a cada uno |
 | `ejercicios.equipo` y `ejercicios.musculos` | filtrar por lugar y mostrar los músculos en la ficha |
-| trigger `crear_perfil` ampliado | guarda lugar, días, edad, altura y medidas iniciales al registrarse |
+| trigger `crear_perfil` ampliado | guarda objetivos y sus días, lugar, edad, altura y medidas iniciales al registrarse |
 
 No cambia ninguna política RLS, no borra columnas ni usuarios, y `datos.sql` agrega los ejercicios nuevos **al final**, así que los ids de siempre no cambian.
 Los usuarios antiguos quedan con "casa" y sus días de siempre, y en Inicio ven una tarjeta para completar sus preferencias.
-Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan lugar y días.
+Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan objetivos múltiples, lugar y días.
 
 ### Migración de calorías (v6, una sola vez)
 Si ya ejecutaste `migracion-onboarding.sql`, ejecuta ahora **en este orden**:
-1. `supabase/migracion-calorias.sql` → agrega `perfiles.sexo` (opcional) y `sesiones.kcal`, y actualiza el trigger de registro para guardar el sexo.
-2. `supabase/datos.sql` → trae los 41 ejercicios nuevos (van al final, los ids de siempre no cambian).
+1. `supabase/migracion-onboarding.sql` otra vez → agrega el campo de objetivos múltiples y actualiza el trigger.
+2. `supabase/migracion-calorias.sql` → agrega `perfiles.sexo` (opcional) y `sesiones.kcal`, y actualiza el trigger para conservar todas las preferencias del registro.
+3. `supabase/datos.sql` → trae los 41 ejercicios nuevos (van al final, los ids de siempre no cambian).
 
-Solo agrega columnas; no toca RLS ni datos. Si vuelves a ejecutar `migracion-onboarding.sql` después, corre otra vez `migracion-calorias.sql` (las dos actualizan el mismo trigger).
+Solo agrega columnas; no toca RLS ni datos. Si vuelves a ejecutar `migracion-onboarding.sql` después, corre otra vez `migracion-calorias.sql` para dejar el trigger actualizado.
 Sin esta migración la app sigue funcionando: las calorías se calculan al vuelo con la duración de cada sesión.
 
 ### 3. Configura el inicio de sesión
@@ -188,7 +190,7 @@ fittrack/
 │   └── utilidades.js         → fechas, números, reglas de contraseña
 ├── supabase/
 │   ├── esquema.sql           → tablas, RLS, trigger y bucket de fotos (instalación nueva)
-│   ├── migracion-onboarding.sql → solo si tu base ya existía: agrega lo del onboarding
+│   ├── migracion-onboarding.sql → si tu base ya existía: onboarding y objetivos múltiples
 │   ├── migracion-calorias.sql   → después de la anterior: sexo y kcal por sesión
 │   ├── datos.sql             → ejercicios, recetas y consejos (ejecutar 2.º)
 │   ├── generar-datos.js      → regenera datos.sql si cambias los catálogos (npm run sql)

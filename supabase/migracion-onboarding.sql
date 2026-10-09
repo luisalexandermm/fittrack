@@ -40,6 +40,11 @@ alter table public.perfiles
   add column if not exists plan_semanal jsonb
   check (plan_semanal is null or pg_column_size(plan_semanal) < 60000);
 
+-- Hasta cuatro objetivos con sus días, sin repetir días entre objetivos.
+alter table public.perfiles
+  add column if not exists objetivos_dias jsonb
+  check (objetivos_dias is null or (jsonb_typeof(objetivos_dias) = 'object' and pg_column_size(objetivos_dias) < 2000));
+
 
 -- ------------------------------------------------------------
 -- 2. EJERCICIOS: equipo necesario y músculos trabajados
@@ -54,7 +59,7 @@ alter table public.ejercicios
 
 
 -- ------------------------------------------------------------
--- 3. TRIGGER DE REGISTRO: ahora también guarda lugar, días, edad y altura
+-- 3. TRIGGER DE REGISTRO: también guarda objetivos/días, lugar, edad y altura
 --    (lo demás funciona exactamente igual que antes)
 -- ------------------------------------------------------------
 create or replace function public.crear_perfil()
@@ -67,6 +72,7 @@ declare
   datos jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   sensibles boolean := coalesce((datos ->> 'acepta_sensibles')::boolean, false);
   dias smallint[] := null;
+  objetivos jsonb := datos -> 'objetivos_dias';
 begin
   -- Días elegidos en el registro (si llegan bien formados)
   if jsonb_typeof(datos -> 'dias') = 'array' and jsonb_array_length(datos -> 'dias') between 1 and 7 then
@@ -74,13 +80,17 @@ begin
     from jsonb_array_elements_text(datos -> 'dias') as d
     where d ~ '^[0-6]$';
   end if;
+  if coalesce(jsonb_typeof(objetivos), '') <> 'object' then
+    objetivos := jsonb_build_object(coalesce(datos ->> 'objetivo', 'grasa'), to_jsonb(dias));
+  end if;
 
-  insert into public.perfiles (id, nombre, objetivo, nivel, minutos, meta_semanal, meta_peso,
+  insert into public.perfiles (id, nombre, objetivo, objetivos_dias, nivel, minutos, meta_semanal, meta_peso,
                                lugar, dias_entreno, edad, altura_cm, terminos_fecha, sensibles_ok, sensibles_fecha)
   values (
     new.id,
     coalesce(nullif(left(datos ->> 'nombre', 60), ''), 'Atleta'),
     coalesce(datos ->> 'objetivo', 'grasa'),
+    objetivos,
     coalesce((datos ->> 'nivel')::smallint, 1),
     coalesce((datos ->> 'minutos')::smallint, 20),
     coalesce(cardinality(dias), 3),

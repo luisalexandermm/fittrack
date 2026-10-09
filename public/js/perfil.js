@@ -28,26 +28,44 @@ async function cargarPerfil() {
     stat(r.cintura != null ? numero(r.cintura, 1) : null, 'cm', 'Cintura') +
     stat(r.grasa != null ? numero(r.grasa, 1) : null, '%', 'Grasa corporal');
 
+  const mapaObjetivos = objetivosDiasPerfil();
+  const nombresObjetivos = Object.keys(mapaObjetivos).map(objetivo => NOMBRES_OBJETIVO[objetivo]).join(' · ');
   document.getElementById('perfil-objetivo').innerHTML = `
     <span class="tile">${icono('objetivo')}</span>
-    <div><strong>${NOMBRES_OBJETIVO[perfil.objetivo]}</strong><small>${perfil.meta_peso ? `Meta: ${numero(perfil.meta_peso, 1)} kg` : `${perfil.meta_semanal} días por semana · ${perfil.minutos} min`}</small></div>
+    <div><strong>${nombresObjetivos}</strong><small>${perfil.meta_peso ? `Meta: ${numero(perfil.meta_peso, 1)} kg` : `${perfil.meta_semanal} días por semana · ${perfil.minutos} min`}</small></div>
     ${icono('chevron', 'chev')}`;
 }
 
 // ---------- Resumen de preferencias ----------
 function diasDeEntreno() {
+  const objetivos = perfil.objetivos_dias;
+  if (objetivos && typeof objetivos === 'object' && !Array.isArray(objetivos)) {
+    const diasObjetivos = Object.values(objetivos).flat().map(Number);
+    if (diasObjetivos.length) return [...new Set(diasObjetivos)].sort((a, b) => a - b);
+  }
   // Si el perfil todavía no tiene días elegidos, se usan los de la semana actual
   if (Array.isArray(perfil.dias_entreno) && perfil.dias_entreno.length) return perfil.dias_entreno;
   return planSemana.dias.filter(d => d.entrena).map(d => d.dia);
 }
 
+function objetivosDiasPerfil() {
+  const actuales = perfil.objetivos_dias;
+  if (actuales && typeof actuales === 'object' && !Array.isArray(actuales) && Object.keys(actuales).length) {
+    return Object.fromEntries(Object.entries(actuales).map(([objetivo, dias]) => [objetivo, Array.isArray(dias) ? dias.map(Number) : []]));
+  }
+  return { [perfil.objetivo || 'grasa']: diasDeEntreno() };
+}
+
 function pintarPreferencias() {
   const dias = diasDeEntreno();
+  const objetivos = objetivosDiasPerfil();
   const lugar = perfil.lugar || planSemana.preferencias.lugar || 'casa';
   const fila = (etiqueta, valor) => `<div><dt>${etiqueta}</dt><dd>${valor}</dd></div>`;
+  const resumenObjetivos = Object.entries(objetivos).map(([objetivo, diasObjetivo]) =>
+    `${NOMBRES_CORTOS[objetivo]}: ${diasObjetivo.map(d => DIAS_CORTOS[d]).join(', ') || 'sin días'}`).join(' · ');
   document.getElementById('perfil-preferencias').innerHTML = `
     <dl class="lista-preferencias">
-      ${fila('Objetivo', NOMBRES_CORTOS[perfil.objetivo])}
+      ${fila('Objetivos', resumenObjetivos)}
       ${fila('Nivel', NOMBRES_NIVEL[perfil.nivel])}
       ${fila('Lugar', { casa: 'Casa', gimnasio: 'Gimnasio', ambos: 'Casa y gimnasio' }[lugar])}
       ${fila('Días', `<span class="dias-mini">${DIAS_CORTOS.map((d, i) => `<i class="${dias.includes(i) ? 'on' : ''}">${d.charAt(0)}</i>`).join('')}</span>`)}
@@ -58,23 +76,26 @@ function pintarPreferencias() {
 // ---------- Preferencias de entreno (lo mismo que el onboarding) ----------
 function abrirPreferencias() {
   const opcion = (valor, texto, actual) => `<button type="button" class="opcion ${String(valor) === String(actual) ? 'activo' : ''}" data-valor="${valor}">${texto}</button>`;
-  const dias = diasDeEntreno();
+  const objetivosIniciales = objetivosDiasPerfil();
   const lugar = perfil.lugar || planSemana.preferencias.lugar || 'casa';
   abrirModal(`
     <form class="form-modal" id="form-preferencias">
       <span class="rotulo">Preferencias de entreno</span>
       <h2>Así entrenas</h2>
-      <div class="campo"><span class="rotulo">Objetivo</span>
-        <div class="opciones" id="p-objetivo">${opcion('grasa', 'Quemar grasa', perfil.objetivo)}${opcion('musculo', 'Músculo', perfil.objetivo)}${opcion('resistencia', 'Resistencia', perfil.objetivo)}${opcion('movilidad', 'Movilidad', perfil.objetivo)}</div>
+      <div class="campo"><span class="rotulo">Objetivos <small class="tenue">(hasta 4)</small></span>
+        <div class="opciones" id="p-objetivos" role="group" aria-label="Objetivos de entrenamiento">
+          ${[['grasa', 'Quemar grasa'], ['musculo', 'Músculo'], ['resistencia', 'Resistencia'], ['movilidad', 'Movilidad']].map(([id, nombre]) => `<button type="button" class="opcion ${objetivosIniciales[id] ? 'activo' : ''}" data-objetivo="${id}" aria-pressed="${Boolean(objetivosIniciales[id])}">${nombre}</button>`).join('')}
+        </div>
+      </div>
+      <div class="campo"><span class="rotulo">Días por objetivo</span>
+        <div class="ob-asignacion-dias" id="p-dias-objetivo"></div>
+        <small class="tenue">Cada día solo puede pertenecer a un objetivo.</small>
       </div>
       <div class="campo"><span class="rotulo">Nivel</span>
         <div class="opciones" id="p-nivel">${opcion(1, 'Principiante', perfil.nivel)}${opcion(2, 'Intermedio', perfil.nivel)}${opcion(3, 'Avanzado', perfil.nivel)}</div>
       </div>
       <div class="campo"><span class="rotulo">Lugar</span>
         <div class="opciones" id="p-lugar">${opcion('casa', 'Casa', lugar)}${opcion('gimnasio', 'Gimnasio', lugar)}${opcion('ambos', 'Ambos', lugar)}</div>
-      </div>
-      <div class="campo"><span class="rotulo">Días para entrenar</span>
-        <div class="dias-elegir" id="p-dias">${DIAS_CORTOS.map((d, i) => `<button type="button" class="${dias.includes(i) ? 'activo' : ''}" data-dia="${i}" aria-pressed="${dias.includes(i)}" aria-label="${DIAS_LARGOS[i]}">${d.charAt(0)}</button>`).join('')}</div>
       </div>
       <div class="campo"><span class="rotulo">Tiempo de actividad por sesión <small class="tenue">(sin contar calentamiento)</small></span>
         <div class="opciones" id="p-minutos">${[10, 15, 20, 30, 45, 60].map(m => opcion(m, m === 60 ? '60+ min' : m + ' min', cercano(perfil.minutos))).join('')}</div>
@@ -86,33 +107,81 @@ function abrirPreferencias() {
       </div>
     </form>`);
 
-  ['p-objetivo', 'p-nivel', 'p-lugar', 'p-minutos'].forEach(id => seleccionUnica(id));
-  document.getElementById('p-dias').addEventListener('click', e => {
-    const b = e.target.closest('[data-dia]');
+  let objetivosDias = Object.fromEntries(Object.entries(objetivosIniciales).map(([id, valores]) => [id, [...valores]]));
+  const pintarDiasObjetivos = foco => {
+    const ocupados = new Set(Object.values(objetivosDias).flat());
+    document.getElementById('p-dias-objetivo').innerHTML = Object.entries(objetivosDias).map(([objetivo, diasObjetivo]) => `
+      <section class="ob-asignacion">
+        <h3>${NOMBRES_CORTOS[objetivo]}</h3>
+        <div class="ob-dias" role="group" aria-label="Días para ${NOMBRES_CORTOS[objetivo]}">
+          ${DIAS_LARGOS.map((nombre, i) => {
+            const activo = diasObjetivo.includes(i);
+            const deshabilitado = ocupados.has(i) && !activo;
+            return `<button type="button" class="ob-dia ${activo ? 'activo' : ''}" data-objetivo="${objetivo}" data-dia="${i}" aria-pressed="${activo}" aria-label="${nombre}" ${deshabilitado ? 'disabled title="Este día ya está asignado a otro objetivo"' : ''}><b>${DIAS_CORTOS[i].charAt(0)}</b><span>${nombre}</span></button>`;
+          }).join('')}
+        </div>
+      </section>`).join('');
+    if (foco) {
+      const boton = document.querySelector(`#p-dias-objetivo [data-objetivo="${foco.objetivo}"][data-dia="${foco.dia}"]`);
+      if (boton) boton.focus();
+    }
+  };
+  pintarDiasObjetivos();
+  document.getElementById('p-objetivos').addEventListener('click', e => {
+    const b = e.target.closest('[data-objetivo]');
     if (!b) return;
-    b.classList.toggle('activo');
-    b.setAttribute('aria-pressed', b.classList.contains('activo'));
+    const objetivo = b.dataset.objetivo;
+    if (objetivosDias[objetivo]) {
+      if (Object.keys(objetivosDias).length === 1) {
+        document.getElementById('p-pref-error').textContent = 'Elige al menos un objetivo';
+        return;
+      }
+      delete objetivosDias[objetivo];
+    } else {
+      if (Object.keys(objetivosDias).length === 4) {
+        document.getElementById('p-pref-error').textContent = 'Puedes elegir hasta 4 objetivos';
+        return;
+      }
+      objetivosDias[objetivo] = [];
+    }
+    document.querySelectorAll('#p-objetivos [data-objetivo]').forEach(opcion => {
+      const activo = Boolean(objetivosDias[opcion.dataset.objetivo]);
+      opcion.classList.toggle('activo', activo);
+      opcion.setAttribute('aria-pressed', String(activo));
+    });
+    document.getElementById('p-pref-error').textContent = '';
+    pintarDiasObjetivos();
   });
+  document.getElementById('p-dias-objetivo').addEventListener('click', e => {
+    const b = e.target.closest('[data-objetivo][data-dia]');
+    if (!b) return;
+    const objetivo = b.dataset.objetivo, dia = Number(b.dataset.dia);
+    const valores = objetivosDias[objetivo];
+    objetivosDias[objetivo] = valores.includes(dia) ? valores.filter(d => d !== dia) : [...valores, dia].sort((a, c) => a - c);
+    document.getElementById('p-pref-error').textContent = '';
+    pintarDiasObjetivos({ objetivo, dia });
+  });
+  ['p-nivel', 'p-lugar', 'p-minutos'].forEach(id => seleccionUnica(id));
 
   document.getElementById('form-preferencias').addEventListener('submit', async e => {
     e.preventDefault();
+    if (!Object.keys(objetivosDias).length) return (document.getElementById('p-pref-error').textContent = 'Elige al menos un objetivo');
+    if (Object.values(objetivosDias).some(valores => !valores.length)) return (document.getElementById('p-pref-error').textContent = 'Elige al menos un día para cada objetivo');
     const nuevas = {
-      objetivo: valorSeleccionado('p-objetivo'),
+      objetivos_dias: objetivosDias,
       nivel: Number(valorSeleccionado('p-nivel')),
       lugar: valorSeleccionado('p-lugar'),
-      dias_entreno: [...document.querySelectorAll('#p-dias .activo')].map(b => Number(b.dataset.dia)),
       minutos: Number(valorSeleccionado('p-minutos'))
     };
-    if (!nuevas.dias_entreno.length) return (document.getElementById('p-pref-error').textContent = 'Elige al menos un día');
 
-    const antes = { objetivo: perfil.objetivo, nivel: perfil.nivel, lugar, dias_entreno: dias, minutos: perfil.minutos };
+    const antes = { objetivos_dias: objetivosIniciales, nivel: perfil.nivel, lugar, minutos: perfil.minutos };
     const cambio = JSON.stringify(antes) !== JSON.stringify(nuevas);
     try {
       const respuesta = await api('/perfil', { method: 'PUT', body: nuevas });
       await recargarPerfil();
       configuradorListo = false; // la rutina libre usará los nuevos valores
       if (!respuesta.falta_migracion) planSemana.pendientes = false; // ya no hace falta el aviso de Inicio
-      if (respuesta.falta_migracion) avisar('Se guardó objetivo, nivel y tiempo. Lugar y días necesitan la migración de la base de datos.', 'error');
+      if (respuesta.falta_migracion) avisar('Se guardó nivel y tiempo. Para guardar objetivos múltiples y sus días, ejecuta las migraciones de la base de datos.', 'error');
       if (cambio) preguntarReplanificar();
       else { cerrarModal(); avisar('Preferencias guardadas'); }
       pintarPreferencias();

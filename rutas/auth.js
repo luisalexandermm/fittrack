@@ -6,7 +6,7 @@ const express = require('express');
 const { clienteAuth } = require('../db/supabase');
 const { guardarSesion, borrarSesion, obtenerSesion } = require('../middleware/auth');
 const { hoy, numeroONull, passwordValida, traducirErrorAuth } = require('./utilidades');
-const { limpiarDias } = require('./plan');
+const { limpiarDias, limpiarObjetivosDias } = require('./plan');
 
 const router = express.Router();
 const OBJETIVOS = ['grasa', 'musculo', 'resistencia', 'movilidad'];
@@ -18,7 +18,7 @@ function urlSitio(req) {
 
 // POST /api/auth/registro
 router.post('/registro', async (req, res) => {
-  const { nombre, email, password, objetivo, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
+  const { nombre, email, password, objetivo, objetivos_dias, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
           lugar, dias, edad, altura, sexo, cintura, cadera, pecho, brazo, muslo } = req.body;
 
   if (!nombre || !email || !password) return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios' });
@@ -50,11 +50,21 @@ router.post('/registro', async (req, res) => {
     return res.status(400).json({ error: 'Revisa la edad' });
   }
 
+  const objetivosLimpios = objetivos_dias === undefined ? null : limpiarObjetivosDias(objetivos_dias);
+  if (objetivos_dias !== undefined && !objetivosLimpios) {
+    return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos y asigna días distintos a cada uno' });
+  }
+  const diasLimpios = objetivosLimpios
+    ? [...new Set(Object.values(objetivosLimpios).flat())].sort((a, b) => a - b)
+    : limpiarDias(dias) || [0, 2, 4];
+  const objetivoPrincipal = objetivosLimpios ? Object.keys(objetivosLimpios)[0] : objetivo;
+
   // Estos datos viajan a Supabase y el trigger "crear_perfil" arma el perfil con ellos
-  // (lugar, dias y edad los guarda el trigger nuevo de migracion-onboarding.sql; el viejo los ignora)
+  // (lugar, dias y edad los guarda el trigger actualizado de migracion-onboarding.sql)
   const datosPerfil = {
     nombre: String(nombre).trim().slice(0, 60),
-    objetivo: OBJETIVOS.includes(objetivo) ? objetivo : 'grasa',
+    objetivo: OBJETIVOS.includes(objetivoPrincipal) ? objetivoPrincipal : 'grasa',
+    objetivos_dias: objetivosLimpios || { [OBJETIVOS.includes(objetivo) ? objetivo : 'grasa']: diasLimpios },
     nivel: [1, 2, 3].includes(Number(nivel)) ? Number(nivel) : 1,
     minutos: Math.min(Math.max(Number(minutos) || 20, 10), 60),
     acepta_terminos: true,
@@ -67,7 +77,7 @@ router.post('/registro', async (req, res) => {
     brazo: medida(brazo),
     muslo: medida(muslo),
     lugar: ['casa', 'gimnasio', 'ambos'].includes(lugar) ? lugar : 'casa',
-    dias: limpiarDias(dias) || [0, 2, 4],
+    dias: diasLimpios,
     edad: edadNumerica !== null ? Math.round(edadNumerica) : null,
     altura: alturaNumerica && alturaNumerica >= 50 && alturaNumerica <= 260 ? alturaNumerica : null,
     sexo: ['hombre', 'mujer', 'otro'].includes(sexo) ? sexo : null,

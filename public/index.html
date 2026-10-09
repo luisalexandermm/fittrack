@@ -480,15 +480,15 @@
             </div>
           </section>
 
-          <!-- Paso 2: objetivo -->
+          <!-- Paso 2: objetivos -->
           <section class="ob-paso" data-paso="2" hidden>
             <h2 class="ob-titulo">¿Qué quieres conseguir?</h2>
-            <p class="ob-sub">Define el ritmo de trabajo y descanso de tus rutinas.</p>
-            <div class="ob-opciones" id="r-objetivo">
-              <button type="button" class="ob-opcion activo" data-valor="grasa"><svg class="picto"><use href="img/iconos.svg#p-cardio"/></svg><strong>Definir / perder grasa</strong><span>Intervalos intensos</span></button>
-              <button type="button" class="ob-opcion" data-valor="musculo"><svg class="picto"><use href="img/iconos.svg#p-empuje"/></svg><strong>Ganar músculo</strong><span>Fuerza y tensión</span></button>
-              <button type="button" class="ob-opcion" data-valor="resistencia"><svg class="picto"><use href="img/iconos.svg#p-piernas"/></svg><strong>Mejorar resistencia</strong><span>Aguantar más</span></button>
-              <button type="button" class="ob-opcion" data-valor="movilidad"><svg class="picto"><use href="img/iconos.svg#p-movilidad"/></svg><strong>Mejorar movilidad</strong><span>Postura y soltura</span></button>
+            <p class="ob-sub">Elige hasta 4 objetivos. Después asignarás días distintos a cada uno.</p>
+            <div class="ob-opciones" id="r-objetivo" role="group" aria-label="Objetivos de entrenamiento">
+              <button type="button" class="ob-opcion activo" data-objetivo="grasa" aria-pressed="true"><svg class="picto"><use href="img/iconos.svg#p-cardio"/></svg><strong>Definir / perder grasa</strong><span>Intervalos intensos</span></button>
+              <button type="button" class="ob-opcion" data-objetivo="musculo" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-empuje"/></svg><strong>Ganar músculo</strong><span>Fuerza y tensión</span></button>
+              <button type="button" class="ob-opcion" data-objetivo="resistencia" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-piernas"/></svg><strong>Mejorar resistencia</strong><span>Aguantar más</span></button>
+              <button type="button" class="ob-opcion" data-objetivo="movilidad" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-movilidad"/></svg><strong>Mejorar movilidad</strong><span>Postura y soltura</span></button>
             </div>
           </section>
 
@@ -514,20 +514,12 @@
             </div>
           </section>
 
-          <!-- Paso 5: días -->
+          <!-- Paso 5: días por objetivo -->
           <section class="ob-paso" data-paso="5" hidden>
-            <h2 class="ob-titulo">¿Qué días quieres entrenar?</h2>
-            <p class="ob-sub">Elige los que de verdad puedes. Luego lo cambias en tu perfil.</p>
-            <div class="ob-dias" id="r-dias" role="group" aria-label="Días de entrenamiento">
-              <button type="button" class="ob-dia activo" data-dia="0" aria-pressed="true"><b>L</b><span>Lunes</span></button>
-              <button type="button" class="ob-dia" data-dia="1" aria-pressed="false"><b>M</b><span>Martes</span></button>
-              <button type="button" class="ob-dia activo" data-dia="2" aria-pressed="true"><b>X</b><span>Miércoles</span></button>
-              <button type="button" class="ob-dia" data-dia="3" aria-pressed="false"><b>J</b><span>Jueves</span></button>
-              <button type="button" class="ob-dia activo" data-dia="4" aria-pressed="true"><b>V</b><span>Viernes</span></button>
-              <button type="button" class="ob-dia" data-dia="5" aria-pressed="false"><b>S</b><span>Sábado</span></button>
-              <button type="button" class="ob-dia" data-dia="6" aria-pressed="false"><b>D</b><span>Domingo</span></button>
-            </div>
-            <p class="ob-pista" id="r-dias-pista">3 días por semana · un gran comienzo</p>
+            <h2 class="ob-titulo">¿Qué días dedicarás a cada objetivo?</h2>
+            <p class="ob-sub">Cada día solo puede pertenecer a un objetivo. Elige al menos un día por objetivo.</p>
+            <div class="ob-asignacion-dias" id="r-dias-objetivo"></div>
+            <p class="ob-pista" id="r-dias-pista">Asigna los días de cada objetivo</p>
           </section>
 
           <!-- Paso 6: tiempo -->

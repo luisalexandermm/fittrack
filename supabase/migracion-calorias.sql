@@ -2,7 +2,7 @@
 --  FitTrack — migración "calorías + sexo" (v6)
 --
 --  Para tu base que YA TIENE usuarios y ya ejecutó migracion-onboarding.sql.
---  Solo AGREGA dos columnas y actualiza el trigger de registro.
+--  Solo AGREGA columnas y actualiza el trigger de registro.
 --  No borra nada y no cambia las políticas RLS.
 --  Supabase → SQL Editor → New query → pega TODO → Run.
 --  Después ejecuta datos.sql (trae los 41 ejercicios nuevos).
@@ -14,6 +14,11 @@
 alter table public.perfiles
   add column if not exists sexo text
   check (sexo is null or sexo in ('hombre', 'mujer', 'otro'));
+
+-- Metas de entrenamiento y días asignados a cada una.
+alter table public.perfiles
+  add column if not exists objetivos_dias jsonb
+  check (objetivos_dias is null or (jsonb_typeof(objetivos_dias) = 'object' and pg_column_size(objetivos_dias) < 2000));
 
 -- Calorías estimadas de cada sesión (MET × peso × tiempo). Se calcula en el servidor.
 alter table public.sesiones
@@ -32,6 +37,7 @@ declare
   datos jsonb := coalesce(new.raw_user_meta_data, '{}'::jsonb);
   sensibles boolean := coalesce((datos ->> 'acepta_sensibles')::boolean, false);
   dias smallint[] := null;
+  objetivos jsonb := datos -> 'objetivos_dias';
 begin
   -- Días elegidos en el registro (si llegan bien formados)
   if jsonb_typeof(datos -> 'dias') = 'array' and jsonb_array_length(datos -> 'dias') between 1 and 7 then
@@ -39,13 +45,17 @@ begin
     from jsonb_array_elements_text(datos -> 'dias') as d
     where d ~ '^[0-6]$';
   end if;
+  if coalesce(jsonb_typeof(objetivos), '') <> 'object' then
+    objetivos := jsonb_build_object(coalesce(datos ->> 'objetivo', 'grasa'), to_jsonb(dias));
+  end if;
 
-  insert into public.perfiles (id, nombre, objetivo, nivel, minutos, meta_semanal, meta_peso,
+  insert into public.perfiles (id, nombre, objetivo, objetivos_dias, nivel, minutos, meta_semanal, meta_peso,
                                lugar, dias_entreno, edad, altura_cm, sexo, terminos_fecha, sensibles_ok, sensibles_fecha)
   values (
     new.id,
     coalesce(nullif(left(datos ->> 'nombre', 60), ''), 'Atleta'),
     coalesce(datos ->> 'objetivo', 'grasa'),
+    objetivos,
     coalesce((datos ->> 'nivel')::smallint, 1),
     coalesce((datos ->> 'minutos')::smallint, 20),
     coalesce(cardinality(dias), 3),
