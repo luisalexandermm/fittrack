@@ -9,25 +9,12 @@ let diaActual = null;         // 0–6 si es la rutina de un día de la semana; 
 let diaSugerido = null;       // lo ponen Inicio y Calendario al tocar un día
 let objetivoSugerido = null;  // compatibilidad: el calendario puede sugerir un objetivo
 let configuradorListo = false;
-let objetivosRutina = [];
 let rutinasGuardadas = [];
 
 const PICTO_GRUPO = { piernas: 'p-piernas', empuje: 'p-empuje', tiron: 'p-tiron', core: 'p-core', cardio: 'p-cardio', movilidad: 'p-movilidad' };
 
 function prepararRutinas() {
-  document.getElementById('g-objetivo').addEventListener('click', e => {
-    const boton = e.target.closest('[data-objetivo]');
-    if (!boton) return;
-    const objetivo = boton.dataset.objetivo;
-    if (objetivosRutina.includes(objetivo)) {
-      if (objetivosRutina.length === 1) return avisar('Elige al menos un objetivo', 'error');
-      objetivosRutina = objetivosRutina.filter(o => o !== objetivo);
-    } else {
-      if (objetivosRutina.length === 4) return avisar('Puedes elegir hasta 4 objetivos', 'error');
-      objetivosRutina.push(objetivo);
-    }
-    pintarObjetivosRutina();
-  });
+  seleccionUnica('g-objetivo');
   seleccionUnica('g-nivel');
   seleccionUnica('g-lugar');
   const rango = document.getElementById('g-minutos');
@@ -80,11 +67,7 @@ async function cargarRutinas() {
   await cargarPlan();
   // Valores del perfil en el configurador de rutina libre (solo la primera vez)
   if (!configuradorListo) {
-    const objetivosPerfil = perfil.objetivos_dias && typeof perfil.objetivos_dias === 'object'
-      ? Object.keys(perfil.objetivos_dias).filter(o => ['grasa', 'musculo', 'resistencia', 'movilidad'].includes(o))
-      : [];
-    objetivosRutina = objetivosPerfil.length ? objetivosPerfil : [perfil.objetivo || 'grasa'];
-    pintarObjetivosRutina();
+    marcarOpcion('g-objetivo', perfil.objetivo);
     marcarOpcion('g-nivel', perfil.nivel);
     marcarOpcion('g-lugar', perfil.lugar || planSemana.preferencias.lugar || 'casa');
     document.getElementById('g-minutos').value = perfil.minutos;
@@ -99,14 +82,6 @@ async function cargarRutinas() {
     pintarSelectorSemana();
   }
   cargarGuardadas();
-}
-
-function pintarObjetivosRutina() {
-  document.querySelectorAll('#g-objetivo [data-objetivo]').forEach(boton => {
-    const activo = objetivosRutina.includes(boton.dataset.objetivo);
-    boton.classList.toggle('activo', activo);
-    boton.setAttribute('aria-pressed', String(activo));
-  });
 }
 
 // ---------- Semana ----------
@@ -135,8 +110,29 @@ function mostrarDia(i) {
   }
 }
 
+// Avisos de FitTrack Adaptive para un día del plan (rutina recuperada o pasada a otro día)
+function avisosDelDia(dia) {
+  let html = '';
+  if (dia.extra) {
+    html += `
+      <div class="aviso-extra">
+        <span>${icono('reloj', 'ic-sm')}<b>En la mañana:</b> ${escapar(dia.extra.rutina.nombre.split(' · ')[0])} · ${minutosActividad(dia.extra.rutina)} min (recuperada del ${NOMBRES_DIA_MIN[dia.extra.origen]})</span>
+        <button type="button" class="btn btn-lima btn-sm" data-empezar-extra="${dia.dia}">${icono('play', 'ic-sm')}Empezar</button>
+      </div>`;
+  }
+  if (dia.movido_a != null) {
+    html += `
+      <div class="aviso-extra">
+        <span>${icono('calendario', 'ic-sm')}Pasaste esta rutina a la mañana del ${NOMBRES_DIA_MIN[dia.movido_a]}.</span>
+        <button type="button" class="btn btn-linea btn-sm" data-deshacer-mover="${dia.dia}">Deshacer</button>
+      </div>`;
+  }
+  return html;
+}
+
 function pintarDescanso(dia) {
   document.getElementById('vista-rutina').innerHTML = `
+    ${avisosDelDia(dia)}
     <div class="rutina-banner descanso">
       <div class="banner-texto">
         <span class="rotulo">${DIAS_LARGOS[dia.dia]}</span>
@@ -178,7 +174,7 @@ async function generarRutina() {
     rutinaActual = await api('/rutinas/generar', {
       method: 'POST',
       body: {
-        objetivos: objetivosRutina,
+        objetivo: valorSeleccionado('g-objetivo'),
         nivel: valorSeleccionado('g-nivel'),
         lugar: valorSeleccionado('g-lugar'),
         minutos: document.getElementById('g-minutos').value
@@ -227,7 +223,13 @@ function pintarRutina() {
   }).join('');
 
   const lugar = NOMBRES_LUGAR[r.lugar || 'casa'];
+  const diaPlan = esDelPlan ? planSemana.dias[diaActual] : null;
+  const hoyIdx = indiceDia(hoyTexto());
+  const adaptar = diaPlan && diaPlan.movido_a == null && diaActual <= hoyIdx ? `
+      ${diaActual === hoyIdx ? `<button class="btn btn-linea" type="button" data-corta="${diaActual}">${icono('reloj')}Tengo poco tiempo</button>` : ''}
+      <button class="btn btn-linea" type="button" data-mover="${diaActual}">${icono('calendario')}${diaActual === hoyIdx ? 'Hoy no puedo' : 'Pasarla a hoy'}</button>` : '';
   document.getElementById('vista-rutina').innerHTML = `
+    ${diaPlan ? avisosDelDia(diaPlan) : ''}
     <div class="rutina-banner">
       <div class="banner-texto">
         <span class="rotulo">${esDelPlan ? DIAS_LARGOS[diaActual] : (rutinaActualId ? 'Rutina guardada' : 'Rutina libre')}</span>
@@ -238,7 +240,7 @@ function pintarRutina() {
       <div class="banner-figura" id="banner-figura"></div>
     </div>
     <div class="chips-info">
-      <span>${(r.objetivos || [r.objetivo]).map(o => NOMBRES_CORTOS[o]).join(' · ')}</span>
+      <span>${NOMBRES_CORTOS[r.objetivo]}</span>
       <span>${r.trabajo} s trabajo</span>
       <span>${r.descanso} s descanso</span>
       <span>${r.rondas} rondas</span>
@@ -252,6 +254,7 @@ function pintarRutina() {
     ${bloques}
     <div class="acciones-rutina">
       ${rutinaActualId ? '' : `<button class="btn btn-linea btn-icono" id="btn-guardar-rutina" type="button" aria-label="Guardar rutina">${icono('guardar')}</button>`}
+      ${adaptar}
       <button class="btn btn-lima" id="btn-empezar" type="button">${icono('play')}Empezar entrenamiento</button>
     </div>`;
 
@@ -299,8 +302,7 @@ async function cambiarEjercicio(indice) {
   const actual = principal.ejercicios[indice];
   const usados = principal.ejercicios.map(e => e.id).join(',');
   try {
-    const objetivos = rutinaActual.objetivos || [rutinaActual.objetivo];
-    const nuevo = await api(`/rutinas/alternativa?grupo=${actual.grupo}&objetivos=${objetivos.join(',')}&nivel=${rutinaActual.nivel}&lugar=${rutinaActual.lugar || 'casa'}&excluir=${usados}`);
+    const nuevo = await api(`/rutinas/alternativa?grupo=${actual.grupo}&objetivo=${rutinaActual.objetivo}&nivel=${rutinaActual.nivel}&lugar=${rutinaActual.lugar || 'casa'}&excluir=${usados}`);
     principal.ejercicios[indice] = {
       id: nuevo.id, nombre: nuevo.nombre, grupo: nuevo.grupo, nivel: nuevo.nivel, descripcion: nuevo.descripcion,
       equipo: nuevo.equipo || 'ninguno', musculos: nuevo.musculos || '', segundos: actual.segundos
@@ -352,7 +354,7 @@ async function cargarGuardadas() {
   }
   lista.innerHTML = rutinasGuardadas.map(r => `
     <div class="caja guardada">
-      <span class="rotulo">${(r.contenido.objetivos || [r.objetivo]).map(o => NOMBRES_CORTOS[o] || o).join(' · ')} · ${r.minutos} min</span>
+      <span class="rotulo">${NOMBRES_CORTOS[r.objetivo] || r.objetivo} · ${r.minutos} min</span>
       <h3>${escapar(r.nombre)}</h3>
       <div class="fila">
         <button class="btn btn-linea btn-sm" data-accion="abrir" data-id="${r.id}">Abrir</button>

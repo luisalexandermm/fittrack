@@ -6,6 +6,7 @@ const { ok } = require('../db/supabase');
 const { hoy, fechaValida } = require('./utilidades');
 const { esColumnaFaltante } = require('./plan');
 const { pesoParaCalculo, metMinutosSesion, metMinutosAproximados, kcalDe } = require('./calorias');
+const { logrosNuevos } = require('./logros');
 
 const router = express.Router();
 
@@ -58,7 +59,17 @@ router.post('/', async (req, res) => {
     resultado = await req.sb.from('sesiones').insert(fila).select('id').single();
   }
   const guardada = ok(resultado);
-  res.status(201).json({ id: guardada.id, kcal, peso_estimado: peso.estimado });
+
+  // ¿Esta sesión desbloqueó algún logro? Si falla el cálculo, la sesión igual quedó guardada.
+  let nuevos = [];
+  try {
+    const todas = ok(await req.sb.from('sesiones').select('id, fecha, minutos, nombre'));
+    const meta = Array.isArray(perfil.dias_entreno) && perfil.dias_entreno.length ? perfil.dias_entreno.length : perfil.meta_semanal;
+    nuevos = logrosNuevos(todas.filter(x => x.id !== guardada.id), todas, meta).map(l => ({ id: l.id, titulo: l.titulo, icono: l.icono }));
+  } catch (error) {
+    console.error('[logros] no se pudieron calcular:', error.message);
+  }
+  res.status(201).json({ id: guardada.id, kcal, peso_estimado: peso.estimado, logros_nuevos: nuevos });
 });
 
 // DELETE /api/sesiones/:id  (RLS solo deja borrar las propias)

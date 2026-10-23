@@ -395,7 +395,7 @@ const TOTAL_PASOS = 7;
 const formRegistro = $('form-registro');
 const errorRegistro = $('r-error');
 const btnSiguiente = $('r-siguiente');
-const ob = { objetivo: 'grasa', objetivos_dias: { grasa: [0, 2, 4] }, dias: [0, 2, 4], lugar: 'casa', nivel: 1, minutos: 20 };
+const ob = { objetivo: 'grasa', lugar: 'casa', nivel: 1, dias: [0, 2, 4], minutos: 20 };
 let pasoActual = 1;
 
 function marcarProgreso(n) {
@@ -419,68 +419,11 @@ function irAPaso(n, animar = true) {
   errorRegistro.textContent = '';
   marcarProgreso(n);
   cuerpoModal.scrollTop = 0;
-  if (n === 5) pintarDiasObjetivos();
   if (animar) enfocarPrimero();
 }
 $('ob-atras').addEventListener('click', () => { if (pasoActual > 1) irAPaso(pasoActual - 1); });
 
-// Objetivos: hasta cuatro, con días asignados por separado
-const nombresDias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-const inicialesDias = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
-$('r-objetivo').addEventListener('click', e => {
-  const opcion = e.target.closest('[data-objetivo]');
-  if (!opcion) return;
-  const objetivo = opcion.dataset.objetivo;
-  if (ob.objetivos_dias[objetivo]) {
-    if (Object.keys(ob.objetivos_dias).length === 1) {
-      errorRegistro.textContent = 'Elige al menos un objetivo';
-      return;
-    }
-    delete ob.objetivos_dias[objetivo];
-  } else {
-    if (Object.keys(ob.objetivos_dias).length === 4) {
-      errorRegistro.textContent = 'Puedes elegir hasta 4 objetivos';
-      return;
-    }
-    ob.objetivos_dias[objetivo] = [];
-  }
-  $('r-objetivo').querySelectorAll('[data-objetivo]').forEach(b => {
-    const activo = Boolean(ob.objetivos_dias[b.dataset.objetivo]);
-    b.classList.toggle('activo', activo);
-    b.setAttribute('aria-pressed', String(activo));
-  });
-  errorRegistro.textContent = '';
-  actualizarDiasObjetivos();
-});
-
-function actualizarDiasObjetivos() {
-  ob.objetivo = Object.keys(ob.objetivos_dias)[0];
-  ob.dias = [...new Set(Object.values(ob.objetivos_dias).flat())].sort((a, b) => a - b);
-}
-
-function pintarDiasObjetivos(foco = null) {
-  actualizarDiasObjetivos();
-  const asignados = new Set(ob.dias);
-  $('r-dias-objetivo').innerHTML = Object.entries(ob.objetivos_dias).map(([objetivo, dias]) => `
-    <section class="ob-asignacion">
-      <h3>${NOMBRES_CORTOS[objetivo]}</h3>
-      <div class="ob-dias" role="group" aria-label="Días para ${NOMBRES_CORTOS[objetivo]}">
-        ${nombresDias.map((nombre, dia) => {
-          const seleccionado = dias.includes(dia);
-          const ocupado = asignados.has(dia) && !seleccionado;
-          return `<button type="button" class="ob-dia ${seleccionado ? 'activo' : ''}" data-objetivo="${objetivo}" data-dia="${dia}" aria-pressed="${seleccionado}" aria-label="${nombre}" ${ocupado ? 'disabled title="Este día ya está asignado a otro objetivo"' : ''}><b>${inicialesDias[dia]}</b><span>${nombre}</span></button>`;
-        }).join('')}
-      </div>
-    </section>`).join('');
-  const total = ob.dias.length;
-  $('r-dias-pista').textContent = `${total} ${total === 1 ? 'día' : 'días'} asignados · ${Object.keys(ob.objetivos_dias).length} ${Object.keys(ob.objetivos_dias).length === 1 ? 'objetivo' : 'objetivos'}`;
-  if (foco) {
-    const boton = $('r-dias-objetivo').querySelector(`[data-objetivo="${foco.objetivo}"][data-dia="${foco.dia}"]`);
-    if (boton) boton.focus();
-  }
-}
-
-// Opciones de una sola elección (lugar, nivel, tiempo)
+// Opciones de una sola elección (objetivo, lugar, nivel, tiempo)
 function eleccionUnica(idContenedor, campo, convertir = v => v) {
   $(idContenedor).addEventListener('click', e => {
     const opcion = e.target.closest('[data-valor]');
@@ -489,6 +432,7 @@ function eleccionUnica(idContenedor, campo, convertir = v => v) {
     ob[campo] = convertir(opcion.dataset.valor);
   });
 }
+eleccionUnica('r-objetivo', 'objetivo');
 eleccionUnica('r-lugar', 'lugar');
 eleccionUnica('r-nivel', 'nivel', Number);
 eleccionUnica('r-minutos', 'minutos', Number);
@@ -498,17 +442,21 @@ $('r-sexo').addEventListener('click', e => {
   if (b) $('r-sexo').querySelectorAll('[data-valor]').forEach(o => o.classList.toggle('activo', o === b));
 });
 
-// Días: cada uno se asigna a un solo objetivo
-$('r-dias-objetivo').addEventListener('click', e => {
-  const boton = e.target.closest('[data-objetivo][data-dia]');
+// Días: se pueden elegir varios
+$('r-dias').addEventListener('click', e => {
+  const boton = e.target.closest('[data-dia]');
   if (!boton) return;
-  const objetivo = boton.dataset.objetivo;
-  const dia = Number(boton.dataset.dia);
-  const dias = ob.objetivos_dias[objetivo];
-  ob.objetivos_dias[objetivo] = dias.includes(dia) ? dias.filter(d => d !== dia) : [...dias, dia].sort((a, b) => a - b);
-  errorRegistro.textContent = '';
-  pintarDiasObjetivos({ objetivo, dia });
+  const activo = !boton.classList.contains('activo');
+  boton.classList.toggle('activo', activo);
+  boton.setAttribute('aria-pressed', String(activo));
+  ob.dias = [...$('r-dias').querySelectorAll('.activo')].map(b => Number(b.dataset.dia));
+  pintarPistaDias();
 });
+function pintarPistaDias() {
+  const n = ob.dias.length;
+  const pistas = { 0: 'Elige al menos un día', 1: 'Un día por semana · mejor que nada', 2: 'Dos días · cuerpo completo cada vez', 3: 'Tres días · un gran comienzo', 4: 'Cuatro días · con un día de movilidad', 5: 'Cinco días · buen ritmo', 6: 'Seis días · deja un día libre', 7: 'Siete días · incluye días suaves' };
+  $('r-dias-pista').textContent = pistas[n];
+}
 
 // Mostrar peso, meta y medidas solo si autoriza datos sensibles
 const casillaSensibles = $('r-sensibles');
@@ -531,8 +479,7 @@ function revisarPaso(n) {
     if (errorPass) return errorPass;
     if (pass !== $('r-pass2').value) return 'Las contraseñas no coinciden';
   }
-  if (n === 2 && !Object.keys(ob.objetivos_dias).length) return 'Elige al menos un objetivo';
-  if (n === 5 && Object.values(ob.objetivos_dias).some(dias => !dias.length)) return 'Elige al menos un día para cada objetivo';
+  if (n === 5 && ob.dias.length === 0) return 'Elige al menos un día para entrenar';
   if (n === 7) {
     const edad = $('r-edad').value;
     if (edad && (edad < 14 || edad > 100)) return 'Revisa la edad';
@@ -574,6 +521,8 @@ async function crearCuenta() {
     btnSiguiente.disabled = false;
     if (/correo|contraseña|cuenta/i.test(err.message)) irAPaso(1);
     errorRegistro.textContent = err.message;
+    // La cuenta ya existe (quizás sin confirmar) o no se pudo mandar el correo: ofrecer reenviarlo
+    $('r-reenviar').hidden = !['ya_existe', 'correo_no_enviado'].includes(err.codigo);
     return;
   }
   btnSiguiente.disabled = false;
@@ -602,9 +551,9 @@ const esperar = ms => new Promise(r => setTimeout(r, ms));
 
 // Texto pequeño bajo cada día de entreno
 function detalleEnfoque(dia, pref) {
-  if (dia.enfoque === 'movilidad' && (dia.objetivo || pref.objetivo) !== 'movilidad') return 'Recuperación activa';
+  if (dia.enfoque === 'movilidad' && pref.objetivo !== 'movilidad') return 'Recuperación activa';
   const lugar = { casa: 'En casa', gimnasio: 'En el gimnasio', ambos: 'Casa o gimnasio' }[pref.lugar];
-  return `${NOMBRES_CORTOS[dia.objetivo || pref.objetivo]} · ${lugar}`;
+  return `${NOMBRES_CORTOS[pref.objetivo]} · ${lugar}`;
 }
 
 function mostrarSemana(semana, respuesta) {
@@ -625,7 +574,8 @@ function mostrarSemana(semana, respuesta) {
   $('ob-ir-app').hidden = confirmar;
   $('ob-ir-login').hidden = !confirmar;
   if (confirmar) {
-    $('ob-confirmar-texto').textContent = `Te enviamos un enlace a ${respuesta.email}. Tócalo para activar tu cuenta: tu semana te estará esperando.`;
+    $('ob-confirmar-texto').textContent = `Te enviamos un enlace a ${respuesta.email}. Tócalo para activar tu cuenta: tu semana te estará esperando. Si no aparece en unos minutos, revisa spam y promociones.`;
+    $('ob-reenviar').dataset.email = respuesta.email;
     $('l-email').value = respuesta.email;
   }
   enfocarPrimero();
@@ -638,12 +588,66 @@ $('form-login').addEventListener('submit', async e => {
   e.preventDefault();
   const error = $('l-error');
   error.textContent = '';
+  $('l-reenviar').hidden = true;
   try {
     await api('/auth/login', { method: 'POST', body: { email: $('l-email').value, password: $('l-pass').value } });
     window.location.href = '/app';
   } catch (err) {
     error.textContent = err.message;
+    // Cuenta sin confirmar: ofrecer reenviar el correo ahí mismo
+    $('l-reenviar').hidden = err.codigo !== 'correo_sin_confirmar';
   }
+});
+
+// ---------- Reenviar el correo de confirmación ----------
+// Cada caja .reenviar sabe de dónde sacar el correo: de un campo (data-correo="id del input")
+// o guardado en data-email (pantalla final del registro).
+const ESPERA_REENVIO = 60; // segundos entre un reenvío y otro
+
+function correoDeCaja(caja) {
+  return (caja.dataset.correo ? $(caja.dataset.correo).value : caja.dataset.email || '').trim();
+}
+
+async function reenviarConfirmacion(caja) {
+  const boton = caja.querySelector('[data-reenviar]');
+  const estado = caja.querySelector('.reenviar-estado');
+  const email = correoDeCaja(caja);
+  if (!/^\S+@\S+\.\S+$/.test(email)) {
+    estado.textContent = 'Escribe tu correo para poder reenviarlo.';
+    return;
+  }
+  boton.disabled = true;
+  estado.textContent = 'Enviando…';
+  try {
+    await api('/auth/reenviar', { method: 'POST', body: { email } });
+    estado.textContent = `Listo. Si ${email} tiene una cuenta sin confirmar, te llegará un correo nuevo. Revisa también spam y promociones.`;
+    cuentaRegresiva(boton);
+  } catch (err) {
+    estado.textContent = err.message;
+    boton.disabled = false;
+  }
+}
+
+// Evita que alguien pida muchos correos seguidos: el botón espera 60 s
+function cuentaRegresiva(boton) {
+  if (!boton.dataset.texto) boton.dataset.texto = boton.textContent;
+  let quedan = ESPERA_REENVIO;
+  const paso = () => {
+    if (quedan <= 0) {
+      boton.disabled = false;
+      boton.textContent = boton.dataset.texto;
+      return;
+    }
+    boton.textContent = `Puedes reenviarlo en ${quedan} s`;
+    quedan--;
+    setTimeout(paso, 1000);
+  };
+  paso();
+}
+
+document.addEventListener('click', e => {
+  const boton = e.target.closest('[data-reenviar]');
+  if (boton && !boton.disabled) reenviarConfirmacion(boton.closest('.reenviar'));
 });
 
 $('ir-recuperar').addEventListener('click', () => {

@@ -9,7 +9,7 @@ const path = require('path');
 
 require('./db/supabase'); // revisa que existan las llaves de Supabase en .env
 const { requiereLogin, requiereAutorizacionSensibles } = require('./middleware/auth');
-const { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteGeneral, verificarOrigen } = require('./middleware/seguridad');
+const { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteReenviar, limiteGeneral, verificarOrigen } = require('./middleware/seguridad');
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -29,6 +29,7 @@ app.use('/api/auth/login', limiteLogin);
 app.use('/api/auth/registro', limiteRegistro);
 app.use('/api/auth/recuperar', limiteRecuperar);
 app.use('/api/auth/restablecer', limiteRestablecer);
+app.use('/api/auth/reenviar', limiteReenviar);
 
 app.use('/api/auth', require('./rutas/auth'));                          // pública
 app.use('/api/perfil', requiereLogin, require('./rutas/perfil'));
@@ -41,6 +42,10 @@ app.use('/api/medidas', requiereLogin, requiereAutorizacionSensibles, require('.
 app.use('/api/fotos', requiereLogin, requiereAutorizacionSensibles, require('./rutas/fotos'));
 app.use('/api/nutricion', requiereLogin, require('./rutas/nutricion'));
 app.use('/api/resumen', requiereLogin, require('./rutas/resumen'));
+app.use('/api/logros', requiereLogin, require('./rutas/logros'));
+app.use('/api/asistente', requiereLogin, require('./rutas/asistente'));
+app.use('/api/recordatorios', require('./rutas/recordatorios').publico);           // envío diario (Vercel Cron)
+app.use('/api/recordatorios', requiereLogin, require('./rutas/recordatorios'));
 
 // Cualquier otra ruta /api que no exista
 app.use('/api', (req, res) => res.status(404).json({ error: 'Ruta no encontrada' }));

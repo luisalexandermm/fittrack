@@ -17,18 +17,24 @@ async function passwordCorrecta(email, password) {
 // GET /api/cuenta/exportar → todos los datos del usuario en un archivo JSON
 router.get('/exportar', async (req, res) => {
   const sb = req.sb;
-  const [perfil, sesiones, medidas, fotos, rutinas] = await Promise.all([
+  const [perfil, sesiones, medidas, fotos, rutinas, recordatorios, asistente] = await Promise.all([
     sb.from('perfiles').select('*').single(), // todo el perfil (incluye preferencias y semana)
     sb.from('sesiones').select('fecha, nombre, objetivo, minutos, sensacion, notas').order('fecha'),
     sb.from('medidas').select('fecha, peso, cintura, cadera, pecho, brazo, muslo, grasa, notas').order('fecha'),
     sb.from('fotos').select('fecha, angulo, nota').order('fecha'),
-    sb.from('rutinas').select('nombre, objetivo, nivel, minutos, creado_en')
+    sb.from('rutinas').select('nombre, objetivo, nivel, minutos, creado_en'),
+    sb.from('suscripciones_push').select('creado_en'),   // si falta la migración v9 viene con error
+    sb.from('uso_asistente').select('fecha, preguntas').order('fecha')
   ]);
   res.setHeader('Content-Disposition', 'attachment; filename="mis-datos-fittrack.json"');
   res.json({
     exportado_en: new Date().toISOString(),
     email: req.usuario.email,
-    perfil: ok(perfil), sesiones: ok(sesiones), medidas: ok(medidas), fotos: ok(fotos), rutinas_guardadas: ok(rutinas)
+    perfil: ok(perfil), sesiones: ok(sesiones), medidas: ok(medidas), fotos: ok(fotos), rutinas_guardadas: ok(rutinas),
+    // Recordatorios: solo cuántos dispositivos y desde cuándo (las llaves del navegador no aportan nada)
+    recordatorios_activos: recordatorios.error ? [] : recordatorios.data,
+    // Asistente: FitTrack no guarda tus preguntas, solo cuántas hiciste cada día
+    preguntas_al_asistente_por_dia: asistente.error ? [] : asistente.data
   });
 });
 

@@ -117,11 +117,14 @@ router.get('/', async (req, res) => {
     // (solo si la meta es BAJAR de peso; si es subir, las calorías no aplican)
     const baja = perfil.meta_peso && perfil.meta_peso < inicial;
     const porcentaje = valor => Math.min(Math.max(Math.round(valor), 0), 100);
+    // Solo se da un porcentaje cuando hay datos para calcularlo (si no, va null y la app muestra "—"):
+    //  - báscula: al menos 2 registros de peso (con uno solo no hay con qué comparar)
+    //  - estimado: al menos 1 entrenamiento desde el primer registro de peso
     let progreso = null, progresoEstimado = null;
-    if (perfil.meta_peso && inicial !== perfil.meta_peso) {
+    if (perfil.meta_peso && inicial !== perfil.meta_peso && pesos.length >= 2) {
       progreso = porcentaje(((inicial - actual) / (inicial - perfil.meta_peso)) * 100);
     }
-    if (baja) progresoEstimado = porcentaje((kgEstimadosTotal / (inicial - perfil.meta_peso)) * 100);
+    if (baja && desdeInicio.length >= 1) progresoEstimado = porcentaje((kgEstimadosTotal / (inicial - perfil.meta_peso)) * 100);
 
     // Línea estimada semana a semana (desde el primer registro hasta hoy)
     // Arranca en el primer peso y suma un punto al final de cada semana (el último es hoy)
@@ -138,6 +141,8 @@ router.get('/', async (req, res) => {
     peso = {
       progreso,
       progreso_estimado: progresoEstimado,
+      registros: pesos.length,
+      sesiones_desde_inicio: desdeInicio.length,
       inicial,
       actual,
       estimado,

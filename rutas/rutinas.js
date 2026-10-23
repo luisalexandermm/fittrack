@@ -57,10 +57,8 @@ function sirveEnLugar(ejercicio, lugar) {
 
 // Busca ejercicios de una fase que sirvan para el objetivo, el nivel y el lugar
 function buscarEjercicios(fase, objetivo, nivel, lugar = 'casa') {
-  const objetivos = Array.isArray(objetivo) ? objetivo : [objetivo];
   return EJERCICIOS.filter(e =>
-    e.fase === fase && e.nivel <= nivel &&
-    objetivos.some(o => e.objetivos.split(',').includes(o)) && sirveEnLugar(e, lugar));
+    e.fase === fase && e.nivel <= nivel && e.objetivos.split(',').includes(objetivo) && sirveEnLugar(e, lugar));
 }
 
 // Elige "cantidad" ejercicios intentando que sean de grupos distintos
@@ -115,24 +113,69 @@ function formatear(ejercicio, segundos) {
   };
 }
 
+// Trabajo y descanso según objetivo y nivel:
+// principiante trabaja menos y descansa más; avanzado al revés
+function tiemposBase(objetivo, nivel) {
+  const base = CONFIG[objetivo] || CONFIG.grasa;
+  let trabajo = base.trabajo;
+  let descanso = base.descanso;
+  if (nivel === 1) { trabajo -= 10; descanso += 10; }
+  if (nivel === 3) { trabajo += 10; descanso = Math.max(10, descanso - 5); }
+  return { trabajo, descanso };
+}
+
+// Rondas y segundos de trabajo para que el circuito dure "minutos" de actividad.
+// Se redondea al número de rondas más cercano (sin pasarse más de 3 min) y luego
+// se suben o bajan unos segundos de trabajo (máx. ±10 s) para quedar lo más cerca posible.
+function ajustarTiempo(cantidad, trabajo, descanso, minutos) {
+  const segundosActividad = minutos * 60;
+  const duracionRonda = cantidad * (trabajo + descanso);
+  const rondasExactas = (segundosActividad + DESCANSO_ENTRE_RONDAS) / (duracionRonda + DESCANSO_ENTRE_RONDAS);
+  let rondas = Math.max(1, Math.round(rondasExactas));
+  const actividadCon = r => r * duracionRonda + (r - 1) * DESCANSO_ENTRE_RONDAS;
+  if (rondas > 1 && actividadCon(rondas) > segundosActividad + 180) rondas = Math.max(1, Math.floor(rondasExactas));
+
+  const sobra = segundosActividad - actividadCon(rondas);
+  const ajuste = Math.max(-10, Math.min(10, Math.round(sobra / (cantidad * rondas) / 5) * 5));
+  const trabajoFinal = trabajo + ajuste;
+  const duracionActividad = rondas * cantidad * (trabajoFinal + descanso) + (rondas - 1) * DESCANSO_ENTRE_RONDAS;
+  return { rondas, trabajo: trabajoFinal, duracionActividad };
+}
+
+// Junta las partes en el formato de rutina que usan la app y el reproductor
+function armarRutina({ titulo, objetivo, nivel, minutos, lugar, trabajo, descanso, rondas, duracionActividad, calentamiento, principal, enfriamiento }) {
+  const segundosSuaves = (calentamiento.length + enfriamiento.length) * SEGUNDOS_SUAVES;
+  const rutina = {
+    nombre: `${titulo} · ${Math.round(duracionActividad / 60)} min`,
+    objetivo,
+    nivel,
+    minutos,
+    lugar,
+    trabajo,
+    descanso,
+    rondas,
+    descanso_ronda: DESCANSO_ENTRE_RONDAS,
+    duracion_seg: segundosSuaves + duracionActividad, // todo: calentamiento + actividad + enfriamiento
+    actividad_seg: duracionActividad,                 // solo el circuito (lo que eligió el usuario)
+    suaves_seg: segundosSuaves,                       // calentamiento + enfriamiento
+    bloques: [
+      { tipo: 'calentamiento', titulo: 'Calentamiento', rondas: 1, ejercicios: calentamiento },
+      { tipo: 'principal', titulo: 'Circuito principal', rondas, ejercicios: principal },
+      { tipo: 'enfriamiento', titulo: 'Enfriamiento', rondas: 1, ejercicios: enfriamiento }
+    ]
+  };
+  // Esfuerzo de la rutina (para estimar calorías con el peso de cada usuario)
+  rutina.met_min = metMinutosRutina(rutina);
+  return rutina;
+}
+
 // opciones (todas opcionales):
 //   lugar   → 'casa' (por defecto) | 'gimnasio' | 'ambos'
 //   grupos  → lista de grupos para el circuito, ej: ['empuje', 'tiron', 'core']
 //   titulo  → nombre que se muestra (por defecto el del objetivo)
 function generarRutina(objetivo, nivel, minutos, opciones = {}) {
-  const objetivos = [...new Set(Array.isArray(objetivo) ? objetivo : [objetivo])];
-  if (!objetivos.length || objetivos.length > 4 || objetivos.some(o => !Object.hasOwn(CONFIG, o))) {
-    throw new Error('Elige entre 1 y 4 objetivos válidos');
-  }
-  const base = CONFIG[objetivos[0]];
   const lugar = opciones.lugar || 'casa';
-
-  // Una rutina combinada usa el promedio de trabajo y descanso de sus objetivos.
-  let trabajo = Math.round(objetivos.reduce((total, o) => total + CONFIG[o].trabajo, 0) / objetivos.length);
-  let descanso = Math.round(objetivos.reduce((total, o) => total + CONFIG[o].descanso, 0) / objetivos.length);
-  // Ajuste por nivel: principiante trabaja menos y descansa más; avanzado al revés
-  if (nivel === 1) { trabajo -= 10; descanso += 10; }
-  if (nivel === 3) { trabajo += 10; descanso = Math.max(10, descanso - 5); }
+  const { trabajo, descanso } = tiemposBase(objetivo, nivel);
 
   // 1. Calentamiento
   const cantCalentamiento = minutos >= 30 ? 4 : 3;
@@ -148,74 +191,55 @@ function generarRutina(objetivo, nivel, minutos, opciones = {}) {
   // 2. Bloque principal
   let porRonda = nivel + 3;              // 4, 5 o 6 ejercicios
   if (minutos <= 15) porRonda = Math.min(porRonda, 4);
-
-  const disponibles = buscarEjercicios('principal', objetivos, nivel, lugar);
-  let elegidos = [];
-  if (objetivos.length > 1) {
-    for (const meta of objetivos) {
-      const candidatos = mezclar(disponibles.filter(e => e.objetivos.split(',').includes(meta) && !elegidos.includes(e)));
-      const exclusivo = candidatos.filter(e => objetivos.filter(o => e.objetivos.split(',').includes(o)).length === 1);
-      const elegido = exclusivo[0] || candidatos[0];
-      if (elegido) elegidos.push(elegido);
-    }
-  }
-  const faltan = porRonda - elegidos.length;
-  if (faltan > 0) {
-    elegidos = [
-      ...elegidos,
-      ...elegirSinRepetir(disponibles.filter(e => !elegidos.includes(e)), faltan, nivel, lugar, opciones)
-    ];
-  }
-  let principal = elegirSinRepetir(elegidos, porRonda, nivel, lugar, opciones);
-  principal = principal.map(e => formatear(e, trabajo));
+  const disponibles = buscarEjercicios('principal', objetivo, nivel, lugar);
+  const elegidos = elegirSinRepetir(disponibles, porRonda, nivel, lugar, opciones);
 
   // El tiempo elegido es SOLO el circuito principal (actividad).
-  // Calentamiento y enfriamiento van aparte.
-  const segundosSuaves = (calentamiento.length + enfriamiento.length) * SEGUNDOS_SUAVES;
-  const segundosActividad = minutos * 60;
-  const duracionRonda = principal.length * (trabajo + descanso);
-  // Rondas que caben en el tiempo de actividad: se redondea al número más cercano,
-  // pero sin pasarse más de 3 minutos de lo que eligió el usuario.
-  const rondasExactas = (segundosActividad + DESCANSO_ENTRE_RONDAS) / (duracionRonda + DESCANSO_ENTRE_RONDAS);
-  let rondas = Math.max(1, Math.round(rondasExactas));
-  const actividadCon = r => r * duracionRonda + (r - 1) * DESCANSO_ENTRE_RONDAS;
-  if (rondas > 1 && actividadCon(rondas) > segundosActividad + 180) rondas = Math.max(1, Math.floor(rondasExactas));
+  const tiempo = ajustarTiempo(elegidos.length, trabajo, descanso, minutos);
+  const principal = elegidos.map(e => formatear(e, tiempo.trabajo));
 
-  // Ajuste fino: se suben o bajan unos segundos de trabajo (máx. ±10 s) para
-  // que la actividad quede lo más cerca posible del tiempo elegido.
-  const espacios = principal.length * rondas;
-  const sobra = segundosActividad - actividadCon(rondas);
-  const ajuste = Math.max(-10, Math.min(10, Math.round(sobra / espacios / 5) * 5));
-  if (ajuste) {
-    trabajo += ajuste;
-    principal.forEach(e => { e.segundos = trabajo; });
+  return armarRutina({
+    titulo: opciones.titulo || CONFIG[objetivo].nombre,
+    objetivo, nivel, minutos, lugar, descanso,
+    trabajo: tiempo.trabajo, rondas: tiempo.rondas, duracionActividad: tiempo.duracionActividad,
+    calentamiento, principal, enfriamiento
+  });
+}
+
+// ---------- Versión corta de una rutina ("hoy tengo poco tiempo") ----------
+// Conserva el enfoque y los MISMOS ejercicios del día; si hay que quitar alguno,
+// deja al menos uno de cada grupo. Recalcula las rondas para el tiempo de hoy.
+// El calentamiento y el enfriamiento se acortan, pero no se quitan.
+function acortarRutina(rutina, minutos) {
+  const bloque = tipo => rutina.bloques.find(b => b.tipo === tipo) || { ejercicios: [] };
+  const original = bloque('principal').ejercicios;
+  const cantidad = minutos <= 15 ? Math.min(4, original.length) : original.length;
+  const elegidos = unoPorGrupo(original, cantidad);
+
+  const { trabajo, descanso } = tiemposBase(rutina.objetivo, rutina.nivel);
+  const tiempo = ajustarTiempo(elegidos.length, trabajo, descanso, minutos);
+  const suaves = minutos <= 20 ? 2 : 3;
+
+  return armarRutina({
+    titulo: rutina.nombre.split(' · ')[0],
+    objetivo: rutina.objetivo, nivel: rutina.nivel, minutos, lugar: rutina.lugar, descanso,
+    trabajo: tiempo.trabajo, rondas: tiempo.rondas, duracionActividad: tiempo.duracionActividad,
+    calentamiento: bloque('calentamiento').ejercicios.slice(0, suaves).map(e => ({ ...e })),
+    principal: elegidos.map(e => ({ ...e, segundos: tiempo.trabajo })),
+    enfriamiento: bloque('enfriamiento').ejercicios.slice(0, 2).map(e => ({ ...e }))
+  });
+}
+
+// Elige "cantidad" ejercicios de la lista: primero uno de cada grupo, luego el resto.
+// Mantiene el orden original del circuito.
+function unoPorGrupo(ejercicios, cantidad) {
+  const elegidos = new Set();
+  const gruposVistos = new Set();
+  for (const e of ejercicios) {
+    if (elegidos.size < cantidad && !gruposVistos.has(e.grupo)) { elegidos.add(e); gruposVistos.add(e.grupo); }
   }
-  const duracionActividad = rondas * principal.length * (trabajo + descanso) + (rondas - 1) * DESCANSO_ENTRE_RONDAS;
-  const duracionTotal = segundosSuaves + duracionActividad;
-
-  const rutina = {
-    nombre: `${opciones.titulo || (objetivos.length > 1 ? 'Rutina combinada' : base.nombre)} · ${Math.round(duracionActividad / 60)} min`,
-    objetivo: objetivos[0],
-    objetivos,
-    nivel,
-    minutos,
-    lugar,
-    trabajo,
-    descanso,
-    rondas,
-    descanso_ronda: DESCANSO_ENTRE_RONDAS,
-    duracion_seg: duracionTotal,            // todo: calentamiento + actividad + enfriamiento
-    actividad_seg: duracionActividad,       // solo el circuito (lo que eligió el usuario)
-    suaves_seg: segundosSuaves,             // calentamiento + enfriamiento
-    bloques: [
-      { tipo: 'calentamiento', titulo: 'Calentamiento', rondas: 1, ejercicios: calentamiento },
-      { tipo: 'principal', titulo: 'Circuito principal', rondas, ejercicios: principal },
-      { tipo: 'enfriamiento', titulo: 'Enfriamiento', rondas: 1, ejercicios: enfriamiento }
-    ]
-  };
-  // Esfuerzo de la rutina (para estimar calorías con el peso de cada usuario)
-  rutina.met_min = metMinutosRutina(rutina);
-  return rutina;
+  for (const e of ejercicios) if (elegidos.size < cantidad) elegidos.add(e);
+  return ejercicios.filter(e => elegidos.has(e));
 }
 
 // Convierte "excluir" (un Set, un arreglo o una lista de ellos) en una lista de Sets,
@@ -260,16 +284,12 @@ router.post('/generar', async (req, res) => {
   // select('*'): funciona aunque la base todavía no tenga la columna "lugar"
   const perfil = ok(await req.sb.from('perfiles').select('*').eq('id', req.usuarioId).single());
 
-  const objetivosRecibidos = Array.isArray(req.body.objetivos) ? req.body.objetivos : [req.body.objetivo];
-  const objetivos = [...new Set(objetivosRecibidos.filter(o => Object.hasOwn(CONFIG, o)))];
-  if (!objetivos.length || objetivos.length !== objetivosRecibidos.length || objetivos.length > 4) {
-    return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos válidos' });
-  }
+  const objetivo = CONFIG[req.body.objetivo] ? req.body.objetivo : perfil.objetivo;
   const nivel = [1, 2, 3].includes(Number(req.body.nivel)) ? Number(req.body.nivel) : perfil.nivel;
   const minutos = Math.min(Math.max(Number(req.body.minutos) || perfil.minutos, 10), 60);
   const lugar = LUGARES.includes(req.body.lugar) ? req.body.lugar : (perfil.lugar || 'casa');
 
-  res.json(generarRutina(objetivos, nivel, minutos, { lugar }));
+  res.json(generarRutina(objetivo, nivel, minutos, { lugar }));
 });
 
 // GET /api/rutinas/alternativa?grupo=core&objetivo=grasa&nivel=2&excluir=3,5
@@ -277,21 +297,16 @@ router.post('/generar', async (req, res) => {
 router.get('/alternativa', async (req, res) => {
   EJERCICIOS = (await cargarCatalogos()).ejercicios;
   const { grupo, objetivo } = req.query;
-  const objetivos = String(req.query.objetivos || objetivo || '')
-    .split(',')
-    .filter((o, i, lista) => Object.hasOwn(CONFIG, o) && lista.indexOf(o) === i)
-    .slice(0, 4);
-  if (!objetivos.length) return res.status(400).json({ error: 'Objetivo inválido' });
   const nivel = Number(req.query.nivel) || 1;
   const excluir = String(req.query.excluir || '').split(',').map(Number);
   const lugar = LUGARES.includes(req.query.lugar) ? req.query.lugar : 'casa';
 
-  let opciones = buscarEjercicios('principal', objetivos, nivel, lugar)
+  let opciones = buscarEjercicios('principal', objetivo, nivel, lugar)
     .filter(e => e.grupo === grupo && !excluir.includes(e.id));
 
   // Si no hay del mismo grupo, cualquier otro que sirva para el objetivo
   if (opciones.length === 0) {
-    opciones = buscarEjercicios('principal', objetivos, nivel, lugar).filter(e => !excluir.includes(e.id));
+    opciones = buscarEjercicios('principal', objetivo, nivel, lugar).filter(e => !excluir.includes(e.id));
   }
   if (opciones.length === 0) return res.status(404).json({ error: 'No hay alternativas' });
 
@@ -334,7 +349,7 @@ async function prepararCatalogo() {
 
 module.exports = router;
 module.exports.generarRutina = generarRutina;
+module.exports.acortarRutina = acortarRutina;
 module.exports.prepararCatalogo = prepararCatalogo;
 module.exports.CONFIG = CONFIG;
 module.exports.LUGARES = LUGARES;
-module.exports.buscarEjercicios = buscarEjercicios;

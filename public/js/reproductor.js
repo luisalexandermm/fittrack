@@ -232,6 +232,10 @@ async function guardarSesion() {
     $('rep-notas').value = '';
     cerrarReproductor();
     avisar(respuesta.kcal ? `Sesión guardada · ≈ ${numero(respuesta.kcal)} kcal` : 'Sesión guardada');
+    // ¿Desbloqueó un logro? Se avisa un momento después del aviso de la sesión
+    (respuesta.logros_nuevos || []).forEach((logro, i) => {
+      setTimeout(() => avisar(`Logro desbloqueado: ${logro.titulo}`), 2600 * (i + 1));
+    });
     // El calendario y la semana se actualizan con la sesión nueva
     if (location.hash === '#inicio' || location.hash === '') cargarInicio();
     else location.hash = '#inicio';

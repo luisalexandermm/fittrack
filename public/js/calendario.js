@@ -82,12 +82,18 @@ function pintarSemana() {
 
     let titulo = act.titulo;
     let detalle = act.entrena ? `${act.minutos} min · ${resumenRutina(act.rutina).split(' · ')[1]}` : act.detalle;
+    if (x.movido) detalle = `Pasada a la mañana del ${NOMBRES_DIA_MIN[act.movido_a]}`;
+    if (x.extra) {
+      const recuperada = `${escapar(x.extra.rutina.nombre.split(' · ')[0])} recuperada en la mañana (${minutosActividad(x.extra.rutina)} min)`;
+      if (!act.entrena) titulo = x.extra.rutina.nombre.split(' · ')[0];
+      detalle = act.entrena && !x.movido ? `${detalle} · + ${recuperada}` : recuperada;
+    }
     if (hechas.length) {
       titulo = hechas[0].nombre.split(' · ')[0];
       detalle = `${minutos} min${hechas.length > 1 ? ` · ${hechas.length} sesiones` : ''}`;
     }
     const estado = `<span class="estado e-${x.estado}"><b aria-hidden="true">${SIMBOLO_ESTADO[x.estado]}</b>${TEXTO_ESTADO[x.estado]}</span>`;
-    const clicable = act.entrena && !hechas.length;
+    const clicable = (act.entrena || x.extra) && !hechas.length;
     return `
       <${clicable ? 'button type="button"' : 'div'} class="dia-fila e-${x.estado} ${x.fecha === diaSeleccionado ? 'sel' : ''}" data-fecha="${x.fecha}" ${clicable ? `data-ver-dia="${act.dia}"` : ''}>
         <span class="fecha"><span class="rotulo">${DIAS[dia.getDay()]}</span><span class="cifra">${dia.getDate()}</span></span>

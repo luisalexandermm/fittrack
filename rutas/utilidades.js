@@ -2,11 +2,19 @@
 
 // Fecha de hoy en formato YYYY-MM-DD (hora de Colombia, o la de TZ si la defines)
 function hoy() {
+  return fechaLocal(new Date());
+}
+
+// Fecha (YYYY-MM-DD) de un momento, en la misma zona horaria que hoy().
+// Sirve para pasar fechas guardadas en UTC (como creado_en) al día de Colombia.
+function fechaLocal(momento) {
+  const fecha = new Date(momento);
+  if (Number.isNaN(fecha.getTime())) return null;
   const zonaHoraria = (process.env.TZ || 'America/Bogota').replace(/^:/, '');
   try {
-    return new Date().toLocaleDateString('en-CA', { timeZone: zonaHoraria });
+    return fecha.toLocaleDateString('en-CA', { timeZone: zonaHoraria });
   } catch {
-    return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
+    return fecha.toLocaleDateString('en-CA', { timeZone: 'America/Bogota' });
   }
 }
 
@@ -32,6 +40,13 @@ function passwordValida(password) {
 }
 
 // Pasa los mensajes de Supabase Auth (en inglés) a español claro
+// Supabase no pudo mandar el correo (SMTP mal configurado o el correo de prueba de Supabase,
+// que solo envía a los miembros del equipo del proyecto)
+function correoNoEnviado(error) {
+  const m = String(error.message || '').toLowerCase();
+  return m.includes('error sending') || m.includes('email address not authorized') || (error.code === 'unexpected_failure' && m.includes('email'));
+}
+
 function traducirErrorAuth(error) {
   const m = String(error.message || '').toLowerCase();
   const codigo = String(error.code || '');
@@ -39,6 +54,7 @@ function traducirErrorAuth(error) {
   if (codigo === 'invalid_credentials' || m.includes('invalid login credentials')) return 'Correo o contraseña incorrectos';
   if (m.includes('already registered') || m.includes('already been registered')) return 'Ya existe una cuenta con ese correo';
   if (codigo === 'over_email_send_rate_limit' || m.includes('email rate limit')) return 'Ya te enviamos un correo hace poco. Revisa tu bandeja de entrada (y spam) o espera un rato antes de pedir otro.';
+  if (correoNoEnviado(error)) return 'No pudimos enviar el correo en este momento. Espera unos minutos y usa "Reenviar correo".';
   if (m.includes('rate limit') || error.status === 429) return 'Demasiados intentos. Espera unos minutos e inténtalo de nuevo.';
   if (m.includes('password') && (m.includes('weak') || m.includes('at least') || m.includes('should'))) return 'La contraseña no cumple los requisitos de seguridad';
   if (m.includes('same') && m.includes('password')) return 'La nueva contraseña debe ser distinta a la anterior';
@@ -49,4 +65,4 @@ function traducirErrorAuth(error) {
   return 'No se pudo completar la operación. Intenta de nuevo.';
 }
 
-module.exports = { hoy, fechaValida, numeroONull, passwordValida, traducirErrorAuth };
+module.exports = { hoy, fechaLocal, fechaValida, numeroONull, passwordValida, traducirErrorAuth, correoNoEnviado };

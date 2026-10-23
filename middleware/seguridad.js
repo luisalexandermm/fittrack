@@ -47,6 +47,7 @@ const limiteLogin = crearLimitadorAcceso(10);
 const limiteRegistro = crearLimitadorAcceso(30);
 const limiteRecuperar = crearLimitadorAcceso(10);
 const limiteRestablecer = crearLimitadorAcceso(10);
+const limiteReenviar = crearLimitadorAcceso(5);   // reenviar correo de confirmación
 
 // 3. Límite general de la API: 300 peticiones por minuto por IP
 const limiteGeneral = rateLimit({
@@ -68,4 +69,4 @@ function verificarOrigen(req, res, next) {
   return res.status(403).json({ error: 'Origen no permitido' });
 }
 
-module.exports = { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteGeneral, verificarOrigen };
+module.exports = { cabeceras, limiteLogin, limiteRegistro, limiteRecuperar, limiteRestablecer, limiteReenviar, limiteGeneral, verificarOrigen };

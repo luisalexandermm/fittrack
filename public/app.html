@@ -9,7 +9,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FitTrack">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="icon" href="/img/logo-simbolo.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="apple-touch-icon" href="/img/pwa-180.png">
@@ -87,12 +86,12 @@
           <summary><span><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Rutina libre</span><svg class="ic flecha-det"><use href="/img/iconos.svg#i-abajo"/></svg></summary>
           <div class="ajustes-cuerpo">
             <div class="campo">
-              <span class="rotulo">Objetivos <small class="tenue">(elige hasta 4)</small></span>
-              <div class="opciones-grandes" id="g-objetivo" role="group" aria-label="Objetivos de la rutina">
-                <button type="button" class="opcion" data-objetivo="grasa" aria-pressed="false"><strong>Quemar grasa</strong><span>40/20</span></button>
-                <button type="button" class="opcion" data-objetivo="musculo" aria-pressed="false"><strong>Músculo</strong><span>45/30</span></button>
-                <button type="button" class="opcion" data-objetivo="resistencia" aria-pressed="false"><strong>Resistencia</strong><span>50/15</span></button>
-                <button type="button" class="opcion" data-objetivo="movilidad" aria-pressed="false"><strong>Movilidad</strong><span>45/10</span></button>
+              <span class="rotulo">Objetivo</span>
+              <div class="opciones-grandes" id="g-objetivo">
+                <button type="button" class="opcion" data-valor="grasa"><strong>Quemar grasa</strong><span>40/20</span></button>
+                <button type="button" class="opcion" data-valor="musculo"><strong>Músculo</strong><span>45/30</span></button>
+                <button type="button" class="opcion" data-valor="resistencia"><strong>Resistencia</strong><span>50/15</span></button>
+                <button type="button" class="opcion" data-valor="movilidad"><strong>Movilidad</strong><span>45/10</span></button>
               </div>
             </div>
             <div class="campo">
@@ -143,9 +142,11 @@
         <button class="pestana activo" data-panel="peso" role="tab">Peso</button>
         <button class="pestana" data-panel="medidas" role="tab">Medidas</button>
         <button class="pestana" data-panel="fotos" role="tab">Fotos</button>
+        <button class="pestana" data-panel="logros" role="tab">Logros</button>
       </div>
 
       <div class="panel" data-panel="peso" id="panel-peso"></div>
+      <div class="panel" data-panel="logros" id="panel-logros" hidden></div>
 
       <div class="panel" data-panel="medidas" hidden>
         <div class="caja">
@@ -274,6 +275,7 @@
           <a href="#nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Mi nutrición<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></a>
           <button type="button" data-abrir="preferencias"><svg class="ic"><use href="/img/iconos.svg#i-calendario"/></svg>Preferencias de entreno<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" data-abrir="configuracion"><svg class="ic"><use href="/img/iconos.svg#i-ajustes"/></svg>Datos personales<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
+          <button type="button" data-abrir="recordatorios"><svg class="ic"><use href="/img/iconos.svg#i-campana"/></svg>Recordatorios<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" data-abrir="privacidad"><svg class="ic"><use href="/img/iconos.svg#i-escudo"/></svg>Privacidad y datos<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" data-abrir="seguridad"><svg class="ic"><use href="/img/iconos.svg#i-candado"/></svg>Contraseña<svg class="ic chev"><use href="/img/iconos.svg#i-chevron"/></svg></button>
           <button type="button" class="btn-tema"><svg class="ic"><use href="/img/iconos.svg#i-luna"/></svg>Tema<b data-tema-texto class="valor-fila">Claro</b></button>
@@ -293,6 +295,32 @@
     <a href="#nutricion" data-vista="nutricion"><svg class="ic"><use href="/img/iconos.svg#i-nutricion"/></svg>Nutrición</a>
     <a href="#perfil" data-vista="perfil"><svg class="ic"><use href="/img/iconos.svg#i-perfil"/></svg>Perfil</a>
   </nav>
+
+  <!-- ============ Zurick, el asistente de FitTrack (chat) ============ -->
+  <button type="button" class="btn-asistente" id="btn-asistente" aria-controls="asistente" aria-expanded="false" aria-label="Hablar con Zurick, tu asistente">
+    <svg class="ic"><use href="/img/iconos.svg#i-chat"/></svg><span>Zurick</span>
+  </button>
+  <section class="asistente" id="asistente" role="dialog" aria-labelledby="asistente-titulo" hidden>
+    <header class="asistente-cabeza">
+      <div>
+        <strong id="asistente-titulo">Zurick</strong>
+        <small>Tu asistente de FitTrack · no reemplaza a un profesional de salud</small>
+      </div>
+      <button type="button" class="btn btn-icono" id="asistente-cerrar" aria-label="Cerrar Zurick"><svg class="ic"><use href="/img/iconos.svg#i-cerrar"/></svg></button>
+    </header>
+    <div class="asistente-mensajes" id="asistente-mensajes" aria-live="polite"></div>
+    <div class="asistente-sugerencias" id="asistente-sugerencias">
+      <button type="button" class="opcion">Solo tengo 15 minutos</button>
+      <button type="button" class="opcion">No tengo mancuernas, ¿qué hago?</button>
+      <button type="button" class="opcion">Quiero mejorar mi movilidad</button>
+      <button type="button" class="opcion">¿Por qué descanso hoy?</button>
+    </div>
+    <form class="asistente-form" id="asistente-form">
+      <input id="asistente-texto" type="text" maxlength="500" autocomplete="off" placeholder="Escribe tu pregunta…" aria-label="Tu pregunta">
+      <button type="submit" class="btn btn-lima btn-icono" aria-label="Enviar"><svg class="ic"><use href="/img/iconos.svg#i-enviar"/></svg></button>
+    </form>
+    <p class="asistente-nota">Para responder, tu pregunta y un resumen de tu plan se envían a Claude (Anthropic). Nunca tu peso, medidas, fotos ni correo. <a href="/privacidad#asistente" target="_blank">Más info</a></p>
+  </section>
 
   <!-- ============ Reproductor (pantalla completa) ============ -->
   <div class="reproductor" id="reproductor" hidden role="dialog" aria-modal="true" aria-label="Entrenamiento">
@@ -380,14 +408,18 @@
   <script src="js/animaciones.js"></script>
   <script src="js/graficas.js"></script>
   <script src="js/plan-semanal.js"></script>
+  <script src="js/adaptar.js"></script>
   <script src="js/inicio.js"></script>
   <script src="js/rutinas.js"></script>
   <script src="js/reproductor.js"></script>
   <script src="js/progreso.js"></script>
+  <script src="js/logros.js"></script>
   <script src="js/fotos.js"></script>
   <script src="js/nutricion.js"></script>
   <script src="js/calendario.js"></script>
   <script src="js/perfil.js"></script>
+  <script src="js/recordatorios.js"></script>
+  <script src="js/asistente.js"></script>
   <script src="js/app.js"></script>
   <script src="js/cookies.js"></script>
 </body>

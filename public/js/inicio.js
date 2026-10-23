@@ -30,6 +30,7 @@ async function cargarInicio() {
 
   document.getElementById('inicio-contenido').innerHTML = `
     ${tarjetaHoy(deHoy, semana, sesionesSemana.filter(s => s.fecha === hoy))}
+    ${avisoAyer(semana)}
 
     <section class="caja s-12 t-semana" aria-labelledby="t-semana">
       <div class="caja-cabeza">
@@ -41,8 +42,8 @@ async function cargarInicio() {
           <a href="#rutinas" class="dia-tira e-${x.estado} ${x.esHoy ? 'es-hoy' : ''}" data-dia="${i}" style="animation-delay:${i * 40}ms">
             <span class="rotulo">${DIAS_CORTOS[i]}</span>
             <b class="simbolo" aria-hidden="true">${SIMBOLO_ESTADO[x.estado]}</b>
-            <strong>${x.dia.titulo}</strong>
-            <small>${x.dia.entrena ? x.dia.minutos + ' min' : (x.dia.tipo === 'activo' ? 'Caminata suave' : 'Recuperación')}</small>
+            <strong>${x.extra && !x.dia.entrena ? escapar(x.extra.rutina.nombre.split(' · ')[0]) : x.dia.titulo}</strong>
+            <small>${x.movido ? `Pasada al ${NOMBRES_DIA_MIN[x.dia.movido_a]}` : x.extra ? `+ recuperada · ${minutosActividad(x.extra.rutina)} min` : x.dia.entrena ? x.dia.minutos + ' min' : (x.dia.tipo === 'activo' ? 'Caminata suave' : 'Recuperación')}</small>
             <span class="solo-lector">${TEXTO_ESTADO[x.estado]}</span>
           </a>`).join('')}
       </div>
@@ -74,7 +75,13 @@ async function cargarInicio() {
   if (figura) montarAnimacion(figura, figura.dataset.ejercicio, figura.dataset.grupo);
 
   contarNumeros(document.getElementById('inicio-contenido'));
-  graficaBarras('grafica-semanas', r.semanas.map(s => ({ etiqueta: diaMes(s.inicio), valor: s.kcal })), 'kcal');
+  // Sin entrenamientos todavía: en vez de una gráfica vacía, invitar a la primera sesión
+  if (r.semanas.some(s => s.kcal > 0)) {
+    graficaBarras('grafica-semanas', r.semanas.map(s => ({ etiqueta: diaMes(s.inicio), valor: s.kcal })), 'kcal');
+  } else {
+    document.getElementById('grafica-semanas').innerHTML = `
+      <div class="vacio">${icono('fuego')}<p>Completa tu primer entrenamiento y aquí verás las calorías de cada semana.</p></div>`;
+  }
   animarBarrasMeta();
   pintarPesoInicio(r);
 
@@ -86,11 +93,39 @@ async function cargarInicio() {
 }
 
 // ---------- Tarjeta "Tu entrenamiento de hoy" ----------
+// Las sesiones de una rutina recuperada terminan en "· recuperada" (así se sabe cuál se hizo)
+const esRecuperada = sesion => /· recuperada$/.test(sesion.nombre);
+
 function tarjetaHoy(deHoy, semana, sesionesHoy) {
   const dia = deHoy.dia;
-  const lugar = NOMBRES_LUGAR[planSemana.preferencias.lugar] || 'En casa';
+  const extraPendiente = deHoy.extra && !sesionesHoy.some(esRecuperada);
+  const propiaPendiente = dia.entrena && !deHoy.movido && !sesionesHoy.some(s => !esRecuperada(s));
 
-  // Ya entrenó hoy
+  // 1. Rutina recuperada de un día anterior: va primero, en la mañana
+  if (extraPendiente) {
+    const despues = propiaPendiente ? `Después, a tu hora de siempre: ${dia.titulo} · ${minutosActividad(dia.rutina)} min.` : '';
+    return tarjetaRutina(deHoy.extra.rutina, {
+      rotulo: `Esta mañana · recuperada del ${NOMBRES_DIA_MIN[deHoy.extra.origen]}`,
+      titulo: deHoy.extra.rutina.nombre.split(' · ')[0],
+      nota: despues,
+      botones: `<button type="button" class="btn btn-lima" data-empezar-extra="${dia.dia}">${icono('play')}Empezar</button>`
+    });
+  }
+
+  // 2. La rutina propia de hoy
+  if (propiaPendiente) {
+    return tarjetaRutina(dia.rutina, {
+      rotulo: `Tu entrenamiento de hoy · ${DIAS_LARGOS[dia.dia]}`,
+      titulo: dia.titulo,
+      botones: `
+        <button type="button" class="btn btn-lima" id="btn-empezar-hoy">${icono('play')}Empezar</button>
+        <button type="button" class="btn btn-linea" data-corta="${dia.dia}">${icono('reloj')}Tengo poco tiempo</button>
+        <button type="button" class="btn btn-linea" data-mover="${dia.dia}">${icono('calendario')}Hoy no puedo</button>
+        <a href="#rutinas" class="btn btn-texto" data-dia="${dia.dia}">Ver rutina</a>`
+    });
+  }
+
+  // 3. Ya entrenó hoy
   if (sesionesHoy.length) {
     const minutos = sesionesHoy.reduce((s, x) => s + x.minutos, 0);
     return `
@@ -98,40 +133,56 @@ function tarjetaHoy(deHoy, semana, sesionesHoy) {
         <div class="t-hoy-texto">
           <span class="rotulo">Tu entrenamiento de hoy</span>
           <h2>Hoy ya cumpliste ${icono('check')}</h2>
-          <p>${escapar(sesionesHoy[0].nombre.split(' · ')[0])} · ${minutos} min. Próximo: ${escapar(siguienteEntreno(semana))}.</p>
+          <p>${escapar(sesionesHoy[0].nombre.split(' · ')[0])}${sesionesHoy.length > 1 ? ` y ${sesionesHoy.length - 1} más` : ''} · ${minutos} min. Próximo: ${escapar(siguienteEntreno(semana))}.</p>
           <div class="acciones"><a href="#calendario" class="btn btn-linea">Ver mi semana</a></div>
         </div>
       </section>`;
   }
 
-  // Día de descanso
-  if (!dia.entrena) {
+  // 4. La pasó a mañana
+  if (deHoy.movido) {
     return `
       <section class="t-hoy s-12 descanso">
         <div class="t-hoy-texto">
           <span class="rotulo">Hoy · ${DIAS_LARGOS[dia.dia]}</span>
-          <h2>${dia.titulo}</h2>
-          <p>${dia.tipo === 'activo' ? 'Camina 20 minutos a ritmo suave y estira un poco.' : 'Tu cuerpo también progresa cuando descansa.'} Próximo entreno: ${escapar(siguienteEntreno(semana))}.</p>
-          <div class="acciones"><a href="#rutinas" class="btn btn-linea" data-dia="${dia.dia}">Entrenar igual</a></div>
+          <h2>Hoy descansas</h2>
+          <p>Pasaste ${escapar(dia.titulo)} a la mañana del ${NOMBRES_DIA_MIN[dia.movido_a]}. Descansar también cuenta.</p>
+          <div class="acciones">
+            <button type="button" class="btn btn-linea" data-deshacer-mover="${dia.dia}">Deshacer: la hago hoy</button>
+            <a href="#calendario" class="btn btn-texto">Ver mi semana</a>
+          </div>
         </div>
-        <div class="t-hoy-figura">${picto(dia.picto)}</div>
+        <div class="t-hoy-figura">${picto('p-descanso')}</div>
       </section>`;
   }
 
-  // Toca entrenar
-  const principal = dia.rutina.bloques.find(b => b.tipo === 'principal');
+  // 5. Día de descanso
+  return `
+    <section class="t-hoy s-12 descanso">
+      <div class="t-hoy-texto">
+        <span class="rotulo">Hoy · ${DIAS_LARGOS[dia.dia]}</span>
+        <h2>${dia.titulo}</h2>
+        <p>${dia.tipo === 'activo' ? 'Camina 20 minutos a ritmo suave y estira un poco.' : 'Tu cuerpo también progresa cuando descansa.'} Próximo entreno: ${escapar(siguienteEntreno(semana))}.</p>
+        <div class="acciones"><a href="#rutinas" class="btn btn-linea" data-dia="${dia.dia}">Entrenar igual</a></div>
+      </div>
+      <div class="t-hoy-figura">${picto(dia.picto)}</div>
+    </section>`;
+}
+
+// Tarjeta grande con una rutina para hoy (la propia o la recuperada)
+function tarjetaRutina(rutina, { rotulo, titulo, nota = '', botones }) {
+  const lugar = NOMBRES_LUGAR[rutina.lugar || planSemana.preferencias.lugar] || 'En casa';
+  const principal = rutina.bloques.find(b => b.tipo === 'principal');
   const primero = principal.ejercicios[0];
   return `
     <section class="t-hoy s-12">
       <div class="t-hoy-texto">
-        <span class="rotulo">Tu entrenamiento de hoy · ${DIAS_LARGOS[dia.dia]}</span>
-        <h2>${dia.titulo}</h2>
-        <p class="t-hoy-meta">${icono('reloj', 'ic-sm')}${minutosActividad(dia.rutina)} min de actividad <span>·</span> ${principal.ejercicios.length} ejercicios × ${principal.rondas} rondas <span>·</span> ${icono('fuego', 'ic-sm')}≈ ${numero(kcalRutina(dia.rutina) || 0)} kcal <span>·</span> ${lugar}</p>
+        <span class="rotulo">${rotulo}</span>
+        <h2>${escapar(titulo)}</h2>
+        <p class="t-hoy-meta">${icono('reloj', 'ic-sm')}${minutosActividad(rutina)} min de actividad <span>·</span> ${principal.ejercicios.length} ejercicios × ${principal.rondas} rondas <span>·</span> ${icono('fuego', 'ic-sm')}≈ ${numero(kcalRutina(rutina) || 0)} kcal <span>·</span> ${lugar}</p>
         <ul class="t-hoy-lista">${principal.ejercicios.map(e => `<li>${escapar(e.nombre)}</li>`).join('')}</ul>
-        <div class="acciones">
-          <button type="button" class="btn btn-lima" id="btn-empezar-hoy">${icono('play')}Empezar</button>
-          <a href="#rutinas" class="btn btn-linea" data-dia="${dia.dia}">Ver rutina</a>
-        </div>
+        ${nota ? `<p class="t-hoy-nota">${escapar(nota)}</p>` : ''}
+        <div class="acciones">${botones}</div>
       </div>
       <div class="t-hoy-figura figura-oscura" id="hoy-figura" data-ejercicio="${escapar(primero.nombre)}" data-grupo="${primero.grupo}"></div>
     </section>`;
@@ -207,6 +258,11 @@ function tarjetaMeta(r) {
   const bajar = meta < p.inicial;
   const estimadoKg = r.calorias.kg_total;
   const medidoKg = p.inicial - p.actual;
+  // El servidor manda null cuando todavía no hay datos suficientes: se muestra "—" y qué falta
+  const pct = v => (v == null ? '—' : v + '%');
+  const faltaBascula = 'Registra tu peso otra vez para comparar';
+  const faltaEntreno = 'Aparece con tu primer entrenamiento';
+  const sinDatos = p.progreso == null && p.progreso_estimado == null;
   return `
     <section class="caja s-7 t-meta" aria-labelledby="t-meta">
       <div class="caja-cabeza">
@@ -214,18 +270,23 @@ function tarjetaMeta(r) {
         <span class="rotulo">${numero(p.inicial, 1)} → ${numero(meta, 1)} kg</span>
       </div>
       ${bajar ? `
-        <div class="barra-doble" role="img" aria-label="Estimado ${p.progreso_estimado}%, medido ${p.progreso ?? 0}%">
+        <div class="barra-doble" role="img" aria-label="Estimado ${pct(p.progreso_estimado)}, báscula ${pct(p.progreso)}">
           <span class="barra-pista"><i class="b-estimado" data-ancho="${p.progreso_estimado || 0}"></i></span>
           <span class="barra-pista"><i class="b-medido" data-ancho="${p.progreso || 0}"></i></span>
         </div>
         <div class="meta-cifras">
-          <div><span class="punto-l estimado"></span><b>${p.progreso_estimado || 0}%</b><small>Estimado por tus entrenamientos · −${numero(estimadoKg, 2)} kg</small></div>
-          <div><span class="punto-l medido"></span><b>${p.progreso ?? 0}%</b><small>Báscula · ${medidoKg >= 0 ? '−' : '+'}${numero(Math.abs(medidoKg), 1)} kg</small></div>
+          <div><span class="punto-l estimado"></span><b>${pct(p.progreso_estimado)}</b><small>${p.progreso_estimado == null ? faltaEntreno : `Estimado por tus entrenamientos · −${numero(estimadoKg, 2)} kg`}</small></div>
+          <div><span class="punto-l medido"></span><b>${pct(p.progreso)}</b><small>${p.progreso == null ? faltaBascula : `Báscula · ${medidoKg >= 0 ? '−' : '+'}${numero(Math.abs(medidoKg), 1)} kg`}</small></div>
         </div>
-        <p class="kcal-nota">Desde ${diaMes(r.calorias.desde)} has quemado ≈ ${numero(r.calorias.total)} kcal entrenando (7.700 kcal ≈ 1 kg). Lo que comes también cuenta: la báscula manda.</p>`
+        <p class="kcal-nota">${sinDatos
+          ? 'Todavía no hay datos para calcular tu avance: completa un entrenamiento y vuelve a pesarte en unos días.'
+          : `Desde ${diaMes(r.calorias.desde)} has quemado ≈ ${numero(r.calorias.total)} kcal entrenando (7.700 kcal ≈ 1 kg). Lo que comes también cuenta: la báscula manda.`}</p>`
+      : p.progreso == null ? `
+        <p class="kcal-detalle"><b>—</b> ${faltaBascula.toLowerCase()} y ver tu avance.</p>
+        <p class="kcal-nota">Tu meta es subir de peso: aquí cuenta lo que marca la báscula.</p>`
       : `
-        <div class="barra barra-meta"><i data-ancho="${p.progreso || 0}"></i></div>
-        <p class="kcal-detalle"><b>${p.progreso ?? 0}%</b> de tu meta según la báscula.</p>
+        <div class="barra barra-meta"><i data-ancho="${p.progreso}"></i></div>
+        <p class="kcal-detalle"><b>${p.progreso}%</b> de tu meta según la báscula.</p>
         <p class="kcal-nota">Tu meta es subir de peso: aquí cuenta lo que marca la báscula. Entrenando has gastado ≈ ${numero(r.calorias.total)} kcal; súmalas a lo que comes.</p>`}
     </section>`;
 }

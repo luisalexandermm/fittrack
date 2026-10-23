@@ -9,10 +9,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="FitTrack">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="icon" href="img/logo-simbolo.png" type="image/png">
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="apple-touch-icon" href="/img/pwa-180.png">
+  <link rel="apple-touch-icon" href="img/pwa-180.png">
   <link rel="preload" href="fuentes/big-shoulders-display-latin-900-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/landing.css">
@@ -106,7 +105,7 @@
 
   <!-- Barra fija: aparece al pasar el hero -->
   <header class="nav-fija" id="nav-fija" aria-hidden="true">
-    <a href="#arriba" class="marca" tabindex="-1"><img class="marca-simbolo" src="/img/logo-simbolo.png" alt="" aria-hidden="true">FitTrack</a>
+    <a href="#arriba" class="marca" tabindex="-1"><img class="marca-simbolo" src="/img/logo.png" alt="" aria-hidden="true">FitTrack</a>
     <nav class="nav-fija-enlaces">
       <a href="#como" tabindex="-1">Cómo funciona</a>
       <a href="#demo" tabindex="-1">Pruébalo</a>
@@ -143,8 +142,8 @@
     <!-- Cinta de datos -->
     <div class="cinta" aria-hidden="true">
       <div class="cinta-pista">
-        <span>108 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
-        <span>108 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+        <span>124 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
+        <span>124 ejercicios</span><i></i><span>Casa o gimnasio</span><i></i><span>10–60 min</span><i></i><span>Tu semana, día por día</span><i></i><span>Animación de cada movimiento</span><i></i><span>Hecho en Quibdó</span><i></i>
       </div>
     </div>
 
@@ -331,22 +330,11 @@
         </div>
       </div>
       <p class="vitrina-nota tenue">Ejemplos ilustrativos: en tu cuenta verás solo tus datos reales.</p>
-      <aside class="instalar-ayuda caja revelar" id="instalar" aria-labelledby="instalar-titulo">
-        <div>
-          <span class="rotulo">iPhone y iPad</span>
-          <h3 id="instalar-titulo">Agrega FitTrack a tu pantalla de inicio</h3>
-          <ol>
-            <li>Abre esta página directamente en <strong>Safari</strong> y toca <strong>Compartir</strong> <span aria-label="Compartir">↑</span>.</li>
-            <li>Elige <strong>Agregar a pantalla de inicio</strong> y luego toca <strong>Agregar</strong>.</li>
-          </ol>
-          <p class="tenue">Si abriste el enlace desde otra app, ábrelo en Safari. Solo necesitas tu cuenta de FitTrack; no necesitas una cuenta de Vercel ni descargar nada del App Store.</p>
-        </div>
-      </aside>
     </section>
 
     <!-- Contadores -->
     <section class="contadores" aria-label="FitTrack en números">
-      <div><span class="cifra" data-contar="108">0</span><span class="rotulo">ejercicios animados</span></div>
+      <div><span class="cifra" data-contar="124">0</span><span class="rotulo">ejercicios animados</span></div>
       <div><span class="cifra" data-contar="20">0</span><span class="rotulo">recetas</span></div>
       <div><span class="cifra" data-contar="4">0</span><span class="rotulo">objetivos</span></div>
       <div><span class="cifra" data-contar="7">0</span><span class="rotulo">días, a tu medida</span></div>
@@ -480,15 +468,15 @@
             </div>
           </section>
 
-          <!-- Paso 2: objetivos -->
+          <!-- Paso 2: objetivo -->
           <section class="ob-paso" data-paso="2" hidden>
             <h2 class="ob-titulo">¿Qué quieres conseguir?</h2>
-            <p class="ob-sub">Elige hasta 4 objetivos. Después asignarás días distintos a cada uno.</p>
-            <div class="ob-opciones" id="r-objetivo" role="group" aria-label="Objetivos de entrenamiento">
-              <button type="button" class="ob-opcion activo" data-objetivo="grasa" aria-pressed="true"><svg class="picto"><use href="img/iconos.svg#p-cardio"/></svg><strong>Definir / perder grasa</strong><span>Intervalos intensos</span></button>
-              <button type="button" class="ob-opcion" data-objetivo="musculo" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-empuje"/></svg><strong>Ganar músculo</strong><span>Fuerza y tensión</span></button>
-              <button type="button" class="ob-opcion" data-objetivo="resistencia" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-piernas"/></svg><strong>Mejorar resistencia</strong><span>Aguantar más</span></button>
-              <button type="button" class="ob-opcion" data-objetivo="movilidad" aria-pressed="false"><svg class="picto"><use href="img/iconos.svg#p-movilidad"/></svg><strong>Mejorar movilidad</strong><span>Postura y soltura</span></button>
+            <p class="ob-sub">Define el ritmo de trabajo y descanso de tus rutinas.</p>
+            <div class="ob-opciones" id="r-objetivo">
+              <button type="button" class="ob-opcion activo" data-valor="grasa"><svg class="picto"><use href="img/iconos.svg#p-cardio"/></svg><strong>Definir / perder grasa</strong><span>Intervalos intensos</span></button>
+              <button type="button" class="ob-opcion" data-valor="musculo"><svg class="picto"><use href="img/iconos.svg#p-empuje"/></svg><strong>Ganar músculo</strong><span>Fuerza y tensión</span></button>
+              <button type="button" class="ob-opcion" data-valor="resistencia"><svg class="picto"><use href="img/iconos.svg#p-piernas"/></svg><strong>Mejorar resistencia</strong><span>Aguantar más</span></button>
+              <button type="button" class="ob-opcion" data-valor="movilidad"><svg class="picto"><use href="img/iconos.svg#p-movilidad"/></svg><strong>Mejorar movilidad</strong><span>Postura y soltura</span></button>
             </div>
           </section>
 
@@ -514,12 +502,20 @@
             </div>
           </section>
 
-          <!-- Paso 5: días por objetivo -->
+          <!-- Paso 5: días -->
           <section class="ob-paso" data-paso="5" hidden>
-            <h2 class="ob-titulo">¿Qué días dedicarás a cada objetivo?</h2>
-            <p class="ob-sub">Cada día solo puede pertenecer a un objetivo. Elige al menos un día por objetivo.</p>
-            <div class="ob-asignacion-dias" id="r-dias-objetivo"></div>
-            <p class="ob-pista" id="r-dias-pista">Asigna los días de cada objetivo</p>
+            <h2 class="ob-titulo">¿Qué días quieres entrenar?</h2>
+            <p class="ob-sub">Elige los que de verdad puedes. Luego lo cambias en tu perfil.</p>
+            <div class="ob-dias" id="r-dias" role="group" aria-label="Días de entrenamiento">
+              <button type="button" class="ob-dia activo" data-dia="0" aria-pressed="true"><b>L</b><span>Lunes</span></button>
+              <button type="button" class="ob-dia" data-dia="1" aria-pressed="false"><b>M</b><span>Martes</span></button>
+              <button type="button" class="ob-dia activo" data-dia="2" aria-pressed="true"><b>X</b><span>Miércoles</span></button>
+              <button type="button" class="ob-dia" data-dia="3" aria-pressed="false"><b>J</b><span>Jueves</span></button>
+              <button type="button" class="ob-dia activo" data-dia="4" aria-pressed="true"><b>V</b><span>Viernes</span></button>
+              <button type="button" class="ob-dia" data-dia="5" aria-pressed="false"><b>S</b><span>Sábado</span></button>
+              <button type="button" class="ob-dia" data-dia="6" aria-pressed="false"><b>D</b><span>Domingo</span></button>
+            </div>
+            <p class="ob-pista" id="r-dias-pista">3 días por semana · un gran comienzo</p>
           </section>
 
           <!-- Paso 6: tiempo -->
@@ -578,6 +574,10 @@
           </section>
 
           <p class="error-form" id="r-error" role="alert"></p>
+          <div class="reenviar" id="r-reenviar" data-correo="r-email" hidden>
+            <button type="button" class="enlace-simple" data-reenviar>Reenviar correo de confirmación</button>
+            <p class="reenviar-estado" aria-live="polite"></p>
+          </div>
           <div class="ob-botones">
             <button type="submit" class="btn btn-lima btn-bloque" id="r-siguiente">Continuar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
           </div>
@@ -601,7 +601,12 @@
           <h2 class="ob-titulo" id="ob-semana-titulo">Así queda tu semana</h2>
           <div class="ob-confirmar" id="ob-confirmar" hidden>
             <svg class="ic ic-lg acento"><use href="img/iconos.svg#i-check"/></svg>
-            <div><strong>Confirma tu correo para empezar</strong><p class="suave" id="ob-confirmar-texto"></p></div>
+            <div><strong>Confirma tu correo para empezar</strong><p class="suave" id="ob-confirmar-texto"></p>
+              <div class="reenviar" id="ob-reenviar">
+                <button type="button" class="enlace-simple" data-reenviar>¿No te llegó? Reenviar correo</button>
+                <p class="reenviar-estado" aria-live="polite"></p>
+              </div>
+            </div>
           </div>
           <ol class="semana-lista" id="ob-semana-lista"></ol>
           <a href="/app" class="btn btn-lima btn-bloque" id="ob-ir-app">Ir a mi panel <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></a>
@@ -618,6 +623,10 @@
           <div class="campo"><label for="l-email">Correo</label><input id="l-email" type="email" autocomplete="email"></div>
           <div class="campo"><label for="l-pass">Contraseña</label><input id="l-pass" type="password" autocomplete="current-password"></div>
           <p class="error-form" id="l-error" role="alert"></p>
+          <div class="reenviar" id="l-reenviar" data-correo="l-email" hidden>
+            <button type="button" class="enlace-simple" data-reenviar>Reenviar correo de confirmación</button>
+            <p class="reenviar-estado" aria-live="polite"></p>
+          </div>
           <button type="submit" class="btn btn-lima btn-bloque">Entrar <svg class="ic ic-flecha"><use href="img/iconos.svg#i-flecha"/></svg></button>
           <button type="button" class="enlace-simple" id="ir-recuperar">¿Olvidaste tu contraseña?</button>
         </form>

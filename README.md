@@ -17,13 +17,13 @@ Supabase → **New project**. Elige una región cercana (por ejemplo *São Paulo
 ### 2. Crea las tablas
 Supabase → **SQL Editor** → **New query**:
 1. Pega todo el archivo `supabase/esquema.sql` → **Run**.
-2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 108 ejercicios —85 de casa y 23 de gimnasio—, 20 recetas y 13 consejos).
+2. Nueva consulta, pega `supabase/datos.sql` → **Run** (carga 124 ejercicios —101 de casa y 23 de gimnasio—, 20 recetas y 13 consejos).
 
 Eso crea las tablas, las reglas de seguridad (RLS), el trigger que arma el perfil al registrarse y el bucket **privado** `fotos` en Storage. Puedes ejecutarlos otra vez sin romper nada.
 
 ### ¿Tu base ya tenía usuarios? Ejecuta la migración (una sola vez)
 Si ya habías ejecutado el `esquema.sql` anterior, **no borres nada**: ejecuta en el SQL Editor, en este orden:
-1. `supabase/migracion-onboarding.sql` → agrega los objetivos múltiples y la asignación de días.
+1. `supabase/migracion-onboarding.sql`
 2. `supabase/datos.sql`
 
 La migración **solo agrega** cosas y se puede ejecutar varias veces:
@@ -34,22 +34,27 @@ La migración **solo agrega** cosas y se puede ejecutar varias veces:
 | `perfiles.dias_entreno` (0 = lunes … 6 = domingo) | los días que eligió; si está vacío se calculan con `meta_semanal` como antes |
 | `perfiles.edad` (opcional) | dato básico del onboarding |
 | `perfiles.plan_semanal` (jsonb) | la semana generada: qué rutina toca cada día |
-| `perfiles.objetivos_dias` (jsonb) | hasta cuatro objetivos y los días asignados a cada uno |
 | `ejercicios.equipo` y `ejercicios.musculos` | filtrar por lugar y mostrar los músculos en la ficha |
-| trigger `crear_perfil` ampliado | guarda objetivos y sus días, lugar, edad, altura y medidas iniciales al registrarse |
+| trigger `crear_perfil` ampliado | guarda lugar, días, edad, altura y medidas iniciales al registrarse |
 
 No cambia ninguna política RLS, no borra columnas ni usuarios, y `datos.sql` agrega los ejercicios nuevos **al final**, así que los ids de siempre no cambian.
 Los usuarios antiguos quedan con "casa" y sus días de siempre, y en Inicio ven una tarjeta para completar sus preferencias.
-Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan objetivos múltiples, lugar y días.
+Si subes el código **antes** de ejecutar la migración, la app sigue funcionando: arma la semana sin guardarla y avisa que faltan lugar y días.
 
 ### Migración de calorías (v6, una sola vez)
 Si ya ejecutaste `migracion-onboarding.sql`, ejecuta ahora **en este orden**:
-1. `supabase/migracion-onboarding.sql` otra vez → agrega el campo de objetivos múltiples y actualiza el trigger.
-2. `supabase/migracion-calorias.sql` → agrega `perfiles.sexo` (opcional) y `sesiones.kcal`, y actualiza el trigger para conservar todas las preferencias del registro.
-3. `supabase/datos.sql` → trae los 41 ejercicios nuevos (van al final, los ids de siempre no cambian).
+1. `supabase/migracion-calorias.sql` → agrega `perfiles.sexo` (opcional) y `sesiones.kcal`, y actualiza el trigger de registro para guardar el sexo.
+2. `supabase/datos.sql` → trae los 41 ejercicios nuevos (van al final, los ids de siempre no cambian).
 
-Solo agrega columnas; no toca RLS ni datos. Si vuelves a ejecutar `migracion-onboarding.sql` después, corre otra vez `migracion-calorias.sql` para dejar el trigger actualizado.
+Solo agrega columnas; no toca RLS ni datos. Si vuelves a ejecutar `migracion-onboarding.sql` después, corre otra vez `migracion-calorias.sql` (las dos actualizan el mismo trigger).
 Sin esta migración la app sigue funcionando: las calorías se calculan al vuelo con la duración de cada sesión.
+
+### Migración de recordatorios y asistente (v9, una sola vez)
+Si tu base ya tenía usuarios, ejecuta **en este orden**:
+1. `supabase/migracion-v9.sql` → crea dos tablas nuevas con RLS: `suscripciones_push` (dónde mandar los recordatorios) y `uso_asistente` (cuántas preguntas hace cada usuario al día, **sin guardar el texto**), más la función `contar_pregunta_asistente()`.
+2. `supabase/datos.sql` → trae los 16 ejercicios nuevos para principiantes y movilidad (van al final; los ids de siempre no cambian) y suma "quemar grasa" a 5 ejercicios de nivel 1 que ya existían.
+
+No cambia ninguna tabla que ya existe ni sus políticas. Sin esta migración la app sigue funcionando: el asistente cuenta las preguntas en la memoria del servidor y los recordatorios avisan que falta la migración.
 
 ### 3. Configura el inicio de sesión
 Supabase → **Authentication → URL Configuration**:
@@ -57,6 +62,10 @@ Supabase → **Authentication → URL Configuration**:
 - **Redirect URLs:** agrega `http://localhost:3000/verificar` (y luego `https://tu-dominio.com/verificar`).
 
 Opcional: pon los correos en español con `supabase/plantillas-correo.md`.
+
+**Correo de confirmación (importante):** el correo que trae Supabase por defecto es solo para pruebas: manda **2 correos por hora** y **solo a los miembros de tu equipo** en Supabase. A cualquier otra persona no le llega. Antes de que se registren usuarios reales, configura un SMTP propio en **Authentication → Emails → SMTP Settings** (por ejemplo Resend, Brevo o Gmail con contraseña de aplicación) y sube el límite en **Authentication → Rate Limits**. Si Supabase no puede mandar un correo, el servidor lo escribe en los logs con la pista `[auth] Supabase no pudo enviar el correo`.
+
+Si a alguien no le llegó, puede pedir otro con **"Reenviar correo de confirmación"**: aparece al terminar el registro, al intentar entrar con una cuenta sin confirmar y si se registra otra vez con el mismo correo (máximo 5 cada 15 minutos por IP, y 60 s entre uno y otro).
 Por defecto Supabase pide **confirmar el correo** al registrarse; la app ya maneja ese paso. Si quieres entrar sin confirmar mientras pruebas, desactívalo en **Authentication → Sign In / Providers → Email → Confirm email**.
 
 ### 4. Pon las llaves
@@ -78,8 +87,13 @@ cp .env.example .env
 |---|---|
 | `SUPABASE_URL` | Project URL (`https://xxxx.supabase.co`) |
 | `SUPABASE_ANON_KEY` | Llave pública: `anon` o `publishable` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Llave secreta: `service_role` o `secret`. **Solo en el servidor**, nunca en el frontend ni en GitHub. Se usa para borrar cuentas. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Llave secreta: `service_role` o `secret`. **Solo en el servidor**, nunca en el frontend ni en GitHub. Se usa para borrar cuentas y enviar los recordatorios. |
 | `SITE_URL` | `http://localhost:3000` (tu dominio al publicar) |
+| `ANTHROPIC_API_KEY` | (Opcional) clave del asistente: [console.anthropic.com](https://console.anthropic.com) → API Keys. Sin ella, el asistente responde con reglas (respaldo) y lo dice. |
+| `IA_MODELO` · `IA_LIMITE_DIARIO` | (Opcionales) modelo de Claude (por defecto `claude-haiku-4-5-20251001`) y preguntas por usuario al día (por defecto 20) |
+| `VAPID_PUBLIC_KEY` · `VAPID_PRIVATE_KEY` | (Opcional) llaves de los recordatorios. Créalas con `npm run vapid` |
+| `VAPID_CONTACTO` | `mailto:tu-correo` (lo pide el estándar de notificaciones) |
+| `CRON_SECRET` | Una clave larga y aleatoria. Vercel la manda sola cuando dispara el recordatorio diario |
 
 ### 5. Arranca
 ```bash
@@ -116,19 +130,16 @@ El símbolo del logo (`img/logo-simbolo.png`) es el corredor recortado de tu `lo
 |---|---|
 | **Landing** | Hero oscuro con la palabra FITTRACK, anillo lima y tu foto (el diseño original), cómo funciona, **demo con el generador real** (objetivo, lugar, nivel y tiempo, con la animación de cada ejercicio), vitrina de la app, objetivos |
 | **Registro (modal)** | Onboarding en 7 pasos dentro de una ventana flotante: cuenta (con confirmar contraseña) → objetivo → lugar → nivel → días → tiempo → datos básicos y privacidad → **FitTrack arma tu semana** y te la muestra |
-| **Inicio** | Tu entrenamiento de hoy (con la figura del primer ejercicio y botón Empezar), tu semana (✓ hecho · → próximo · ○ programado · — descanso), tu progreso (peso, cintura, entrenamientos, racha) y lo que está cambiando (gráfica de peso y minutos por semana) |
-| **Rutinas** | La rutina de cada día de la semana, ficha de cada ejercicio (animación, músculos, duración, descanso, nivel, equipo e instrucciones), cambiar ejercicios, otra versión del día y una rutina libre que combina hasta cuatro objetivos |
+| **Inicio** | Tu entrenamiento de hoy (con la figura del primer ejercicio, **Empezar**, **Tengo poco tiempo** y **Hoy no puedo**), aviso si ayer no entrenaste, tu semana (✓ hecho · → próximo · ○ programado · — descanso), tu progreso (peso, cintura, entrenamientos, racha) y lo que está cambiando (gráfica de peso y minutos por semana) |
+| **Rutinas** | La rutina de cada día de la semana, ficha de cada ejercicio (animación, músculos, duración, descanso, nivel, equipo e instrucciones), cambiar ejercicios, otra versión del día, rutina libre y rutinas guardadas |
 | **Entrenamiento** | Pantalla completa: ejercicio X de N, figura animada, contador, barra de progreso, músculos, siguiente ejercicio, pausa, saltar, anterior y terminar antes (se guarda lo hecho) |
-| **Progreso** | Pestañas Peso (gráfica con meta, anillo de avance, estadísticas), Medidas (gráfica y tabla) y Fotos (galería privada y comparador antes/después) |
-| **Nutrición** | Plan diario con recetas etiquetadas para los objetivos elegidos; el enfoque rota entre metas según los días de entreno y descanso. Puedes cambiar cada comida por otra opción del mismo enfoque. |
+| **Progreso** | Pestañas Peso (gráfica con meta, anillo de avance, estadísticas), Medidas (gráfica y tabla), Fotos (galería privada y comparador antes/después) y **Logros** |
+| **Zurick (asistente)** | Botón flotante en toda la app: responde dudas de tu plan y alternativas de ejercicios con Claude (o con reglas si la IA no está) |
+| **Nutrición** | Plan de comidas del día según el objetivo, cambiar opciones, 20 recetas con ingredientes y pasos, consejo del día |
 | **Calendario** | Tu semana con estados y leyenda, días cumplidos e historial del mes |
-| **Perfil** | Preferencias de entreno (objetivo, nivel, lugar, días, tiempo; al cambiarlas pregunta si actualizar la semana), datos personales, privacidad y datos, contraseña, tema claro/oscuro |
+| **Perfil** | Preferencias de entreno (objetivo, nivel, lugar, días, tiempo; al cambiarlas pregunta si actualizar la semana), datos personales, **recordatorios**, privacidad y datos, contraseña, tema claro/oscuro |
 
 Funciona en celular, tablet y escritorio: en pantallas de 1024 px o menos el menú lateral se cambia por una barra arriba y otra abajo.
-
-### Instalar en iPhone o iPad
-
-Abre el enlace público de FitTrack directamente en **Safari**, toca **Compartir** → **Agregar a pantalla de inicio** → **Agregar**. iOS no muestra un botón automático de descarga para sitios web: se instala desde ese menú y queda como un ícono en la pantalla de inicio. No se necesita cuenta de Vercel ni descargarla del App Store. El sitio debe estar publicado con HTTPS para que la instalación y el registro funcionen.
 
 ---
 
@@ -168,19 +179,23 @@ fittrack/
 ├── server.js                 → arranca Express, seguridad, rutas y frontend
 ├── db/
 │   ├── supabase.js           → conexión con Supabase y catálogos en memoria
-│   ├── ejercicios.js         → 108 ejercicios con equipo y músculos (fuente de datos.sql)
+│   ├── ejercicios.js         → 124 ejercicios con equipo y músculos (fuente de datos.sql)
 │   ├── recetas.js            → 20 recetas (desayuno, almuerzo, cena, snack)
 │   └── consejos.js           → consejos del día
 ├── middleware/
 │   ├── auth.js               → sesión de Supabase en cookies y autorización de datos sensibles
 │   └── seguridad.js          → helmet/CSP, límite de intentos, verificación de origen
 ├── rutas/
-│   ├── auth.js               → registro, login, confirmación, recuperar contraseña, logout
+│   ├── auth.js               → registro, login, confirmación, reenviar correo, recuperar contraseña, logout
 │   ├── perfil.js             → ver y editar perfil
 │   ├── cuenta.js             → exportar datos, contraseña, autorización, borrar cuenta
 │   ├── rutinas.js            → GENERADOR de rutinas + guardadas
 │   ├── plan.js               → la SEMANA: usa el generador una vez por día, sin repetir y nueva cada lunes
 │   ├── calorias.js           → MET, kcal, kg estimados y % de grasa por cintura
+│   ├── adaptar.js            → FitTrack Adaptive: versión corta y pasar a la mañana siguiente
+│   ├── logros.js             → logros por constancia (calculados con tus sesiones)
+│   ├── recordatorios.js      → notificaciones push y envío diario (Vercel Cron)
+│   ├── asistente.js          → asistente: contexto, reglas, límite diario y respaldo
 │   ├── fechas.js             → lunes de la semana y sumar días
 │   ├── sesiones.js           → entrenamientos completados
 │   ├── medidas.js            → peso y medidas
@@ -190,8 +205,9 @@ fittrack/
 │   └── utilidades.js         → fechas, números, reglas de contraseña
 ├── supabase/
 │   ├── esquema.sql           → tablas, RLS, trigger y bucket de fotos (instalación nueva)
-│   ├── migracion-onboarding.sql → si tu base ya existía: onboarding y objetivos múltiples
+│   ├── migracion-onboarding.sql → solo si tu base ya existía: agrega lo del onboarding
 │   ├── migracion-calorias.sql   → después de la anterior: sexo y kcal por sesión
+│   ├── migracion-v9.sql      → después de la anterior: recordatorios y contador del asistente
 │   ├── datos.sql             → ejercicios, recetas y consejos (ejecutar 2.º)
 │   ├── generar-datos.js      → regenera datos.sql si cambias los catálogos (npm run sql)
 │   └── plantillas-correo.md  → correos de Supabase en español
@@ -201,7 +217,7 @@ fittrack/
     ├── verificar.html        → a donde llegan los enlaces de los correos
     ├── privacidad.html · terminos.html · cookies.html · 404.html
     ├── css/  base.css (colores, botones, formularios) · landing.css · app.css
-    ├── img/  iconos.svg (íconos y pictogramas) · logo.png · logo-simbolo.png · hero-atleta.png (tu foto)
+    ├── img/  iconos.svg (íconos y pictogramas) · logo.png · logo-simbolo.png · pwa-*.png (íconos de la app, incluido el maskable) · hero-atleta.png (tu foto)
     ├── fuentes/              → Big Shoulders, Bricolage Grotesque, Instrument Sans (OFL)
     └── js/
         ├── tema.js           → claro (por defecto) / oscuro
@@ -215,9 +231,15 @@ fittrack/
         ├── graficas.js       → barras, línea y anillo en SVG
         ├── inicio.js · rutinas.js · reproductor.js · progreso.js · fotos.js
         ├── nutricion.js · calendario.js · perfil.js
+        ├── adaptar.js        → "Tengo poco tiempo" y "Hoy no puedo" (propuestas y aceptar)
+        ├── logros.js · recordatorios.js · asistente.js
         ├── error-404.js      → la 404 "Esta página pesa 404 kg" (3 intentos, se suelta un disco)
         └── vendor/gsap.min.js → GSAP 3.15 (licencia gratuita de GSAP), solo lo usa la 404
 ```
+
+`servicios/ia.js` → conexión con Claude · `public/sw.js` → service worker (solo notificaciones).
+
+Las pruebas viven en `pruebas/` (`npm test`; `catalogo-falso.js` reemplaza a Supabase mientras corren).
 
 ## Colores (cámbialos en `public/css/base.css`)
 
@@ -261,10 +283,45 @@ kcal = MET × 3,5 × peso (kg) / 200  × minutos        7.700 kcal ≈ 1 kg de g
 
 **El tiempo que eliges es tiempo de actividad**: el circuito principal dura eso (se ajustan rondas y unos segundos de trabajo para cuadrar). El calentamiento y el enfriamiento, unos 4–5 minutos, van aparte.
 
-**Variedad**: un día de entreno **nunca repite** los ejercicios del día de entreno anterior; dentro de la semana se evita repetir; y **cada lunes** se arma una semana nueva que evita los ejercicios de la semana pasada (`plan.semana` guarda el lunes de cada plan).
+**Variedad**: un día de entreno **nunca repite** los ejercicios del circuito del día de entreno anterior; dentro de la semana se evita repetir; y **cada lunes** se arma una semana nueva que evita los ejercicios de la semana pasada (`plan.semana` guarda el lunes de cada plan).
+
+*Limitación conocida:* con los ejercicios de v9, la semana nueva ya sale distinta en todos los objetivos y niveles **excepto movilidad en nivel 2 y 3**, que repite varios (sus circuitos usan 5–6 ejercicios y todavía no hay suficientes). La prueba `pruebas/plan.test.js` lo deja marcado como pendiente.
+
+Los días de entreno anteriores a la creación de la cuenta no cuentan como "No se hizo" (aparecen como "Antes de tu cuenta").
 
 `rutas/plan.js` reparte un **enfoque** a cada día de entreno según el objetivo (por ejemplo, grasa: Full Body → Cardio intenso → Piernas + Core → Movilidad → Tren superior…; con 1–2 días, siempre Full Body) y llama al generador de arriba una vez por día. Los días libres quedan como *descanso activo* o *descanso*.
 La semana se guarda en `perfiles.plan_semanal` y se repite cada lunes. Se vuelve a armar cuando el usuario cambia sus preferencias y dice que sí, o con "Otra versión de este día". Las sesiones hechas están en `sesiones`, así que nunca se pierden.
+
+## FitTrack Adaptive: el plan se acomoda a tu día
+
+Las reglas están en `rutas/adaptar.js` (funciones puras, con pruebas en `pruebas/adaptar.test.js`). **Nada cambia en tu semana hasta que aceptas la propuesta**, y siempre se explica por qué.
+
+- **Tengo poco tiempo** (`POST /api/plan/corta`): elige 10–40 min (menos de lo que dura la de hoy). Se conservan el enfoque del día y sus mismos ejercicios; si hay que quitar alguno, queda al menos uno de cada grupo. Calentamiento y enfriamiento se acortan pero no se quitan. No se guarda nada: solo se entrena esa versión.
+- **Hoy no puedo** (`POST /api/plan/mover`): la rutina pasa a la **mañana del día siguiente** (si el día ya pasó, a hoy). Si ese día ya tenía rutina, quedan dos sesiones (mañana y tu hora de siempre) sin pasar el tope de actividad de tu nivel: **45 min** principiante, **60** intermedio, **75** avanzado; si no cabe completa, se recorta, y si no caben ni 10 min, recomienda dejarla pasar.
+- **No se acumula:** una rutina se pasa una sola vez, un día recibe máximo una recuperada y el domingo no se pasa (el lunes empieza la semana nueva). Se puede **deshacer**.
+- Las sesiones de una rutina recuperada se guardan con "· recuperada" al final del nombre, y las versiones cortas con "· versión corta".
+
+## Logros
+
+`rutas/logros.js` los calcula con tus sesiones reales (no se guardan aparte): primer entrenamiento, 3 en una semana, semana completa, 3 días seguidos, 2 y 4 semanas seguidas con al menos 2 entrenamientos, 10/25/50 sesiones, 5 horas, usar una versión corta y completar una recuperada. **No hay logros por entrenar todos los días:** descansar también es parte del plan. Al guardar una sesión, la app avisa si desbloqueaste uno.
+
+## Recordatorios (notificaciones)
+
+1. Crea las llaves: `npm run vapid` y copia `VAPID_PUBLIC_KEY` y `VAPID_PRIVATE_KEY` a tu `.env` y a Vercel. Agrega también `VAPID_CONTACTO` y `CRON_SECRET`.
+2. `vercel.json` ya trae el envío diario: `"schedule": "0 12 * * *"` = **12:00 UTC = 7:00 a. m. en Colombia**. En el plan gratis de Vercel las tareas programadas corren una vez al día (y puede variar dentro de esa hora).
+3. Cada usuario los activa en **Perfil → Recordatorios** (por dispositivo). Le llega "Hoy toca Cardio intenso · 30 min" solo si ese día le toca y todavía no ha entrenado; si tiene una rutina recuperada, se la recuerda primero.
+4. En **iPhone** solo funcionan si instalan FitTrack en la pantalla de inicio (Safari → Compartir → Agregar a inicio, iOS 16.4 o más nuevo).
+
+`public/sw.js` es el service worker: **solo** recibe las notificaciones; no guarda nada en caché, así que la app sigue necesitando internet.
+Para probar sin esperar a las 7:00: en Perfil → Recordatorios usa **Enviar una de prueba**, o llama a `GET /api/recordatorios/enviar` con la cabecera `Authorization: Bearer TU_CRON_SECRET`.
+
+## Zurick, el asistente de FitTrack
+
+- `servicios/ia.js` es lo único que habla con Claude (Anthropic). Para usar otro proveedor, solo se cambia ese archivo.
+- `rutas/asistente.js` arma el contexto con tu perfil (sin peso, medidas, fotos, correo, sexo ni edad), tu semana, tus últimas 5 sesiones y el catálogo de ejercicios que puedes hacer, y le da reglas al modelo: respuestas cortas, solo con tus datos, sin diagnósticos médicos, sin dietas extremas ni entrenar con dolor.
+- Si la pregunta menciona dolor, mareo, dolor en el pecho, lesión o embarazo, la respuesta siempre incluye la recomendación de parar y consultar a un profesional.
+- **Límite:** 20 preguntas por usuario al día (`IA_LIMITE_DIARIO`), contadas en la base con `contar_pregunta_asistente()`. FitTrack no guarda el texto de las preguntas.
+- **Respaldo:** si no hay clave, la IA tarda más de 15 s o responde con error, contesta con reglas sencillas y la app lo marca como "Respuesta automática".
 
 ## Animaciones de los ejercicios
 
@@ -274,15 +331,31 @@ Para un ejercicio nuevo: agrégalo **al final** de `db/ejercicios.js`, corre `np
 ## Despliegue en Vercel con GitHub
 
 1. Importa el repositorio desde GitHub en Vercel y deja la **Root Directory** en la carpeta del proyecto. Vercel detecta `server.js` como Express; no hace falta un comando de build.
-2. En **Project Settings → Environment Variables**, agrega `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `SITE_URL`. Define `SITE_URL` con el dominio de producción, por ejemplo `https://tu-dominio.vercel.app`. Las llaves secretas van solo en Vercel, nunca en GitHub.
+2. En **Project Settings → Environment Variables**, agrega `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` y `SITE_URL` (y, si los usas, `ANTHROPIC_API_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_CONTACTO` y `CRON_SECRET`). Define `SITE_URL` con el dominio de producción, por ejemplo `https://tu-dominio.vercel.app`. Las llaves secretas van solo en Vercel, nunca en GitHub.
 3. Despliega y copia el dominio asignado. En Supabase → **Authentication → URL Configuration**, úsalo como **Site URL** y agrega `https://tu-dominio.vercel.app/verificar` a **Redirect URLs**. Si usarás dominios de Preview, agrega también un patrón permitido que cubra únicamente tus previews.
 4. Cada push a la rama conectada volverá a desplegar la app. Prueba registro, confirmación de correo, inicio de sesión y subida de fotos.
 
 `vercel.json` habilita URLs limpias como `/app` y `/verificar`. Vercel sirve los archivos de `public/` desde su CDN. Las fotos tienen un límite de **4 MB** para respetar el máximo de 4,5 MB por petición de Vercel Functions.
 
+## Pruebas
+
+```bash
+npm test
+```
+
+Corre las pruebas de `pruebas/` con el probador que trae Node (sin instalar nada) y sin conectarse a Supabase: el generador de rutinas usa el mismo catálogo de `db/ejercicios.js`. Revisan que:
+- el tiempo elegido sea tiempo de actividad (±2 min por el redondeo de rondas),
+- se respeten el nivel y el lugar (en casa nunca salen máquinas),
+- el circuito no repita ejercicios y un día de entreno no repita los del anterior,
+- un principiante trabaje menos y descanse más que un avanzado,
+- las fórmulas de calorías y de % de grasa, las fechas y los mensajes de error en español,
+- FitTrack Adaptive: la versión corta conserva enfoque y grupos, pasar una rutina respeta el tope de tu nivel, no se acumula y se puede deshacer,
+- los logros, el texto de los recordatorios (y que no se manden en descanso o si ya entrenaste),
+- que al asistente nunca se le mande peso, meta, edad, altura ni sexo, y que ante síntomas siempre recomiende parar y consultar.
+
 ## Antes de publicar
 
-1. Configura un **SMTP propio** en Supabase (el correo gratuito envía muy pocos mensajes por hora).
+1. Configura un **SMTP propio** en Supabase (el correo de prueba solo envía 2 por hora y solo a tu equipo).
 2. Activa las copias de seguridad de Supabase (plan Pro) o exporta la base de vez en cuando.
 3. Revisa los textos legales.
 

@@ -725,6 +725,43 @@
     ], dur: 600, activo: ['torso'], extras: [{ tipo: 'pesa', en: 'mano1', grande: true }]
   };
 
+  // ---------- v9: ejercicios para principiantes ----------
+  M.sentadillaSilla = {
+    cuadros: [pose({ b1: A(60, 70), b2: A(56, 66) }), { ...sentadillaAbajo, b1: A(80, 84), b2: A(76, 80) }],
+    dur: 1100, activo: ['piernas'], extras: [{ tipo: 'caja', x: 22, y: 89, w: 24, h: 21 }]
+  };
+
+  M.flexionPared = {
+    cuadros: [
+      { h: [46, 66], t: 168, c: 170, b1: P(84, 46, -1), b2: P(82, 47, -1), m1: P(38, 107), m2: P(40, 107) },
+      { h: [49, 66], t: 158, c: 160, b1: P(84, 46, -1), b2: P(82, 47, -1), m1: P(38, 107), m2: P(40, 107) }
+    ], dur: 900, activo: ['brazos'], extras: [{ tipo: 'pared', x: 86 }]
+  };
+
+  const rodillasArriba = { h: [48, 92], t: 128, c: 130, b1: P(71, suelo, -1), b2: P(69, suelo, -1), m1: A(-52, -140), m2: A(-54, -142) };
+  M.planchaRodillas = { cuadros: [rodillasArriba, { ...rodillasArriba, h: [48, 93] }], dur: 1500, activo: ['torso'] };
+
+  M.crunchInverso = {
+    cuadros: [{ ...acostado, b1: A(-90, -90), b2: A(-88, -88), m1: A(178, 90), m2: A(176, 88) },
+              { ...acostado, h: [66, 100], b1: A(-90, -90), b2: A(-88, -88), m1: A(-140, 140), m2: A(-142, 138) }],
+    dur: 1000, activo: ['torso']
+  };
+
+  M.birdDog = {
+    cuadros: [cuatro, { ...cuatro, b2: A(100, 100), m1: A(-88, -88) }, cuatro, { ...cuatro, b1: A(100, 100), m2: A(-90, -90) }],
+    dur: 1000, activo: ['torso', 'piernas']
+  };
+
+  M.jackSinSalto = {
+    frente: true,
+    cuadros: [
+      { h: [60, 64], t: 180, b1: A(10, 6), b2: A(-10, -6), m1: P(64, 107), m2: P(56, 107) },
+      { h: [62, 64], t: 180, b1: A(150, 160), b2: A(-150, -160), m1: P(82, 107), m2: P(56, 107) },
+      { h: [60, 64], t: 180, b1: A(10, 6), b2: A(-10, -6), m1: P(64, 107), m2: P(56, 107) },
+      { h: [58, 64], t: 180, b1: A(150, 160), b2: A(-150, -160), m1: P(64, 107), m2: P(38, 107) }
+    ], dur: 520, activo: ['piernas', 'brazos']
+  };
+
   M.descanso = {
     cuadros: [pose({ b1: A(8, 14), b2: A(-4, 2) }), pose({ b1: A(8, 16), b2: A(-4, 4), t: 178 })],
     dur: 1800, activo: []
@@ -841,13 +878,33 @@
     'Extensión de tríceps en polea': 'pushdown',
     'Aperturas con mancuernas': 'aperturas',
     'Elíptica a intervalos': 'eliptica',
-    'Farmer walk (caminata con pesas)': 'farmer'
+    'Farmer walk (caminata con pesas)': 'farmer',
+    'Sentadilla a la silla': 'sentadillaSilla',
+    'Zancada estática': 'zancada',
+    'Puente de glúteo con pausa': 'puente',
+    'Flexiones en pared': 'flexionPared',
+    'Plancha con rodillas': 'planchaRodillas',
+    'Crunch inverso': 'crunchInverso',
+    'Pájaro-perro (bird dog)': 'birdDog',
+    'Elevación en Y boca abajo': 'nadador',
+    'Marcha rápida con brazos': 'marcha',
+    'Jumping jacks sin salto': 'jackSinSalto',
+    'Escaladores lentos': 'escaladores',
+    'Gato-camello con respiración': 'gatoCamello',
+    'Sentadilla profunda con apoyo': 'sentadillaProfunda',
+    'Estocada baja con brazos arriba': 'estocadaRotacion',
+    'Círculos grandes de brazos': 'brazosCirculos',
+    'Balanceo de pierna con apoyo': 'balanceoPierna'
   };
 
   // Si aparece un ejercicio nuevo sin movimiento propio, se usa uno de su grupo
   const POR_GRUPO = { piernas: 'sentadilla', empuje: 'flexion', tiron: 'superman', core: 'plancha', cardio: 'jumpingJacks', movilidad: 'brazosCirculos' };
 
   const EQUIPO_TEXTO = {
+    'Sentadilla a la silla': 'Silla firme',
+    'Flexiones en pared': 'Pared',
+    'Sentadilla profunda con apoyo': 'Mesa o marco de puerta',
+    'Balanceo de pierna con apoyo': 'Pared',
     'Zancada búlgara (en silla)': 'Silla firme',
     'Sentadilla a una pierna (pistol asistida)': 'Pared o marco de puerta',
     'Sentadilla isométrica en pared': 'Pared',

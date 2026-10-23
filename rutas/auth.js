@@ -5,8 +5,8 @@
 const express = require('express');
 const { clienteAuth } = require('../db/supabase');
 const { guardarSesion, borrarSesion, obtenerSesion } = require('../middleware/auth');
-const { hoy, numeroONull, passwordValida, traducirErrorAuth } = require('./utilidades');
-const { limpiarDias, limpiarObjetivosDias } = require('./plan');
+const { hoy, numeroONull, passwordValida, traducirErrorAuth, correoNoEnviado } = require('./utilidades');
+const { limpiarDias } = require('./plan');
 
 const router = express.Router();
 const OBJETIVOS = ['grasa', 'musculo', 'resistencia', 'movilidad'];
@@ -16,9 +16,19 @@ function urlSitio(req) {
   return (process.env.SITE_URL || `${req.protocol}://${req.get('host')}`).replace(/\/$/, '');
 }
 
+const correoValido = correo => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo);
+
+// Deja una pista en los logs del servidor cuando Supabase no puede mandar correos
+function avisarFalloCorreo(error) {
+  if (correoNoEnviado(error)) {
+    console.error('[auth] Supabase no pudo enviar el correo:', error.message,
+      '→ Configura un SMTP propio en Supabase: Authentication → Emails → SMTP Settings');
+  }
+}
+
 // POST /api/auth/registro
 router.post('/registro', async (req, res) => {
-  const { nombre, email, password, objetivo, objetivos_dias, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
+  const { nombre, email, password, objetivo, nivel, minutos, acepta_terminos, acepta_sensibles, peso, meta_peso,
           lugar, dias, edad, altura, sexo, cintura, cadera, pecho, brazo, muslo } = req.body;
 
   if (!nombre || !email || !password) return res.status(400).json({ error: 'Nombre, correo y contraseña son obligatorios' });
@@ -50,21 +60,11 @@ router.post('/registro', async (req, res) => {
     return res.status(400).json({ error: 'Revisa la edad' });
   }
 
-  const objetivosLimpios = objetivos_dias === undefined ? null : limpiarObjetivosDias(objetivos_dias);
-  if (objetivos_dias !== undefined && !objetivosLimpios) {
-    return res.status(400).json({ error: 'Elige entre 1 y 4 objetivos y asigna días distintos a cada uno' });
-  }
-  const diasLimpios = objetivosLimpios
-    ? [...new Set(Object.values(objetivosLimpios).flat())].sort((a, b) => a - b)
-    : limpiarDias(dias) || [0, 2, 4];
-  const objetivoPrincipal = objetivosLimpios ? Object.keys(objetivosLimpios)[0] : objetivo;
-
   // Estos datos viajan a Supabase y el trigger "crear_perfil" arma el perfil con ellos
-  // (lugar, dias y edad los guarda el trigger actualizado de migracion-onboarding.sql)
+  // (lugar, dias y edad los guarda el trigger nuevo de migracion-onboarding.sql; el viejo los ignora)
   const datosPerfil = {
     nombre: String(nombre).trim().slice(0, 60),
-    objetivo: OBJETIVOS.includes(objetivoPrincipal) ? objetivoPrincipal : 'grasa',
-    objetivos_dias: objetivosLimpios || { [OBJETIVOS.includes(objetivo) ? objetivo : 'grasa']: diasLimpios },
+    objetivo: OBJETIVOS.includes(objetivo) ? objetivo : 'grasa',
     nivel: [1, 2, 3].includes(Number(nivel)) ? Number(nivel) : 1,
     minutos: Math.min(Math.max(Number(minutos) || 20, 10), 60),
     acepta_terminos: true,
@@ -77,7 +77,7 @@ router.post('/registro', async (req, res) => {
     brazo: medida(brazo),
     muslo: medida(muslo),
     lugar: ['casa', 'gimnasio', 'ambos'].includes(lugar) ? lugar : 'casa',
-    dias: diasLimpios,
+    dias: limpiarDias(dias) || [0, 2, 4],
     edad: edadNumerica !== null ? Math.round(edadNumerica) : null,
     altura: alturaNumerica && alturaNumerica >= 50 && alturaNumerica <= 260 ? alturaNumerica : null,
     sexo: ['hombre', 'mujer', 'otro'].includes(sexo) ? sexo : null,
@@ -89,13 +89,23 @@ router.post('/registro', async (req, res) => {
     password,
     options: { data: datosPerfil, emailRedirectTo: `${urlSitio(req)}/verificar` }
   });
-  if (error) return res.status(400).json({ error: traducirErrorAuth(error) });
+  if (error) {
+    avisarFalloCorreo(error);
+    // Si falló solo el correo, la cuenta puede haber quedado creada: ofrecemos reenviarlo
+    const codigo = correoNoEnviado(error) ? 'correo_no_enviado' : undefined;
+    return res.status(400).json({ error: traducirErrorAuth(error), codigo });
+  }
 
   // Si en Supabase está activa la confirmación por correo, todavía no hay sesión
   if (!data.session) {
     // Supabase no avisa si el correo ya existía (por privacidad): devuelve un usuario sin identidades
     const yaExistia = data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
-    if (yaExistia) return res.status(409).json({ error: 'Ya existe una cuenta con ese correo. Inicia sesión o recupera tu contraseña.' });
+    if (yaExistia) {
+      return res.status(409).json({
+        error: 'Ya existe una cuenta con ese correo. Inicia sesión, recupera tu contraseña o, si nunca confirmaste el correo, pide que te lo reenviemos.',
+        codigo: 'ya_existe'
+      });
+    }
     return res.status(201).json({ ok: true, confirmar: true, email: correo });
   }
 
@@ -107,7 +117,11 @@ router.post('/registro', async (req, res) => {
 router.post('/login', async (req, res) => {
   const correo = String(req.body.email || '').trim().toLowerCase();
   const { data, error } = await clienteAuth().auth.signInWithPassword({ email: correo, password: String(req.body.password || '') });
-  if (error) return res.status(401).json({ error: traducirErrorAuth(error) });
+  if (error) {
+    // La cuenta existe pero falta confirmar el correo: la pantalla ofrece reenviarlo
+    const sinConfirmar = error.code === 'email_not_confirmed' || /email not confirmed/i.test(error.message || '');
+    return res.status(401).json({ error: traducirErrorAuth(error), codigo: sinConfirmar ? 'correo_sin_confirmar' : undefined });
+  }
 
   guardarSesion(res, data.session);
   res.json({ ok: true });
@@ -135,11 +149,34 @@ router.post('/sesion', async (req, res) => {
 // POST /api/auth/recuperar  { email } → Supabase envía un correo para cambiar la contraseña
 router.post('/recuperar', async (req, res) => {
   const correo = String(req.body.email || '').trim().toLowerCase();
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) return res.status(400).json({ error: 'Revisa el correo' });
+  if (!correoValido(correo)) return res.status(400).json({ error: 'Revisa el correo' });
 
   const { error } = await clienteAuth().auth.resetPasswordForEmail(correo, { redirectTo: `${urlSitio(req)}/verificar` });
   if (error && error.status === 429) return res.status(429).json({ error: traducirErrorAuth(error) });
+  if (error) avisarFalloCorreo(error);
   // Siempre respondemos lo mismo, exista o no el correo (así nadie averigua quién está registrado)
+  res.json({ ok: true });
+});
+
+// POST /api/auth/reenviar  { email } → vuelve a mandar el correo de confirmación de la cuenta
+// Igual que en "recuperar", la respuesta no dice si el correo existe o si ya estaba confirmado.
+router.post('/reenviar', async (req, res) => {
+  const correo = String(req.body.email || '').trim().toLowerCase();
+  if (!correoValido(correo)) return res.status(400).json({ error: 'Revisa el correo' });
+
+  const { error } = await clienteAuth().auth.resend({
+    type: 'signup',
+    email: correo,
+    options: { emailRedirectTo: `${urlSitio(req)}/verificar` }
+  });
+  if (error) {
+    const limite = error.status === 429 || error.code === 'over_email_send_rate_limit';
+    if (limite) return res.status(429).json({ error: traducirErrorAuth(error) });
+    if (correoNoEnviado(error)) {
+      avisarFalloCorreo(error);
+      return res.status(503).json({ error: traducirErrorAuth(error) });
+    }
+  }
   res.json({ ok: true });
 });
 

@@ -2,7 +2,12 @@
 //  api.js — funciones compartidas por todas las páginas
 // ============================================================
 
-const MENSAJE_SIN_SERVIDOR = 'No hay conexión con el servidor de FitTrack. Ejecuta "npm start" y abre http://localhost:3000 (no abras el archivo index.html directamente ni con Live Server).';
+// En tu computador (desarrollo) el mensaje explica cómo arrancar el servidor;
+// en la app publicada, el usuario solo necesita saber que revise su conexión.
+const EN_DESARROLLO = location.protocol === 'file:' || ['localhost', '127.0.0.1'].includes(location.hostname);
+const MENSAJE_SIN_SERVIDOR = EN_DESARROLLO
+  ? 'No hay conexión con el servidor de FitTrack. Ejecuta "npm start" y abre http://localhost:3000 (no abras el archivo index.html directamente ni con Live Server).'
+  : 'No pudimos conectar con FitTrack. Revisa tu conexión a internet e inténtalo de nuevo.';
 
 // Hace una petición a la API y devuelve el JSON.
 // Si hay error, lanza una excepción con el mensaje del servidor.

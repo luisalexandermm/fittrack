@@ -228,7 +228,7 @@
 }
 .nav-fija.visible { transform: none; }
 .nav-fija .marca { font-size: 1.3rem; }
-.nav-fija .marca-simbolo { width: 32px; height: 32px; }
+.nav-fija .marca-simbolo { width: 96px; height: auto; max-height: 34px; }
 .nav-fija-enlaces { display: flex; gap: 28px; }
 .nav-fija-enlaces a { color: var(--tinta-2); text-decoration: none; font-weight: 500; font-size: .93rem; transition: color .2s; }
 .nav-fija-enlaces a:hover, .nav-fija-enlaces a.activo { color: var(--tinta); }
@@ -403,11 +403,6 @@
 .vitrina.pausada .vitrina-tab.activo .tiempo { animation-play-state: paused; }
 @keyframes llenar { to { transform: scaleX(1); } }
 .vitrina-nota { font-size: .8rem; margin-top: 18px; }
-.instalar-ayuda { max-width: 800px; margin: 30px auto 0; }
-.instalar-ayuda h3 { margin: 8px 0 14px; font-family: var(--f-titulo); font-size: 1.35rem; }
-.instalar-ayuda ol { padding-left: 22px; }
-.instalar-ayuda li + li { margin-top: 8px; }
-.instalar-ayuda p { margin-top: 14px; font-size: .9rem; }
 
 .telefono-escena { display: grid; place-items: center; perspective: 1200px; padding: 20px 0; }
 .telefono {
@@ -594,9 +589,6 @@
 .nivel-barras[data-n="1"] i:nth-child(1), .nivel-barras[data-n="2"] i:nth-child(-n+2), .nivel-barras[data-n="3"] i { background: var(--acento); }
 
 .ob-dias { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-.ob-asignacion-dias { display: grid; gap: 18px; }
-.ob-asignacion h3 { margin: 0 0 8px; font-size: .95rem; }
-.ob-dia:disabled { opacity: .35; cursor: not-allowed; }
 .ob-dia {
   aspect-ratio: 1 / 1.25; min-height: 58px; border-radius: 14px;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
@@ -657,6 +649,15 @@
 .formulario .btn-bloque { margin-top: 4px; }
 .enlace-simple { margin-top: 14px; font-weight: 600; font-size: .9rem; color: var(--tinta-2); text-decoration: underline; text-underline-offset: 3px; align-self: center; }
 .enlace-simple:hover { color: var(--acento); }
+.enlace-simple:disabled { opacity: .6; cursor: default; text-decoration: none; }
+/* Reenviar el correo de confirmación */
+.reenviar { display: flex; flex-direction: column; align-items: flex-start; }
+.reenviar .enlace-simple { margin-top: 6px; align-self: flex-start; }
+#form-login .reenviar, #form-registro .reenviar { align-items: center; margin-bottom: 8px; }
+#form-login .reenviar .enlace-simple, #form-registro .reenviar .enlace-simple { align-self: center; margin-top: 0; }
+#form-login .reenviar-estado, #form-registro .reenviar-estado { text-align: center; }
+.reenviar-estado { font-size: .85rem; color: var(--tinta-2); margin-top: 4px; }
+.reenviar-estado:empty { display: none; }
 .revisa-correo { align-items: flex-start; gap: 10px; }
 .aviso-servidor { background: var(--lima-suave); border-left: 3px solid var(--acento); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; font-size: .88rem; }
 .aviso-servidor p { margin-top: 4px; color: var(--tinta-2); }

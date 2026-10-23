@@ -38,26 +38,34 @@ function actividadDelDia(fecha) {
 //   proximo    → el siguiente día de entreno
 //   programado ○ un día de entreno que viene después
 //   perdido    ○ era día de entreno y ya pasó sin sesión
+//   antes      · era día de entreno, pero todavía no tenía cuenta (no cuenta como perdido)
+//   movido     ↷ la rutina se pasó a la mañana siguiente (FitTrack Adaptive)
 //   descanso   — día libre
+// Cada día trae también "extra": la rutina recuperada que se le sumó en la mañana (o null).
 function estadosSemana(lunes, fechasConSesion) {
   const hoy = hoyTexto();
+  const estaSemana = lunes === planSemana.semana; // los cambios (movidas) solo valen en la semana del plan
   let yaHayProximo = lunes !== lunesDe(hoy); // en otras semanas no se marca "próximo"
   return [...Array(7)].map((_, i) => {
     const fecha = sumarDias(lunes, i);
     const dia = planSemana.dias[i];
+    const extra = estaSemana && dia.extra ? dia.extra : null;
+    const movido = estaSemana && dia.movido_a != null;
+    const entrena = (dia.entrena && !movido) || Boolean(extra);
     let estado;
     if (fechasConSesion.has(fecha)) estado = 'hecho';
-    else if (!dia.entrena) estado = 'descanso';
-    else if (fecha < hoy) estado = 'perdido';
+    else if (movido && !extra) estado = 'movido';
+    else if (!entrena) estado = 'descanso';
+    else if (fecha < hoy) estado = planSemana.alta && fecha < planSemana.alta ? 'antes' : 'perdido';
     else if (fecha === hoy) { estado = 'hoy'; yaHayProximo = true; }
     else if (!yaHayProximo) { estado = 'proximo'; yaHayProximo = true; }
     else estado = 'programado';
-    return { fecha, dia, estado, esHoy: fecha === hoy };
+    return { fecha, dia, estado, esHoy: fecha === hoy, extra, movido };
   });
 }
 
-const SIMBOLO_ESTADO = { hecho: '✓', hoy: '→', proximo: '→', programado: '○', perdido: '○', descanso: '—' };
-const TEXTO_ESTADO = { hecho: 'Hecho', hoy: 'Hoy', proximo: 'Próximo', programado: 'Programado', perdido: 'No se hizo', descanso: 'Descanso' };
+const SIMBOLO_ESTADO = { hecho: '✓', hoy: '→', proximo: '→', programado: '○', perdido: '○', antes: '·', movido: '↷', descanso: '—' };
+const TEXTO_ESTADO = { hecho: 'Hecho', hoy: 'Hoy', proximo: 'Próximo', programado: 'Programado', perdido: 'No se hizo', antes: 'Antes de tu cuenta', movido: 'Pasada a otro día', descanso: 'Descanso' };
 
 // Resumen corto de una rutina: "25 min · 5 ejercicios"
 function resumenRutina(rutina) {

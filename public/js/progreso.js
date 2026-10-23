@@ -10,7 +10,10 @@ const UNIDADES = { peso: 'kg', cintura: 'cm', cadera: 'cm', pecho: 'cm', brazo: 
 const NOMBRES_MEDIDA = { peso: 'Peso', cintura: 'Cintura', cadera: 'Cadera', pecho: 'Pecho', brazo: 'Brazo', muslo: 'Muslo', grasa: '% Grasa' };
 
 function prepararProgreso() {
-  prepararPestanas('pestanas-progreso', panel => { if (panel === 'fotos') cargarFotos(); });
+  prepararPestanas('pestanas-progreso', panel => {
+    if (panel === 'fotos') cargarFotos();
+    if (panel === 'logros') cargarLogros();
+  });
   seleccionUnica('selector-medida', valor => { medidaGrafica = valor; pintarGraficaMedida(); });
   document.getElementById('btn-registrar').addEventListener('click', abrirFormularioMedida);
 
@@ -82,7 +85,10 @@ function pintarPanelPeso(r) {
   // debajo se ve lo que marca la báscula.
   const progreso = r.peso ? r.peso.progreso : null;
   const estimado = r.peso ? r.peso.progreso_estimado : null;
-  const anillo = estimado != null ? Math.max(estimado, progreso || 0) : progreso;
+  // null = todavía no hay datos suficientes para ese porcentaje (el servidor decide)
+  const anillo = estimado == null && progreso == null ? null : Math.max(estimado || 0, progreso || 0);
+  const pct = v => (v == null ? '—' : v + '%');
+  const bajar = Boolean(meta && r.peso && meta < r.peso.inicial); // meta de bajar: dos barras
 
   const cambio = r.peso ? r.peso.cambio : null;
   const stat = (ic, valor, unidad, etiqueta) => `
@@ -105,13 +111,14 @@ function pintarPanelPeso(r) {
           <strong>${NOMBRES_OBJETIVO[perfil.objetivo]}</strong>
           <p class="tenue" style="font-size:.9rem">${meta ? `Meta: ${numero(meta, 1)} kg` : 'Sin meta de peso'}</p>
         </div>
-        ${estimado != null ? `
-          <div class="barra-doble" style="width:100%"><span class="barra-pista"><i class="b-estimado" style="width:${estimado}%"></i></span><span class="barra-pista"><i class="b-medido" style="width:${progreso || 0}%"></i></span></div>
+        ${bajar ? `
+          <div class="barra-doble" style="width:100%"><span class="barra-pista"><i class="b-estimado" style="width:${estimado || 0}%"></i></span><span class="barra-pista"><i class="b-medido" style="width:${progreso || 0}%"></i></span></div>
           <div class="meta-cifras compacta">
-            <div><span class="punto-l estimado"></span><b>${estimado}%</b><small>Entrenamientos · −${numero(r.calorias.kg_total, 2)} kg</small></div>
-            <div><span class="punto-l medido"></span><b>${progreso ?? 0}%</b><small>Báscula</small></div>
+            <div><span class="punto-l estimado"></span><b>${pct(estimado)}</b><small>${estimado == null ? 'Entrenamientos: aparece con el primero' : `Entrenamientos · −${numero(r.calorias.kg_total, 2)} kg`}</small></div>
+            <div><span class="punto-l medido"></span><b>${pct(progreso)}</b><small>${progreso == null ? 'Báscula: pésate otra vez para comparar' : 'Báscula'}</small></div>
           </div>`
-        : `<div class="barra" style="width:100%"><i style="width:${progreso || 0}%"></i></div>`}
+        : progreso != null ? `<div class="barra" style="width:100%"><i style="width:${progreso}%"></i></div>`
+        : meta && r.peso ? '<p class="tenue" style="font-size:.85rem">Pésate otra vez en unos días para ver tu avance.</p>' : ''}
         ${perfil.sensibles_ok ? `<button class="btn btn-linea btn-sm" type="button" data-editar-meta>${icono('editar', 'ic-sm')}${meta ? 'Cambiar meta' : 'Definir meta'}</button>` : ''}
       </div>
       <div class="stats3 s-12">
